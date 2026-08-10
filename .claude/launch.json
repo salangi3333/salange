@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "saju-dev",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "saju-prod",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "start", "-p", "3001"],
+      "port": 3001
+    },
+    {
+      "name": "shorts-automation",
+      "runtimeExecutable": "C:\\Python314\\python.exe",
+      "runtimeArgs": ["C:\\Users\\user\\Desktop\\쇼츠편집\\app.py"],
+      "port": 5000
+    }
+  ]
+}
