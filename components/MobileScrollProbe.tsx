@@ -23,6 +23,14 @@ import { useEffect, useRef, useState } from "react";
  * 패널)은 패널의 고정 높이(28vh)와 제스처 시작 Y좌표를 코드에서 직접
  * 비교해 자동으로 판정한다.
  *
+ * jsBlocked — WARN이 확정된 순간, PerformanceObserver({type:"longtask"})로
+ * 수집해둔 "50ms 넘게 메인스레드를 막은 작업" 중 그 제스처의 시작~종료
+ * 구간(및 시작 100ms 전)과 겹치는 것들의 합계 시간·개수를 보여준다.
+ * "이 정지가 자바스크립트 실행이 메인스레드를 막아서 생긴 것인지"를
+ * A/B 비교 없이 이 지표 하나로 직접 판정하기 위함이다. 이 API를 지원하지
+ * 않는 브라우저에서는 longtask 관련 값이 전부 "-"로만 표시된다(다른 값은
+ * 그대로 동작).
+ *
  * 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
  */
 
@@ -53,12 +61,17 @@ type GestureRecord = {
   atBottomAtEnd: boolean | null;
   warn: boolean;
   warnIndex: number | null;
+  longTaskMs: number | null;
+  longTaskCount: number | null;
 };
+
+type LongTaskSample = { start: number; end: number; duration: number };
 
 type ProbeSnapshot = {
   variant: ScrollABVariant;
   warnTotal: number;
   warnedGestures: GestureRecord[];
+  longTaskApiSupported: boolean;
 };
 
 // 패널 자체의 고정 최대 높이(vh) — target(본문/패널) 판정 기준선으로도 그대로 쓴다.
@@ -103,6 +116,8 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
     gestureIdSeq: 1,
     warnTotal: 0,
     idleTimeoutId: 0,
+    longTasks: [] as LongTaskSample[],
+    longTaskApiSupported: false,
   });
 
   const [snapshot, setSnapshot] = useState<ProbeSnapshot | null>(null);
@@ -115,7 +130,24 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
         variant,
         warnTotal: c.warnTotal,
         warnedGestures: c.gestureLog.filter((g) => g.warn).slice(0, 5),
+        longTaskApiSupported: c.longTaskApiSupported,
       });
+    }
+
+    // WARN 확정 시, 그 제스처 구간(시작 100ms 전 ~ 종료)과 겹치는 long task
+    // (50ms 넘게 메인스레드를 막은 작업) 합계 시간·개수를 계산한다. 시작
+    // 100ms 전까지 보는 이유: touchstart가 기록된 시점보다 살짝 앞서 시작된
+    // 작업이 그 직후 touchmove 처리를 지연시켰을 가능성까지 포함하기 위함.
+    function sumOverlappingLongTasks(startT: number, endT: number): { totalMs: number; count: number } {
+      let totalMs = 0;
+      let count = 0;
+      for (const lt of c.longTasks) {
+        if (lt.end >= startT - 100 && lt.start <= endT) {
+          totalMs += lt.duration;
+          count++;
+        }
+      }
+      return { totalMs, count };
     }
 
     // abs(totalDy)>=20px 이고 세로 이동이 수평 이동보다 큰데(시작~종료)
@@ -139,6 +171,9 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
       if (g.warn) {
         c.warnTotal++;
         g.warnIndex = c.warnTotal;
+        const { totalMs, count } = sumOverlappingLongTasks(g.startT, g.endT);
+        g.longTaskMs = totalMs;
+        g.longTaskCount = count;
       }
 
       c.currentGesture = null;
@@ -180,6 +215,8 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
         atBottomAtEnd: null,
         warn: false,
         warnIndex: null,
+        longTaskMs: null,
+        longTaskCount: null,
       };
       c.currentGesture = g;
       c.gestureLog.unshift(g);
@@ -213,6 +250,32 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
     window.addEventListener("touchend", onTouchEnd, { passive: true });
     window.addEventListener("touchcancel", onTouchCancel, { passive: true });
 
+    // 메인스레드를 50ms 넘게 막은 작업을 그대로 기록만 한다(관찰만, 아무
+    // 것도 취소·차단하지 않음). 미지원 브라우저에서는 조용히 건너뛴다.
+    let longTaskObserver: PerformanceObserver | null = null;
+    try {
+      if (
+        typeof PerformanceObserver !== "undefined" &&
+        PerformanceObserver.supportedEntryTypes?.includes("longtask")
+      ) {
+        c.longTaskApiSupported = true;
+        longTaskObserver = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            c.longTasks.push({
+              start: entry.startTime,
+              end: entry.startTime + entry.duration,
+              duration: entry.duration,
+            });
+            if (c.longTasks.length > 200) c.longTasks.shift();
+          }
+        });
+        longTaskObserver.observe({ type: "longtask", buffered: true });
+      }
+    } catch {
+      longTaskObserver = null;
+      c.longTaskApiSupported = false;
+    }
+
     flushSnapshot();
 
     return () => {
@@ -221,6 +284,7 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
       window.removeEventListener("touchend", onTouchEnd);
       window.removeEventListener("touchcancel", onTouchCancel);
       window.clearTimeout(c.idleTimeoutId);
+      longTaskObserver?.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -239,9 +303,14 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
         .map((g) => {
           const endY = g.endScrollY !== null ? g.endScrollY.toFixed(1) : "-";
           const dur = g.durationMs !== null ? g.durationMs.toFixed(0) : "-";
+          const jsBlocked = snapshot.longTaskApiSupported
+            ? g.longTaskMs !== null
+              ? `${g.longTaskMs.toFixed(0)}ms(${g.longTaskCount})`
+              : "0ms(0)"
+            : "-";
           return `#${g.warnIndex ?? "?"} dx=${g.totalDx.toFixed(1)} dy=${g.totalDy.toFixed(1)} dur=${dur}ms target=${targetLabel(
             g.startY
-          )}\n  scrollY ${g.startScrollY.toFixed(1)}→${endY}`;
+          )}\n  scrollY ${g.startScrollY.toFixed(1)}→${endY} jsBlocked=${jsBlocked}`;
         })
         .join("\n")
     : "(아직 WARN 없음)";
@@ -266,7 +335,7 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
         whiteSpace: "pre",
       }}
     >
-      {`[scrollDebug] variant=${snapshot.variant}
+      {`[scrollDebug] variant=${snapshot.variant} longtaskAPI=${snapshot.longTaskApiSupported ? "O" : "X"}
 WARN 누적=${snapshot.warnTotal}
 ${warnLines}`}
     </div>
