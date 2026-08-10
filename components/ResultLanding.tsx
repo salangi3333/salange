@@ -162,6 +162,20 @@ export default function ResultLanding({
     }
   }, []);
 
+  // 임시 A/B 진단 전용 — URL에 ?scrollAB=result-pan-y가 있을 때만 아래
+  // <main>(전체 콘텐츠를 감싸는 최상위 래퍼)에 touch-action:pan-y를 추가한다.
+  // 플래그가 없으면(일반 URL) style 자체가 안 붙어 기존과 완전히 동일하다.
+  // 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
+  const [resultPanY, setResultPanY] = useState(false);
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      setResultPanY(params.get("scrollAB") === "result-pan-y");
+    } catch {
+      setResultPanY(false);
+    }
+  }, []);
+
   // StickyBottomBar 노출 제어 — MovieScene/RevealScene에서는 숨기고
   // InsightScene이 화면에 걸쳐 있는 동안에만 나타난다. 마지막 선녀
   // 엔딩(FarewellOutro) 이후로는 구매 CTA 구간이므로 한 번 도달하면
@@ -277,7 +291,10 @@ export default function ResultLanding({
       {/* 결과 페이지(story) 진입 이후로는 끝까지 다크 브라운(sceneBg)을 유지한다.
           main에 배경을 걸어두면 아래 어떤 자식 컴포넌트가 자기 배경을 깜빡
           잊어도 흰 배경이 새어나오지 않는다 — 흰 띠 버그의 안전망. */}
-      <main className={`pb-24 ${isStoryTopic ? "bg-sceneBg" : ""}`}>
+      <main
+        className={`pb-24 ${isStoryTopic ? "bg-sceneBg" : ""}`}
+        style={resultPanY ? { touchAction: "pan-y" } : undefined}
+      >
         {topicLabel && (
           <p className="bg-dark py-2.5 text-center text-xs font-medium text-accentGoldFrom">
             고르신 {topicLabel}부터 자세히 확인해드릴게요
