@@ -132,6 +132,36 @@ export default function ResultLanding({
     document.getElementById("main-cta")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // 임시 A/B 진단 전용 — URL에 ?scrollAB=insight-state-off가 있을 때만,
+  // 아래 StickyBottomBar 노출 제어 경로를 "React state 갱신(최상위
+  // ResultLanding 리렌더)" 대신 "ref 기반 직접 DOM 스타일 반영"으로
+  // 바꾼다. InsightScene 5개의 IntersectionObserver 자체와 가시성 판정
+  // 시점(threshold, 콜백이 불리는 순간)은 전혀 건드리지 않는다 — 오직
+  // 그 결과를 반영하는 방식만 바뀐다. 플래그가 없으면(일반 URL) 아래
+  // 분기는 전혀 타지 않고 기존 state 기반 코드가 그대로 실행된다.
+  // 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
+  // ref로도 같은 값을 들고 있는 이유: InsightScene.tsx의 IntersectionObserver는
+  // scene.id가 바뀔 때만 재구독되고 onVisibilityChange 함수 자체가 바뀌어도
+  // 재구독되지 않는다(그 파일은 수정 대상이 아님). 따라서 handleInsightVisibility가
+  // insightStateOff "state"를 직접 클로저로 참조하면, 마운트 시점(false)에 만들어진
+  // 낡은 함수가 계속 관찰자에 묶여 있어 나중에 플래그가 true가 돼도 옛 동작을 계속
+  // 수행하는 버그가 생긴다. ref는 함수 재생성 없이 항상 최신값을 읽을 수 있어
+  // handleInsightVisibility 자체를 마운트 후 참조가 고정된 안정적인 함수로 유지하면서도
+  // 매 호출 시점의 최신 플래그 값을 정확히 반영한다.
+  const insightStateOffRef = useRef(false);
+  const [insightStateOff, setInsightStateOff] = useState(false);
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const off = params.get("scrollAB") === "insight-state-off";
+      insightStateOffRef.current = off;
+      setInsightStateOff(off);
+    } catch {
+      insightStateOffRef.current = false;
+      setInsightStateOff(false);
+    }
+  }, []);
+
   // StickyBottomBar 노출 제어 — MovieScene/RevealScene에서는 숨기고
   // InsightScene이 화면에 걸쳐 있는 동안에만 나타난다. 마지막 선녀
   // 엔딩(FarewellOutro) 이후로는 구매 CTA 구간이므로 한 번 도달하면
@@ -140,14 +170,44 @@ export default function ResultLanding({
   const [hasReachedEnding, setHasReachedEnding] = useState(false);
   const farewellRef = useRef<HTMLDivElement>(null);
 
-  const handleInsightVisibility = useCallback((id: string, visible: boolean) => {
-    setVisibleInsightIds((prev) => {
-      const next = new Set(prev);
-      if (visible) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+  // insightStateOff일 때만 쓰는 ref 경로 — 기존 state(visibleInsightIds/
+  // hasReachedEnding)와 완전히 별개로 동작해 서로 간섭하지 않는다.
+  const visibleInsightIdsRef = useRef<Set<string>>(new Set());
+  const hasReachedEndingRef = useRef(false);
+  const purchaseBarElRef = useRef<HTMLDivElement>(null);
+
+  // 기존 motion.div의 animate={{y, opacity}} + style.pointerEvents와
+  // 동일한 값·전환 시간(0.5s easeOut)을 순수 DOM 스타일로 재현한다.
+  const applyPurchaseBarVisibility = useCallback((visible: boolean) => {
+    const el = purchaseBarElRef.current;
+    if (!el) return;
+    el.style.opacity = visible ? "1" : "0";
+    el.style.transform = visible ? "translateY(0px)" : "translateY(24px)";
+    el.style.pointerEvents = visible ? "auto" : "none";
+    el.setAttribute("aria-hidden", visible ? "false" : "true");
   }, []);
+
+  // 의도적으로 deps에 insightStateOff(state)를 넣지 않는다 — 이 함수 참조는
+  // 마운트 후 절대 바뀌지 않아야 InsightScene.tsx의 관찰자가(재구독 없이도)
+  // 항상 최신 분기를 타며, 실제 최신값은 매 호출 시 insightStateOffRef에서 읽는다.
+  const handleInsightVisibility = useCallback(
+    (id: string, visible: boolean) => {
+      if (insightStateOffRef.current) {
+        const set = visibleInsightIdsRef.current;
+        if (visible) set.add(id);
+        else set.delete(id);
+        applyPurchaseBarVisibility(set.size > 0 || hasReachedEndingRef.current);
+        return;
+      }
+      setVisibleInsightIds((prev) => {
+        const next = new Set(prev);
+        if (visible) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    },
+    [applyPurchaseBarVisibility]
+  );
 
   useEffect(() => {
     const el = farewellRef.current;
@@ -155,7 +215,12 @@ export default function ResultLanding({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setHasReachedEnding(true);
+          if (insightStateOffRef.current) {
+            hasReachedEndingRef.current = true;
+            applyPurchaseBarVisibility(true);
+          } else {
+            setHasReachedEnding(true);
+          }
           observer.disconnect();
         }
       },
@@ -163,7 +228,7 @@ export default function ResultLanding({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [applyPurchaseBarVisibility]);
 
   const showPurchaseBar = visibleInsightIds.size > 0 || hasReachedEnding;
 
@@ -581,20 +646,44 @@ export default function ResultLanding({
           GPU 레이어가 새로 생성·파괴되어 스크롤 중 컴포지팅 비용이 튀는 원인이었다.
           이제는 DOM에 항상 유지하고 opacity/pointer-events로만 보이기·숨기기를
           처리해 레이어가 페이지 로드 시 한 번만 생성되게 한다. */}
-      <motion.div
-        initial={false}
-        animate={{ y: showPurchaseBar ? 0 : 24, opacity: showPurchaseBar ? 1 : 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        style={{ pointerEvents: showPurchaseBar ? "auto" : "none" }}
-        aria-hidden={!showPurchaseBar}
-      >
-        <StickyBottomBar
-          originalPrice={PRICE.original}
-          discountPrice={PRICE.sale}
-          discountRate={PRICE.discount}
-          onClick={handleCheckout}
-        />
-      </motion.div>
+      {insightStateOff ? (
+        // insight-state-off 전용 경로 — 위 applyPurchaseBarVisibility가
+        // ref로 직접 opacity/transform/pointer-events를 갱신한다. 초기값은
+        // showPurchaseBar(state) 기반 motion.div의 "숨김" 상태와 동일하게
+        // 맞춰 첫 페인트부터 어긋나지 않게 한다.
+        <div
+          ref={purchaseBarElRef}
+          style={{
+            opacity: 0,
+            transform: "translateY(24px)",
+            pointerEvents: "none",
+            transition: "transform 0.5s ease-out, opacity 0.5s ease-out",
+          }}
+          aria-hidden="true"
+        >
+          <StickyBottomBar
+            originalPrice={PRICE.original}
+            discountPrice={PRICE.sale}
+            discountRate={PRICE.discount}
+            onClick={handleCheckout}
+          />
+        </div>
+      ) : (
+        <motion.div
+          initial={false}
+          animate={{ y: showPurchaseBar ? 0 : 24, opacity: showPurchaseBar ? 1 : 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ pointerEvents: showPurchaseBar ? "auto" : "none" }}
+          aria-hidden={!showPurchaseBar}
+        >
+          <StickyBottomBar
+            originalPrice={PRICE.original}
+            discountPrice={PRICE.sale}
+            discountRate={PRICE.discount}
+            onClick={handleCheckout}
+          />
+        </motion.div>
+      )}
     </>
   );
 }

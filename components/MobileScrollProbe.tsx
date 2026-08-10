@@ -26,7 +26,13 @@ import { useEffect, useRef, useState } from "react";
  * 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
  */
 
-type ScrollABVariant = "control" | "timeline-pan-y";
+type ScrollABVariant = "control" | "timeline-pan-y" | "insight-state-off";
+
+// scrollAB로 들어올 수 있는 진단용 variant 값 목록 — 여기 없는 값(또는 값 없음)은
+// 전부 "control"로 표시한다. 새 A/B variant를 추가할 때는 이 목록에만 추가하면
+// 패널의 variant 표시도 함께 인식한다(진단 라벨 판정만 담당, 실제 동작 분기는
+// 각 컴포넌트가 scrollAB 쿼리를 직접 읽어 처리).
+const KNOWN_AB_VARIANTS: ScrollABVariant[] = ["timeline-pan-y", "insight-state-off"];
 
 type GestureEndReason = "touchend" | "touchcancel" | "idle" | "interrupted" | null;
 
@@ -71,9 +77,11 @@ function useScrollDebugConfig(): { enabled: boolean; variant: ScrollABVariant } 
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      const rawVariant = params.get("scrollAB");
+      const matched = KNOWN_AB_VARIANTS.find((v) => v === rawVariant);
       setConfig({
         enabled: params.get("scrollDebug") === "1",
-        variant: params.get("scrollAB") === "timeline-pan-y" ? "timeline-pan-y" : "control",
+        variant: matched ?? "control",
       });
     } catch {
       setConfig({ enabled: false, variant: "control" });
