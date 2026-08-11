@@ -71,7 +71,6 @@ export default function InsightScene({
   motionOff?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const staticEntry = /^ch[1-3]-/.test(scene.id);
 
   useEffect(() => {
     const el = ref.current;
@@ -178,13 +177,13 @@ export default function InsightScene({
             className="relative max-w-[18ch] font-serif-kr text-[22px] font-bold leading-[1.4] text-sceneText sm:text-[30px] sm:leading-[1.35]"
             style={{ wordBreak: "keep-all" }}
           >
-            <WordReveal text={scene.headline} stagger={WORD_STAGGER} staticPosition={staticEntry} />
+            <WordReveal text={scene.headline} stagger={WORD_STAGGER} />
           </h2>
         </div>
 
         {/* 잠시 여백 — 다음 장면으로 넘어가기 전 숨을 고르는 지점 */}
         <motion.span
-          initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
+          initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: dividerDelay }}
@@ -213,7 +212,6 @@ export default function InsightScene({
             overrides={overrides}
             delay={realLifeDelay}
             motionOff={motionOff}
-            staticPosition={staticEntry}
           />
         )}
 
@@ -226,7 +224,6 @@ export default function InsightScene({
             overrides={overrides}
             delay={factDelay}
             motionOff={motionOff}
-            staticPosition={staticEntry}
           />
         )}
 
@@ -234,7 +231,7 @@ export default function InsightScene({
         {scene.action && (
           <div className="flex w-full flex-col items-center gap-4">
             <motion.span
-              initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
+              initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
               whileInView={{ opacity: 1, scaleX: 1 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: actionDividerDelay }}
@@ -245,7 +242,6 @@ export default function InsightScene({
             </p>
             <LineReveal
               text={scene.action}
-              staticPosition={staticEntry}
               delay={actionTextDelay}
               lineGap={0.32}
               className="flex flex-col items-center gap-2"
@@ -258,7 +254,7 @@ export default function InsightScene({
         {/* 명대사 — 설명이 아니라, 마음에 남는 한 줄로 챕터를 맺는다 */}
         {quoteLine && (
           <motion.p
-            initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
+            initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.7, delay: quoteDelay }}
@@ -284,7 +280,6 @@ function InsightBlock({
   overrides,
   delay,
   motionOff,
-  staticPosition,
 }: {
   label: string;
   accent: "gold" | "red";
@@ -292,7 +287,6 @@ function InsightBlock({
   overrides: StoryScene["highlights"];
   delay: number;
   motionOff: boolean;
-  staticPosition: boolean;
 }) {
   const accentBg = accent === "gold" ? "bg-sceneGold/50" : "bg-sceneRed/50";
   const labelColor = accent === "gold" ? "text-sceneGold/65" : "text-sceneRed/65";
@@ -310,7 +304,7 @@ function InsightBlock({
       </motion.p>
       <div className="relative mt-3 pl-4">
         <motion.span
-          initial={{ scaleY: motionOff || staticPosition ? 1 : 0 }}
+          initial={{ scaleY: motionOff ? 1 : 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: delay + 0.1, ease: "easeOut" }}
@@ -319,7 +313,6 @@ function InsightBlock({
         />
         <LineReveal
           text={text}
-          staticPosition={staticPosition}
           delay={delay + TEXT_OFFSET}
           lineGap={LINE_GAP}
           className="flex flex-col gap-2"

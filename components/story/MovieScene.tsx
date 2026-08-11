@@ -68,7 +68,6 @@ export default function MovieScene({
   motionOff?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
-  const staticEntry = /^ch[1-3]-/.test(scene.id);
   const label = scene.chapterLabel ?? "";
   const variant = CHAPTER_VARIANT[label] ?? { camera: "push", texture: "fog" };
   const initialScale = CAMERA_INITIAL_SCALE[variant.camera];
@@ -246,7 +245,7 @@ export default function MovieScene({
       <div className="relative z-10 flex flex-col items-center gap-5 py-10">
         {scene.chapterLabel && (
           <motion.span
-            initial={{ opacity: 0, y: staticEntry ? 0 : 8 }}
+            initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.9 }}
@@ -259,11 +258,11 @@ export default function MovieScene({
           className="max-w-[20ch] font-serif-kr text-[21px] font-bold leading-[1.3] text-sceneText sm:text-3xl sm:leading-snug"
           style={{ wordBreak: "keep-all" }}
         >
-          <WordReveal text={titleText} delay={0.9} staticPosition={staticEntry} />
+          <WordReveal text={titleText} delay={0.9} />
         </h2>
         {scene.narrative[0] && (
           <motion.p
-            initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
+            initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.7, delay: narrativeDelay }}
@@ -273,7 +272,7 @@ export default function MovieScene({
           </motion.p>
         )}
         <motion.span
-          initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
+          initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8, delay: dividerDelay }}
