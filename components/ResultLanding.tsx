@@ -177,25 +177,17 @@ export default function ResultLanding({
     }
   }, []);
 
-  // 임시 A/B 진단 전용 — URL에 ?scrollAB=motion-off가 있을 때만, 아래
+  // 모바일에서 챕터 전환부(영화적 오프닝 → 카드/문/책/그래프 reveal)로
+  // 위로 스크롤해 올라올 때 걸리던 반복 정지 문제 — 아래
   // MovieScene/RevealScene/InsightScene/FarewellOutro의 blur·clipPath·
-  // rotateY·scale을 처음부터 기존 애니메이션의 최종값으로 렌더링한다.
-  // ResultLanding은 Home의 stage가 "result"로 바뀐 뒤 클라이언트에서
-  // 처음 마운트되므로(SSR로 이 컴포넌트 자체가 렌더되는 경로가 없음),
-  // useEffect로 나중에 뒤집는 대신 useState의 lazy initializer로 첫
-  // 렌더 시점에 동기적으로 한 번만 판정한다 — 이후 이 값은 절대 바뀌지
-  // 않는다(setter를 안 씀). 각 대상 컴포넌트는 이 boolean을 prop으로만
-  // 받고, 각자 useEffect/useState로 다시 판정하지 않는다. 플래그가
-  // 없으면(일반 URL) 항상 false로, 기존 코드와 완전히 동일하게 동작한다.
-  // 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
-  const [motionOff] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return new URLSearchParams(window.location.search).get("scrollAB") === "motion-off";
-    } catch {
-      return false;
-    }
-  });
+  // rotateY·scale이 whileInView로 "처음 화면에 걸리는 그 순간" 한꺼번에
+  // 재생을 시작하며 손가락 입력과 겹치는 것이 원인으로 추정되어, 이
+  // 4가지 속성만 처음부터 최종값으로 렌더링하도록 기본값으로 전환했다
+  // (opacity 페이드인은 그대로 유지). 원래는 ?scrollAB=motion-off로만
+  // 켜지는 진단용 A/B였으나, 이제 전체 사용자에게 기본 적용한다.
+  // 되돌리려면 아래 useState(true)를 다시 쿼리 기반 판정으로 바꾸면 된다
+  // (git으로도 이 커밋 하나만 revert하면 원상복구된다).
+  const [motionOff] = useState(true);
 
   // Query-only A/B: remove the root pan-y restriction for the result page.
   // ResultLanding mounts on the client, so the layout effect runs before the
