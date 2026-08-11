@@ -61,7 +61,6 @@ export default function InsightScene({
   scene,
   onVisibilityChange,
   motionOff = false,
-  staticEntry = false,
 }: {
   scene: StoryScene;
   onVisibilityChange?: (id: string, visible: boolean) => void;
@@ -70,9 +69,9 @@ export default function InsightScene({
   // scaleY를 처음부터 기존 애니메이션의 최종값으로 렌더링한다. opacity와
   // 그 전환 타이밍은 전혀 건드리지 않는다. 확인 끝나면 반드시 제거할 것.
   motionOff?: boolean;
-  staticEntry?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const staticEntry = /^ch[1-3]-/.test(scene.id);
 
   useEffect(() => {
     const el = ref.current;
@@ -167,8 +166,8 @@ export default function InsightScene({
           <motion.span
             aria-hidden
             className="pointer-events-none absolute inset-0"
-            initial={staticEntry ? false : { opacity: 0 }}
-            whileInView={staticEntry ? undefined : { opacity: [0, 0.4, 0] }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: [0, 0.4, 0] }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 1.8, delay: headlineEnd + 0.2, ease: "easeInOut" }}
             style={{
@@ -179,14 +178,14 @@ export default function InsightScene({
             className="relative max-w-[18ch] font-serif-kr text-[22px] font-bold leading-[1.4] text-sceneText sm:text-[30px] sm:leading-[1.35]"
             style={{ wordBreak: "keep-all" }}
           >
-            <WordReveal text={scene.headline} stagger={WORD_STAGGER} staticEntry={staticEntry} />
+            <WordReveal text={scene.headline} stagger={WORD_STAGGER} staticPosition={staticEntry} />
           </h2>
         </div>
 
         {/* 잠시 여백 — 다음 장면으로 넘어가기 전 숨을 고르는 지점 */}
         <motion.span
-          initial={staticEntry ? false : { opacity: 0, scaleX: motionOff ? 1 : 0 }}
-          whileInView={staticEntry ? undefined : { opacity: 1, scaleX: 1 }}
+          initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
+          whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: dividerDelay }}
           className="block h-px w-10 bg-sceneGold/40"
@@ -195,8 +194,8 @@ export default function InsightScene({
         {/* 호흡 — Hook과 본문 사이, 작게 한 번 숨을 고르는 지점 */}
         {breathLine && (
           <motion.p
-            initial={staticEntry ? false : { opacity: 0 }}
-            whileInView={staticEntry ? undefined : { opacity: 1 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, delay: breathDelay }}
             className="whitespace-pre-line font-serif-kr text-[15px] italic tracking-[0.02em] text-sceneTextSub/90 sm:text-[12.5px] sm:text-sceneTextSub/80"
@@ -235,8 +234,8 @@ export default function InsightScene({
         {scene.action && (
           <div className="flex w-full flex-col items-center gap-4">
             <motion.span
-              initial={staticEntry ? false : { opacity: 0, scaleX: motionOff ? 1 : 0 }}
-              whileInView={staticEntry ? undefined : { opacity: 1, scaleX: 1 }}
+              initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
+              whileInView={{ opacity: 1, scaleX: 1 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: actionDividerDelay }}
               className="block h-px w-8 bg-sceneGold/30"
@@ -246,7 +245,7 @@ export default function InsightScene({
             </p>
             <LineReveal
               text={scene.action}
-              staticEntry={staticEntry}
+              staticPosition={staticEntry}
               delay={actionTextDelay}
               lineGap={0.32}
               className="flex flex-col items-center gap-2"
@@ -259,8 +258,8 @@ export default function InsightScene({
         {/* 명대사 — 설명이 아니라, 마음에 남는 한 줄로 챕터를 맺는다 */}
         {quoteLine && (
           <motion.p
-            initial={staticEntry ? false : { opacity: 0, y: 6 }}
-            whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.7, delay: quoteDelay }}
             className="max-w-[30ch] whitespace-pre-line text-center font-serif-kr text-[16px] font-bold italic leading-[1.7] text-sceneText/90 sm:text-[17px]"
@@ -301,8 +300,8 @@ function InsightBlock({
   return (
     <div className="w-full max-w-[38ch] text-left sm:max-w-[42ch]">
       <motion.p
-        initial={staticPosition ? false : { opacity: 0 }}
-        whileInView={staticPosition ? undefined : { opacity: 1 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.5, delay }}
         className={`font-serif-kr text-[20px] font-semibold italic leading-snug tracking-[0.02em] sm:text-[13px] sm:font-normal sm:leading-normal ${labelColor}`}
@@ -311,8 +310,8 @@ function InsightBlock({
       </motion.p>
       <div className="relative mt-3 pl-4">
         <motion.span
-          initial={staticPosition ? false : { scaleY: motionOff ? 1 : 0 }}
-          whileInView={staticPosition ? undefined : { scaleY: 1 }}
+          initial={{ scaleY: motionOff || staticPosition ? 1 : 0 }}
+          whileInView={{ scaleY: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: delay + 0.1, ease: "easeOut" }}
           style={{ transformOrigin: "top" }}
@@ -320,7 +319,7 @@ function InsightBlock({
         />
         <LineReveal
           text={text}
-          staticEntry={staticPosition}
+          staticPosition={staticPosition}
           delay={delay + TEXT_OFFSET}
           lineGap={LINE_GAP}
           className="flex flex-col gap-2"

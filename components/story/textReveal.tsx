@@ -20,7 +20,6 @@ export function WordReveal({
   once = true,
   amount = 0.5,
   staticPosition = false,
-  staticEntry = false,
 }: {
   text: string;
   className?: string;
@@ -31,7 +30,6 @@ export function WordReveal({
   once?: boolean;
   amount?: number;
   staticPosition?: boolean;
-  staticEntry?: boolean;
 }) {
   const words = text.split(" ");
   return (
@@ -39,8 +37,8 @@ export function WordReveal({
       {words.map((w, i) => (
         <motion.span
           key={i}
-          initial={staticEntry ? false : { opacity: 0, y: staticPosition ? 0 : 6 }}
-          whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: staticPosition ? 0 : 6 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once, amount }}
           transition={{ duration, delay: delay + i * stagger }}
           className={wordClassName}
@@ -63,7 +61,6 @@ export function LineReveal({
   once = true,
   amount = 0.4,
   staticPosition = false,
-  staticEntry = false,
 }: {
   text: string;
   render?: (line: string) => ReactNode;
@@ -75,7 +72,6 @@ export function LineReveal({
   once?: boolean;
   amount?: number;
   staticPosition?: boolean;
-  staticEntry?: boolean;
 }) {
   const lines = text.split("\n").filter((l) => l.trim().length > 0);
   return (
@@ -83,8 +79,8 @@ export function LineReveal({
       {lines.map((line, i) => (
         <motion.p
           key={i}
-          initial={staticEntry ? false : { opacity: 0, y: staticPosition ? 0 : 8 }}
-          whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: staticPosition ? 0 : 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once, amount }}
           transition={{ duration, delay: delay + i * lineGap }}
           className={lineClassName}

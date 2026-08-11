@@ -30,7 +30,6 @@ export default function RevealScene({
   elementAnalysis,
   tenYear,
   motionOff = false,
-  staticEntry = false,
 }: {
   scene: StoryScene;
   elementAnalysis?: ElementAnalysis;
@@ -39,7 +38,6 @@ export default function RevealScene({
   // 판정해 내려주는 값. RevealBook/RevealDoor/RevealCard/RevealScroll에
   // 그대로 전달된다. 확인 끝나면 반드시 제거할 것.
   motionOff?: boolean;
-  staticEntry?: boolean;
 }) {
   const variant = pickVariant(scene.id);
 
@@ -77,8 +75,8 @@ export default function RevealScene({
         {/* 텍스트보다 연출이 먼저 눈에 들어오도록, 대사는 짧은 정적 이후에 나타난다 */}
         {scene.guideLine && (
           <motion.p
-            initial={staticEntry ? false : { opacity: 0 }}
-            whileInView={staticEntry ? undefined : { opacity: 1 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.7 }}
             className="text-[14px] italic text-sceneTextSub/90 sm:text-[13px] sm:text-sceneTextSub/80"
@@ -87,23 +85,24 @@ export default function RevealScene({
           </motion.p>
         )}
 
-        {variant === "book" && <RevealBook scene={scene} motionOff={motionOff} staticEntry={staticEntry} />}
-        {variant === "seal" && <RevealSeal scene={scene} staticEntry={staticEntry} />}
-        {variant === "door" && <RevealDoor scene={scene} motionOff={motionOff} staticEntry={staticEntry} />}
-        {variant === "card" && <RevealCard scene={scene} motionOff={motionOff} staticEntry={staticEntry} />}
-        {variant === "light" && <RevealLight scene={scene} staticEntry={staticEntry} />}
+        {variant === "book" && <RevealBook scene={scene} motionOff={motionOff} />}
+        {variant === "seal" && <RevealSeal scene={scene} />}
+        {variant === "door" && <RevealDoor scene={scene} motionOff={motionOff} />}
+        {variant === "card" && <RevealCard scene={scene} motionOff={motionOff} />}
+        {variant === "light" && <RevealLight scene={scene} />}
         {variant === "scroll" && (
-          <RevealScroll scene={scene} elementAnalysis={elementAnalysis} motionOff={motionOff} staticEntry={staticEntry} />
+          <RevealScroll scene={scene} elementAnalysis={elementAnalysis} motionOff={motionOff} />
         )}
-        {variant === "silhouette" && <RevealSilhouette scene={scene} tenYear={tenYear} staticEntry={staticEntry} />}
-        {variant === "fade" && <RevealFade scene={scene} staticEntry={staticEntry} />}
+        {variant === "silhouette" && <RevealSilhouette scene={scene} tenYear={tenYear} />}
+        {variant === "fade" && <RevealFade scene={scene} />}
       </div>
     </motion.section>
   );
 }
 
 // ── 서책이 펼쳐짐 — 근거(십성) 공개 ──────────────────────────────
-function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; motionOff: boolean; staticEntry: boolean }) {
+function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
+  const staticEntry = /^ch[1-3]-/.test(scene.id);
   const evidence = scene.evidence ?? [];
   const mid = Math.ceil(evidence.length / 2);
   const left = evidence.slice(0, mid);
@@ -113,8 +112,8 @@ function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
     <div className="flex w-full flex-col items-center gap-6">
       <div className="flex w-full max-w-[420px] justify-center gap-1" style={{ perspective: 900 }}>
         <motion.div
-          initial={staticEntry ? false : { rotateY: motionOff ? 0 : 80, opacity: 0 }}
-          whileInView={staticEntry ? undefined : { rotateY: 0, opacity: 1 }}
+          initial={{ rotateY: motionOff ? 0 : 80, opacity: 0 }}
+          whileInView={{ rotateY: 0, opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
           style={{ transformOrigin: "right center" }}
@@ -123,8 +122,8 @@ function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           {left.map((e, i) => (
             <motion.div
               key={e.label}
-              initial={staticEntry ? false : { opacity: 0, y: 6 }}
-              whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 0.9 + i * 0.3 }}
               className="mb-2 last:mb-0"
@@ -135,8 +134,8 @@ function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           ))}
         </motion.div>
         <motion.div
-          initial={staticEntry ? false : { rotateY: motionOff ? 0 : -80, opacity: 0 }}
-          whileInView={staticEntry ? undefined : { rotateY: 0, opacity: 1 }}
+          initial={{ rotateY: motionOff ? 0 : -80, opacity: 0 }}
+          whileInView={{ rotateY: 0, opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
           style={{ transformOrigin: "left center" }}
@@ -145,8 +144,8 @@ function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           {right.map((e, i) => (
             <motion.div
               key={e.label}
-              initial={staticEntry ? false : { opacity: 0, y: 6 }}
-              whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 1.1 + i * 0.3 }}
               className="mb-2 last:mb-0"
@@ -157,19 +156,19 @@ function RevealBook({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           ))}
         </motion.div>
       </div>
-      <RevealHeadline scene={scene} delay={1.6} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.6} />
     </div>
   );
 }
 
 // ── 봉인 해제 — 혼자 감당하는 순간 ──────────────────────────────
-function RevealSeal({ scene, staticEntry }: { scene: StoryScene; staticEntry: boolean }) {
+function RevealSeal({ scene }: { scene: StoryScene }) {
   const line = scene.narrative[scene.narrative.length - 1] || scene.headline;
   return (
     <div className="flex flex-col items-center gap-8">
       <motion.div
-        initial={staticEntry ? false : { scale: 1, rotate: 0, opacity: 1 }}
-        whileInView={staticEntry ? undefined : { scale: [1, 1.15, 0], rotate: [0, 0, -10], opacity: [1, 1, 0] }}
+        initial={{ scale: 1, rotate: 0, opacity: 1 }}
+        whileInView={{ scale: [1, 1.15, 0], rotate: [0, 0, -10], opacity: [1, 1, 0] }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 0.9, times: [0, 0.5, 1], ease: "easeIn" }}
         className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-sceneRed/70 text-sceneRed"
@@ -177,8 +176,8 @@ function RevealSeal({ scene, staticEntry }: { scene: StoryScene; staticEntry: bo
         <span className="font-serif-kr text-xl font-bold">封</span>
       </motion.div>
       <motion.p
-        initial={staticEntry ? false : { opacity: 0, y: 8 }}
-        whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 1.0, delay: 1.0 }}
         className="max-w-[32ch] whitespace-pre-line font-serif-kr text-[18px] font-bold leading-[1.6] text-sceneText sm:text-2xl"
@@ -191,14 +190,14 @@ function RevealSeal({ scene, staticEntry }: { scene: StoryScene; staticEntry: bo
 }
 
 // ── 문이 열림 — 신살/관계 표식 공개 ──────────────────────────────
-function RevealDoor({ scene, motionOff, staticEntry }: { scene: StoryScene; motionOff: boolean; staticEntry: boolean }) {
+function RevealDoor({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
   const mark = scene.evidence?.[0]?.detail;
   return (
     <div className="relative flex w-full max-w-[320px] flex-col items-center gap-6">
       <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-card border border-sceneGold/30">
         <motion.div
-          initial={staticEntry ? { clipPath: "inset(0 100% 0 0)" } : { clipPath: motionOff ? "inset(0 100% 0 0)" : "inset(0 0 0 0)" }}
-          whileInView={staticEntry ? undefined : { clipPath: "inset(0 100% 0 0)" }}
+          initial={{ clipPath: motionOff ? "inset(0 100% 0 0)" : "inset(0 0 0 0)" }}
+          whileInView={{ clipPath: "inset(0 100% 0 0)" }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.3, delay: 0.15, ease: "easeOut" }}
           className="absolute inset-0 bg-sceneBgAlt"
@@ -209,8 +208,8 @@ function RevealDoor({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
         />
         {mark && (
           <motion.span
-            initial={staticEntry ? false : { opacity: 0 }}
-            whileInView={staticEntry ? undefined : { opacity: 1 }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.9 }}
             className="relative z-10 font-serif-kr text-2xl font-bold text-sceneGold"
@@ -219,26 +218,26 @@ function RevealDoor({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           </motion.span>
         )}
       </div>
-      <RevealHeadline scene={scene} delay={1.3} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.3} />
     </div>
   );
 }
 
 // ── 카드가 뒤집힘 — 올해 재물·직업 시기 공개 ──────────────────────────────
-function RevealCard({ scene, motionOff, staticEntry }: { scene: StoryScene; motionOff: boolean; staticEntry: boolean }) {
+function RevealCard({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
   const face = scene.evidence?.[0]?.detail ?? scene.headline;
   return (
     <div className="flex flex-col items-center gap-6" style={{ perspective: 900 }}>
       <motion.div
-        initial={staticEntry ? { rotateY: 180 } : { rotateY: motionOff ? 180 : 0 }}
-        whileInView={staticEntry ? undefined : { rotateY: 180 }}
+        initial={{ rotateY: motionOff ? 180 : 0 }}
+        whileInView={{ rotateY: 180 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 0.8, delay: 0.15, ease: "easeInOut" }}
         className="flex h-28 w-52 items-center justify-center rounded-card border border-sceneGold/30 bg-sceneCard shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
       >
         <motion.span
-          initial={staticEntry ? false : { opacity: 0 }}
-          whileInView={staticEntry ? undefined : { opacity: 1 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true, amount: 0.6 }}
           transition={{ duration: 0.4, delay: 0.55 }}
           style={{ transform: "rotateY(180deg)" }}
@@ -247,29 +246,29 @@ function RevealCard({ scene, motionOff, staticEntry }: { scene: StoryScene; moti
           {face}
         </motion.span>
       </motion.div>
-      <RevealHeadline scene={scene} delay={1.0} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.0} />
     </div>
   );
 }
 
 // ── 빛이 스며듦 — 궁합 기운 공개 ──────────────────────────────
-function RevealLight({ scene, staticEntry }: { scene: StoryScene; staticEntry: boolean }) {
+function RevealLight({ scene }: { scene: StoryScene }) {
   const a = scene.evidence?.[0];
   const b = scene.evidence?.[1];
   return (
     <div className="relative flex w-full max-w-[420px] flex-col items-center gap-6 overflow-hidden rounded-card py-10">
       <motion.div
         className="pointer-events-none absolute inset-y-0 left-0 w-1/2"
-        initial={staticEntry ? false : { opacity: 0 }}
-        whileInView={staticEntry ? undefined : { opacity: 1 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 1.0, delay: 0.15 }}
         style={{ background: "linear-gradient(90deg, rgba(212,163,74,0.22), transparent)" }}
       />
       <motion.div
         className="pointer-events-none absolute inset-y-0 right-0 w-1/2"
-        initial={staticEntry ? false : { opacity: 0 }}
-        whileInView={staticEntry ? undefined : { opacity: 1 }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 1.0, delay: 0.4 }}
         style={{ background: "linear-gradient(270deg, rgba(124,147,196,0.22), transparent)" }}
@@ -277,8 +276,8 @@ function RevealLight({ scene, staticEntry }: { scene: StoryScene; staticEntry: b
       <div className="relative z-10 flex w-full items-center justify-center gap-6">
         {a && (
           <motion.div
-            initial={staticEntry ? false : { opacity: 0, x: -10 }}
-            whileInView={staticEntry ? undefined : { opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: -10 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-center"
@@ -290,8 +289,8 @@ function RevealLight({ scene, staticEntry }: { scene: StoryScene; staticEntry: b
         <span className="text-sceneTextSub/50">·</span>
         {b && (
           <motion.div
-            initial={staticEntry ? false : { opacity: 0, x: 10 }}
-            whileInView={staticEntry ? undefined : { opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: 10 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, delay: 0.8 }}
             className="text-center"
@@ -303,7 +302,7 @@ function RevealLight({ scene, staticEntry }: { scene: StoryScene; staticEntry: b
           </motion.div>
         )}
       </div>
-      <RevealHeadline scene={scene} delay={1.3} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.3} />
     </div>
   );
 }
@@ -317,62 +316,60 @@ function RevealScroll({
   scene,
   elementAnalysis,
   motionOff,
-  staticEntry,
 }: {
   scene: StoryScene;
   elementAnalysis?: ElementAnalysis;
   motionOff: boolean;
-  staticEntry: boolean;
 }) {
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <motion.div
-        initial={staticEntry ? false : { opacity: 0, scale: motionOff ? 1 : 0.98 }}
-        whileInView={staticEntry ? undefined : { opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: motionOff ? 1 : 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="w-full"
       >
         {elementAnalysis && <ElementFlowScene analysis={elementAnalysis} />}
       </motion.div>
-      <RevealHeadline scene={scene} delay={1.1} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.1} />
     </div>
   );
 }
 
 // ── 실루엣 등장 — 2026·2027년 공개 ──────────────────────────────
-function RevealSilhouette({ scene, tenYear, staticEntry }: { scene: StoryScene; tenYear?: YearFortuneItem[]; staticEntry: boolean }) {
+function RevealSilhouette({ scene, tenYear }: { scene: StoryScene; tenYear?: YearFortuneItem[] }) {
   return (
     <div className="flex w-full flex-col items-center gap-6">
       <motion.div
-        initial={staticEntry ? false : { opacity: 0, y: 16 }}
-        whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.7, delay: 0.2 }}
         className="w-full"
       >
         {tenYear && <YearFlowCards tenYear={tenYear} />}
       </motion.div>
-      <RevealHeadline scene={scene} delay={1.1} staticEntry={staticEntry} />
+      <RevealHeadline scene={scene} delay={1.1} />
     </div>
   );
 }
 
 // ── 기본형 — 위 변형에 해당하지 않는 reveal Scene을 위한 안전한 fallback ──
-function RevealFade({ scene, staticEntry }: { scene: StoryScene; staticEntry: boolean }) {
-  return <RevealHeadline scene={scene} delay={0.2} staticEntry={staticEntry} />;
+function RevealFade({ scene }: { scene: StoryScene }) {
+  return <RevealHeadline scene={scene} delay={0.2} />;
 }
 
 // ── 공통: 한 줄(또는 최대 두 줄) 폭로 문장 ──────────────────────────────
-function RevealHeadline({ scene, delay, staticEntry }: { scene: StoryScene; delay: number; staticEntry: boolean }) {
+function RevealHeadline({ scene, delay }: { scene: StoryScene; delay: number }) {
   return (
     <div className="relative">
       {/* 문장이 맺히는 순간 한 번 은은하게 밝아졌다 가라앉는 여운 — 시선이 멈추는 지점을 만든다 */}
       <motion.span
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        initial={staticEntry ? false : { opacity: 0 }}
-        whileInView={staticEntry ? undefined : { opacity: [0, 0.5, 0] }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: [0, 0.5, 0] }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 1.6, delay: delay + 0.3, ease: "easeInOut" }}
         style={{
@@ -380,8 +377,8 @@ function RevealHeadline({ scene, delay, staticEntry }: { scene: StoryScene; dela
         }}
       />
       <motion.p
-        initial={staticEntry ? false : { opacity: 0, y: 8 }}
-        whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 8 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.8, delay }}
         className="relative max-w-[28ch] whitespace-pre-line font-serif-kr text-[19px] font-bold leading-[1.55] text-sceneText sm:text-2xl sm:leading-[1.6]"
