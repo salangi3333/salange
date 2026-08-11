@@ -195,6 +195,10 @@ export default function ResultLanding({
       return false;
     }
   });
+  const [staticMobileStory] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
 
   // Query-only A/B: remove the root pan-y restriction for the result page.
   // ResultLanding mounts on the client, so the layout effect runs before the
@@ -353,7 +357,7 @@ export default function ResultLanding({
           <>
             <PillarScene name={user.name} pillars={user.pillars} sinsal={user.sinsal} />
             <StoryIntro name={user.name} />
-            <MovieScene scene={PHILOSOPHY_SCENE} motionOff={motionOff} />
+            <MovieScene scene={PHILOSOPHY_SCENE} motionOff={motionOff} staticEntry={staticMobileStory} />
             {storyScenes.map((scene, i) => (
               <SceneSection
                 key={scene.id}
@@ -364,6 +368,7 @@ export default function ResultLanding({
                 onUnlock={handleCheckout}
                 onInsightVisibilityChange={handleInsightVisibility}
                 motionOff={motionOff}
+                staticEntry={staticMobileStory}
               />
             ))}
           </>

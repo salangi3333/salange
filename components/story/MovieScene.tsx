@@ -57,6 +57,7 @@ export default function MovieScene({
   scene,
   index,
   motionOff = false,
+  staticEntry = false,
 }: {
   scene: StoryScene;
   index?: number;
@@ -66,9 +67,9 @@ export default function MovieScene({
   // opacity와 그 전환 타이밍은 전혀 건드리지 않는다. 확인 끝나면 반드시
   // 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
   motionOff?: boolean;
+  staticEntry?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
-  const staticEntry = /^ch[1-3]-/.test(scene.id);
   const label = scene.chapterLabel ?? "";
   const variant = CHAPTER_VARIANT[label] ?? { camera: "push", texture: "fog" };
   const initialScale = CAMERA_INITIAL_SCALE[variant.camera];
@@ -122,7 +123,9 @@ export default function MovieScene({
       <motion.div
         className="pointer-events-none absolute inset-0"
         initial={
-          reduceMotion
+          staticEntry
+            ? false
+            : reduceMotion
             ? undefined
             : {
                 scale: motionOff ? 1 : initialScale,
@@ -130,7 +133,7 @@ export default function MovieScene({
                 filter: motionOff ? "blur(0px)" : "blur(6px)",
               }
         }
-        whileInView={reduceMotion ? undefined : { scale: 1, opacity: 1, filter: "blur(0px)" }}
+        whileInView={staticEntry || reduceMotion ? undefined : { scale: 1, opacity: 1, filter: "blur(0px)" }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration, ease: "easeOut" }}
         style={{
@@ -151,7 +154,7 @@ export default function MovieScene({
       )}
 
       {/* Light Sweep — 은은한 빛줄기가 화면을 한 번 가로질러 지나간다 */}
-      {!reduceMotion && (
+      {!reduceMotion && !staticEntry && (
         <motion.div
           className="pointer-events-none absolute inset-y-[-20%] w-[45%]"
           initial={{ left: "-55%", opacity: 0 }}
@@ -180,8 +183,8 @@ export default function MovieScene({
       {variant.texture === "beam" && (
         <motion.div
           className="pointer-events-none absolute inset-0"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={staticEntry ? false : { opacity: 0 }}
+          whileInView={staticEntry ? undefined : { opacity: 1 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 1.6, delay: 0.4 }}
           style={{
@@ -246,8 +249,8 @@ export default function MovieScene({
       <div className="relative z-10 flex flex-col items-center gap-5 py-10">
         {scene.chapterLabel && (
           <motion.span
-            initial={{ opacity: 0, y: staticEntry ? 0 : 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={staticEntry ? false : { opacity: 0, y: 8 }}
+            whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.9 }}
             className="font-serif-kr text-4xl font-bold text-sceneGold"
@@ -259,12 +262,12 @@ export default function MovieScene({
           className="max-w-[20ch] font-serif-kr text-[21px] font-bold leading-[1.3] text-sceneText sm:text-3xl sm:leading-snug"
           style={{ wordBreak: "keep-all" }}
         >
-          <WordReveal text={titleText} delay={0.9} staticPosition={staticEntry} />
+          <WordReveal text={titleText} delay={0.9} staticEntry={staticEntry} />
         </h2>
         {scene.narrative[0] && (
           <motion.p
-            initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={staticEntry ? false : { opacity: 0, y: 6 }}
+            whileInView={staticEntry ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.7, delay: narrativeDelay }}
             className="max-w-[38ch] whitespace-pre-line font-serif-kr text-[14.5px] italic leading-[1.85] tracking-[0.01em] text-sceneBody/90 sm:text-[13.5px] sm:leading-[1.9] sm:text-sceneBody/80"
@@ -273,8 +276,8 @@ export default function MovieScene({
           </motion.p>
         )}
         <motion.span
-          initial={{ opacity: 0, scaleX: motionOff || staticEntry ? 1 : 0 }}
-          whileInView={{ opacity: 1, scaleX: 1 }}
+          initial={staticEntry ? false : { opacity: 0, scaleX: motionOff ? 1 : 0 }}
+          whileInView={staticEntry ? undefined : { opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8, delay: dividerDelay }}
           className="mt-2 block h-px w-16 bg-sceneGold/50"
