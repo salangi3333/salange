@@ -54,6 +54,26 @@ const KNOWN_AB_VARIANTS: ScrollABVariant[] = [
 
 type GestureEndReason = "touchend" | "touchcancel" | "idle" | "interrupted" | null;
 
+type ElementScrollDiagnostics = {
+  element: string;
+  overflowX: string;
+  overflowY: string;
+  touchAction: string;
+  overscrollBehaviorX: string;
+  overscrollBehaviorY: string;
+};
+
+type GestureDiagnostics = {
+  scene: string;
+  sceneId: string;
+  documentElementWidth: string;
+  bodyWidth: string;
+  scrollChain: ElementScrollDiagnostics[];
+  transformAncestors: string[];
+  positionedAncestors: string[];
+  startsInFixedPurchaseBar: boolean;
+};
+
 // 제스처(터치 시작~종료) 하나를 요약하는 레코드.
 // totalDx/totalDy는 "시작점 대비" 누적 델타.
 type GestureRecord = {
@@ -73,6 +93,7 @@ type GestureRecord = {
   warnIndex: number | null;
   longTaskMs: number | null;
   longTaskCount: number | null;
+  diagnostics: GestureDiagnostics;
 };
 
 type LongTaskSample = { start: number; end: number; duration: number };
@@ -90,6 +111,74 @@ const PANEL_MAX_VH = 28;
 function isAtDocumentBottom(): boolean {
   const el = document.scrollingElement || document.documentElement;
   return el.scrollHeight - (el.scrollTop + el.clientHeight) <= 2;
+}
+
+function elementLabel(el: Element): string {
+  const id = el.id ? `#${el.id}` : "";
+  const classes = Array.from(el.classList).slice(0, 2);
+  const classLabel = classes.length ? `.${classes.join(".")}` : "";
+  return `${el.tagName.toLowerCase()}${id}${classLabel}`;
+}
+
+function collectGestureDiagnostics(target: EventTarget | null, x: number, y: number): GestureDiagnostics {
+  const targetElement = target instanceof Element ? target : document.documentElement;
+  const sceneElement = targetElement.closest<HTMLElement>("[data-probe-scene]");
+  const scrollingElement = document.scrollingElement || document.documentElement;
+  const scrollChain: ElementScrollDiagnostics[] = [];
+  const transformAncestors: string[] = [];
+  const positionedAncestors: string[] = [];
+
+  let current: Element | null = targetElement;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const label = elementLabel(current);
+
+    if (style.transform !== "none") transformAncestors.push(`${label}:${style.transform}`);
+    if (style.position === "fixed" || style.position === "sticky") {
+      positionedAncestors.push(`${label}:${style.position}`);
+    }
+
+    scrollChain.push({
+      element: label,
+      overflowX: style.overflowX,
+      overflowY: style.overflowY,
+      touchAction: style.touchAction,
+      overscrollBehaviorX: style.overscrollBehaviorX,
+      overscrollBehaviorY: style.overscrollBehaviorY,
+    });
+
+    if (current === scrollingElement) break;
+    current = current.parentElement;
+  }
+
+  const purchaseBars = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-probe-scene="sticky-bar"]')
+  );
+  const startsInFixedPurchaseBar = purchaseBars.some((bar) => {
+    const style = window.getComputedStyle(bar);
+    const rect = bar.getBoundingClientRect();
+    return (
+      style.position === "fixed" &&
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.pointerEvents !== "none" &&
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom
+    );
+  });
+
+  return {
+    scene: sceneElement?.dataset.probeScene ?? "-",
+    sceneId: sceneElement?.dataset.probeId ?? "-",
+    documentElementWidth: `${document.documentElement.scrollWidth}/${document.documentElement.clientWidth}`,
+    bodyWidth: `${document.body.scrollWidth}/${document.body.clientWidth}`,
+    scrollChain,
+    transformAncestors,
+    positionedAncestors,
+    startsInFixedPurchaseBar,
+  };
 }
 
 function useScrollDebugConfig(): { enabled: boolean; variant: ScrollABVariant } {
@@ -227,6 +316,7 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
         warnIndex: null,
         longTaskMs: null,
         longTaskCount: null,
+        diagnostics: collectGestureDiagnostics(e.target, t.clientX, t.clientY),
       };
       c.currentGesture = g;
       c.gestureLog.unshift(g);
@@ -318,9 +408,22 @@ function MobileScrollProbeInner({ variant }: { variant: ScrollABVariant }) {
               ? `${g.longTaskMs.toFixed(0)}ms(${g.longTaskCount})`
               : "0ms(0)"
             : "-";
+          const d = g.diagnostics;
+          const chain = d.scrollChain
+            .map(
+              (item) =>
+                `${item.element}[ov=${item.overflowX}/${item.overflowY} ta=${item.touchAction} ob=${item.overscrollBehaviorX}/${item.overscrollBehaviorY}]`
+            )
+            .join(" > ");
           return `#${g.warnIndex ?? "?"} dx=${g.totalDx.toFixed(1)} dy=${g.totalDy.toFixed(1)} dur=${dur}ms target=${targetLabel(
             g.startY
-          )}\n  scrollY ${g.startScrollY.toFixed(1)}→${endY} jsBlocked=${jsBlocked}`;
+          )}\n  scrollY ${g.startScrollY.toFixed(1)}→${endY} jsBlocked=${jsBlocked}\n  scene=${d.scene}/${
+            d.sceneId
+          } fixedBar=${d.startsInFixedPurchaseBar ? "Y" : "N"}\n  width html=${
+            d.documentElementWidth
+          } body=${d.bodyWidth} (scroll/client)\n  chain ${chain}\n  transform=${
+            d.transformAncestors.join(" > ") || "-"
+          }\n  fixed/sticky=${d.positionedAncestors.join(" > ") || "-"}`;
         })
         .join("\n")
     : "(아직 WARN 없음)";
