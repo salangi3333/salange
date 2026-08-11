@@ -102,6 +102,7 @@ export default function RevealScene({
 
 // ── 서책이 펼쳐짐 — 근거(십성) 공개 ──────────────────────────────
 function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
+  const staticEntry = /^ch[1-3]-/.test(scene.id);
   const evidence = scene.evidence ?? [];
   const mid = Math.ceil(evidence.length / 2);
   const left = evidence.slice(0, mid);
@@ -121,7 +122,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
           {left.map((e, i) => (
             <motion.div
               key={e.label}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 0.9 + i * 0.3 }}
@@ -143,7 +144,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
           {right.map((e, i) => (
             <motion.div
               key={e.label}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: staticEntry ? 0 : 6 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.5, delay: 1.1 + i * 0.3 }}

@@ -19,6 +19,7 @@ export function WordReveal({
   duration = 0.45,
   once = true,
   amount = 0.5,
+  staticPosition = false,
 }: {
   text: string;
   className?: string;
@@ -28,6 +29,7 @@ export function WordReveal({
   duration?: number;
   once?: boolean;
   amount?: number;
+  staticPosition?: boolean;
 }) {
   const words = text.split(" ");
   return (
@@ -35,7 +37,7 @@ export function WordReveal({
       {words.map((w, i) => (
         <motion.span
           key={i}
-          initial={{ opacity: 0, y: 6 }}
+          initial={{ opacity: 0, y: staticPosition ? 0 : 6 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once, amount }}
           transition={{ duration, delay: delay + i * stagger }}
@@ -58,6 +60,7 @@ export function LineReveal({
   duration = 0.6,
   once = true,
   amount = 0.4,
+  staticPosition = false,
 }: {
   text: string;
   render?: (line: string) => ReactNode;
@@ -68,6 +71,7 @@ export function LineReveal({
   duration?: number;
   once?: boolean;
   amount?: number;
+  staticPosition?: boolean;
 }) {
   const lines = text.split("\n").filter((l) => l.trim().length > 0);
   return (
@@ -75,7 +79,7 @@ export function LineReveal({
       {lines.map((line, i) => (
         <motion.p
           key={i}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: staticPosition ? 0 : 8 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once, amount }}
           transition={{ duration, delay: delay + i * lineGap }}
