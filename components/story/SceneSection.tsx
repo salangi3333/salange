@@ -88,8 +88,8 @@ export default function SceneSection({
     <motion.section
       data-probe-scene="section"
       data-probe-id={scene.id}
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
