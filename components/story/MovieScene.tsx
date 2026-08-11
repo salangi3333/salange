@@ -112,10 +112,7 @@ export default function MovieScene({
     <motion.section
       data-probe-scene="movie"
       data-probe-id={scene.id}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.6 }}
+      initial={false}
       className={`relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
         index !== undefined && index % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
       }`}

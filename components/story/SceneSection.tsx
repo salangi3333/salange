@@ -88,10 +88,7 @@ export default function SceneSection({
     <motion.section
       data-probe-scene="section"
       data-probe-id={scene.id}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={false}
       className={`relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
         index % 2 === 0 ? "bg-sceneBg" : "bg-sceneBgAlt"
       }`}

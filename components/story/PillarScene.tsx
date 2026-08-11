@@ -44,10 +44,7 @@ export default function PillarScene({
       />
 
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        initial={false}
         className="relative mx-auto w-full max-w-content"
       >
         <p className="text-center text-sm tracking-[0.2em] text-sceneGold/80">

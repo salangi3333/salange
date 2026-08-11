@@ -134,10 +134,7 @@ export default function InsightScene({
       ref={ref}
       data-probe-scene="insight"
       data-probe-id={scene.id}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={false}
       className="relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
     >
       {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기 */}

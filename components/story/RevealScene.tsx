@@ -45,10 +45,7 @@ export default function RevealScene({
     <motion.section
       data-probe-scene="reveal"
       data-probe-id={scene.id}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      initial={false}
       className="relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-20"
     >
       {/* 임시 A/B 테스트 — repeat:Infinity 안개 숨쉬기를 정지 상태로 고정.
