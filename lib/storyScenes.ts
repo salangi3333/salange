@@ -363,10 +363,8 @@ export function buildFullStoryScenes(appData: AppData): StoryScene[] {
     {
       id: "ch2-reveal",
       topic: "all",
-      guideLine: "이제, 하나씩 맞춰집니다.",
       headline: splitHeadline(traits.relationship).headline,
       narrative: [splitHeadline(traits.relationship).rest].filter(Boolean),
-      evidence: user.sinsal.slice(0, 2).map((s) => ({ label: "신살", detail: s })),
       visualType: "reveal",
       isLocked: false,
     },

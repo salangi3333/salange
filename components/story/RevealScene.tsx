@@ -17,7 +17,11 @@ type Variant = "book" | "seal" | "door" | "card" | "light" | "scroll" | "silhoue
 
 function pickVariant(id: string): Variant {
   if (id === "ch1-reveal") return "book";
-  if (id === "ch2-reveal") return "door";
+  // ch2-reveal은 원래 "문이 열림"(신살 1개를 클리핑 애니메이션 박스로
+  // 보여주는) 연출이었으나, 그 박스와 위 안내 문구가 불필요하다는 피드백에
+  // 따라 제거하고 headline/narrative(관계 해석 문장)만 바로 보여주는
+  // "fade"로 바꿨다. 데이터(guideLine/evidence)도 lib/storyScenes.ts의
+  // ch2-reveal 항목에서 함께 제거했다.
   if (id === "ch3-reveal") return "card";
   if (id === "ch4-reveal") return "light";
   if (id === "ch5-reveal-elements") return "scroll";
