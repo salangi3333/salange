@@ -53,7 +53,20 @@ const DUST_DOTS = [
 // 위함. 결과 확인 후 반드시 제거할 것 — 프로덕션에는 반영하지 않는다.
 const STATIC_STRUCTURE_TEST = process.env.NEXT_PUBLIC_STATIC_MOVIE_SCENE === "1";
 
-export default function MovieScene({ scene, index }: { scene: StoryScene; index?: number }) {
+export default function MovieScene({
+  scene,
+  index,
+  motionOff = false,
+}: {
+  scene: StoryScene;
+  index?: number;
+  // 임시 A/B 진단 전용 — 부모(ResultLanding)가 ?scrollAB=motion-off를
+  // 판정해 내려주는 값. true면 "카메라 무빙" 레이어의 scale/filter(blur)와
+  // 구분선의 scaleX를 처음부터 기존 애니메이션의 최종값으로 렌더링한다.
+  // opacity와 그 전환 타이밍은 전혀 건드리지 않는다. 확인 끝나면 반드시
+  // 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
+  motionOff?: boolean;
+}) {
   const reduceMotion = useReducedMotion();
   const label = scene.chapterLabel ?? "";
   const variant = CHAPTER_VARIANT[label] ?? { camera: "push", texture: "fog" };
@@ -110,7 +123,15 @@ export default function MovieScene({ scene, index }: { scene: StoryScene; index?
       {/* 카메라 무빙 — 배경 전체가 아주 느리게 진입하며 자리를 잡는다(+ 살짝 흐렸다가 선명해지는 DOF감) */}
       <motion.div
         className="pointer-events-none absolute inset-0"
-        initial={reduceMotion ? undefined : { scale: initialScale, opacity: 0, filter: "blur(6px)" }}
+        initial={
+          reduceMotion
+            ? undefined
+            : {
+                scale: motionOff ? 1 : initialScale,
+                opacity: 0,
+                filter: motionOff ? "blur(0px)" : "blur(6px)",
+              }
+        }
         whileInView={reduceMotion ? undefined : { scale: 1, opacity: 1, filter: "blur(0px)" }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration, ease: "easeOut" }}
@@ -254,7 +275,7 @@ export default function MovieScene({ scene, index }: { scene: StoryScene; index?
           </motion.p>
         )}
         <motion.span
-          initial={{ opacity: 0, scaleX: 0 }}
+          initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8, delay: dividerDelay }}

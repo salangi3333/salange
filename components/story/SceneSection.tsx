@@ -21,6 +21,7 @@ export default function SceneSection({
   tenYear,
   onUnlock,
   onInsightVisibilityChange,
+  motionOff,
 }: {
   scene: StoryScene;
   index: number;
@@ -28,19 +29,29 @@ export default function SceneSection({
   tenYear?: YearFortuneItem[];
   onUnlock?: () => void;
   onInsightVisibilityChange?: (id: string, visible: boolean) => void;
+  motionOff: boolean;
 }) {
   // MovieScene / RevealScene / InsightScene은 기존 padding-tier/카드
   // 레이아웃과 무관한 전용 연출을 쓰므로, 공통 wrapper에 들어가기 전에
   // 여기서 바로 반환한다. 이 세 타입 외에는(잠금 Scene 등) 기존 렌더링
   // 경로를 그대로 탄다.
   if (scene.visualType === "movie") {
-    return <MovieScene scene={scene} index={index} />;
+    return <MovieScene scene={scene} index={index} motionOff={motionOff} />;
   }
   if (scene.visualType === "reveal") {
-    return <RevealScene scene={scene} elementAnalysis={elementAnalysis} tenYear={tenYear} />;
+    return (
+      <RevealScene
+        scene={scene}
+        elementAnalysis={elementAnalysis}
+        tenYear={tenYear}
+        motionOff={motionOff}
+      />
+    );
   }
   if (scene.visualType === "insight") {
-    return <InsightScene scene={scene} onVisibilityChange={onInsightVisibilityChange} />;
+    return (
+      <InsightScene scene={scene} onVisibilityChange={onInsightVisibilityChange} motionOff={motionOff} />
+    );
   }
 
   const overrides = scene.highlights;

@@ -176,6 +176,26 @@ export default function ResultLanding({
     }
   }, []);
 
+  // 임시 A/B 진단 전용 — URL에 ?scrollAB=motion-off가 있을 때만, 아래
+  // MovieScene/RevealScene/InsightScene/FarewellOutro의 blur·clipPath·
+  // rotateY·scale을 처음부터 기존 애니메이션의 최종값으로 렌더링한다.
+  // ResultLanding은 Home의 stage가 "result"로 바뀐 뒤 클라이언트에서
+  // 처음 마운트되므로(SSR로 이 컴포넌트 자체가 렌더되는 경로가 없음),
+  // useEffect로 나중에 뒤집는 대신 useState의 lazy initializer로 첫
+  // 렌더 시점에 동기적으로 한 번만 판정한다 — 이후 이 값은 절대 바뀌지
+  // 않는다(setter를 안 씀). 각 대상 컴포넌트는 이 boolean을 prop으로만
+  // 받고, 각자 useEffect/useState로 다시 판정하지 않는다. 플래그가
+  // 없으면(일반 URL) 항상 false로, 기존 코드와 완전히 동일하게 동작한다.
+  // 확인 끝나면 반드시 제거할 것 — 프로덕션에 영구히 남겨둘 코드가 아니다.
+  const [motionOff] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return new URLSearchParams(window.location.search).get("scrollAB") === "motion-off";
+    } catch {
+      return false;
+    }
+  });
+
   // StickyBottomBar 노출 제어 — MovieScene/RevealScene에서는 숨기고
   // InsightScene이 화면에 걸쳐 있는 동안에만 나타난다. 마지막 선녀
   // 엔딩(FarewellOutro) 이후로는 구매 CTA 구간이므로 한 번 도달하면
@@ -305,7 +325,7 @@ export default function ResultLanding({
           <>
             <PillarScene name={user.name} pillars={user.pillars} sinsal={user.sinsal} />
             <StoryIntro name={user.name} />
-            <MovieScene scene={PHILOSOPHY_SCENE} />
+            <MovieScene scene={PHILOSOPHY_SCENE} motionOff={motionOff} />
             {storyScenes.map((scene, i) => (
               <SceneSection
                 key={scene.id}
@@ -315,6 +335,7 @@ export default function ResultLanding({
                 tenYear={tenYear}
                 onUnlock={handleCheckout}
                 onInsightVisibilityChange={handleInsightVisibility}
+                motionOff={motionOff}
               />
             ))}
           </>
@@ -627,7 +648,7 @@ export default function ResultLanding({
         )}
 
         <div ref={farewellRef}>
-          <FarewellOutro name={user.name} />
+          <FarewellOutro name={user.name} motionOff={motionOff} />
         </div>
 
         <ReportAccordion

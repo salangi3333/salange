@@ -29,10 +29,15 @@ export default function RevealScene({
   scene,
   elementAnalysis,
   tenYear,
+  motionOff = false,
 }: {
   scene: StoryScene;
   elementAnalysis?: ElementAnalysis;
   tenYear?: YearFortuneItem[];
+  // 임시 A/B 진단 전용 — 부모(ResultLanding)가 ?scrollAB=motion-off를
+  // 판정해 내려주는 값. RevealBook/RevealDoor/RevealCard/RevealScroll에
+  // 그대로 전달된다. 확인 끝나면 반드시 제거할 것.
+  motionOff?: boolean;
 }) {
   const variant = pickVariant(scene.id);
 
@@ -83,12 +88,14 @@ export default function RevealScene({
           </motion.p>
         )}
 
-        {variant === "book" && <RevealBook scene={scene} />}
+        {variant === "book" && <RevealBook scene={scene} motionOff={motionOff} />}
         {variant === "seal" && <RevealSeal scene={scene} />}
-        {variant === "door" && <RevealDoor scene={scene} />}
-        {variant === "card" && <RevealCard scene={scene} />}
+        {variant === "door" && <RevealDoor scene={scene} motionOff={motionOff} />}
+        {variant === "card" && <RevealCard scene={scene} motionOff={motionOff} />}
         {variant === "light" && <RevealLight scene={scene} />}
-        {variant === "scroll" && <RevealScroll scene={scene} elementAnalysis={elementAnalysis} />}
+        {variant === "scroll" && (
+          <RevealScroll scene={scene} elementAnalysis={elementAnalysis} motionOff={motionOff} />
+        )}
         {variant === "silhouette" && <RevealSilhouette scene={scene} tenYear={tenYear} />}
         {variant === "fade" && <RevealFade scene={scene} />}
       </div>
@@ -97,7 +104,7 @@ export default function RevealScene({
 }
 
 // ── 서책이 펼쳐짐 — 근거(십성) 공개 ──────────────────────────────
-function RevealBook({ scene }: { scene: StoryScene }) {
+function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
   const evidence = scene.evidence ?? [];
   const mid = Math.ceil(evidence.length / 2);
   const left = evidence.slice(0, mid);
@@ -107,7 +114,7 @@ function RevealBook({ scene }: { scene: StoryScene }) {
     <div className="flex w-full flex-col items-center gap-6">
       <div className="flex w-full max-w-[420px] justify-center gap-1" style={{ perspective: 900 }}>
         <motion.div
-          initial={{ rotateY: 80, opacity: 0 }}
+          initial={{ rotateY: motionOff ? 0 : 80, opacity: 0 }}
           whileInView={{ rotateY: 0, opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
@@ -129,7 +136,7 @@ function RevealBook({ scene }: { scene: StoryScene }) {
           ))}
         </motion.div>
         <motion.div
-          initial={{ rotateY: -80, opacity: 0 }}
+          initial={{ rotateY: motionOff ? 0 : -80, opacity: 0 }}
           whileInView={{ rotateY: 0, opacity: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
@@ -185,13 +192,13 @@ function RevealSeal({ scene }: { scene: StoryScene }) {
 }
 
 // ── 문이 열림 — 신살/관계 표식 공개 ──────────────────────────────
-function RevealDoor({ scene }: { scene: StoryScene }) {
+function RevealDoor({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
   const mark = scene.evidence?.[0]?.detail;
   return (
     <div className="relative flex w-full max-w-[320px] flex-col items-center gap-6">
       <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-card border border-sceneGold/30">
         <motion.div
-          initial={{ clipPath: "inset(0 0 0 0)" }}
+          initial={{ clipPath: motionOff ? "inset(0 100% 0 0)" : "inset(0 0 0 0)" }}
           whileInView={{ clipPath: "inset(0 100% 0 0)" }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 1.3, delay: 0.15, ease: "easeOut" }}
@@ -219,12 +226,12 @@ function RevealDoor({ scene }: { scene: StoryScene }) {
 }
 
 // ── 카드가 뒤집힘 — 올해 재물·직업 시기 공개 ──────────────────────────────
-function RevealCard({ scene }: { scene: StoryScene }) {
+function RevealCard({ scene, motionOff }: { scene: StoryScene; motionOff: boolean }) {
   const face = scene.evidence?.[0]?.detail ?? scene.headline;
   return (
     <div className="flex flex-col items-center gap-6" style={{ perspective: 900 }}>
       <motion.div
-        initial={{ rotateY: 0 }}
+        initial={{ rotateY: motionOff ? 180 : 0 }}
         whileInView={{ rotateY: 180 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 0.8, delay: 0.15, ease: "easeInOut" }}
@@ -307,11 +314,19 @@ function RevealLight({ scene }: { scene: StoryScene }) {
 // 포함한 세로로 긴 블록이라 whileInView의 40% 노출 조건이 쉽게 채워지지 않아
 // 실제로는 화면에 전혀 나타나지 않는 경우가 있었다. opacity+scale 방식으로
 // 바꾸고 임계값도 낮춰, 스크롤만 닿으면 확실히 보이도록 했다.
-function RevealScroll({ scene, elementAnalysis }: { scene: StoryScene; elementAnalysis?: ElementAnalysis }) {
+function RevealScroll({
+  scene,
+  elementAnalysis,
+  motionOff,
+}: {
+  scene: StoryScene;
+  elementAnalysis?: ElementAnalysis;
+  motionOff: boolean;
+}) {
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+        initial={{ opacity: 0, scale: motionOff ? 1 : 0.98 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, amount: 0.15 }}
         transition={{ duration: 0.7, ease: "easeOut" }}

@@ -60,9 +60,15 @@ function getChapterLabels(id: string): [string, string, string] {
 export default function InsightScene({
   scene,
   onVisibilityChange,
+  motionOff = false,
 }: {
   scene: StoryScene;
   onVisibilityChange?: (id: string, visible: boolean) => void;
+  // 임시 A/B 진단 전용 — 부모(ResultLanding)가 ?scrollAB=motion-off를
+  // 판정해 내려주는 값. true면 아래 구분선 scaleX와 InsightBlock 강조선
+  // scaleY를 처음부터 기존 애니메이션의 최종값으로 렌더링한다. opacity와
+  // 그 전환 타이밍은 전혀 건드리지 않는다. 확인 끝나면 반드시 제거할 것.
+  motionOff?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -180,7 +186,7 @@ export default function InsightScene({
 
         {/* 잠시 여백 — 다음 장면으로 넘어가기 전 숨을 고르는 지점 */}
         <motion.span
-          initial={{ opacity: 0, scaleX: 0 }}
+          initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: dividerDelay }}
@@ -208,6 +214,7 @@ export default function InsightScene({
             text={scene.realLife}
             overrides={overrides}
             delay={realLifeDelay}
+            motionOff={motionOff}
           />
         )}
 
@@ -219,6 +226,7 @@ export default function InsightScene({
             text={scene.fact}
             overrides={overrides}
             delay={factDelay}
+            motionOff={motionOff}
           />
         )}
 
@@ -226,7 +234,7 @@ export default function InsightScene({
         {scene.action && (
           <div className="flex w-full flex-col items-center gap-4">
             <motion.span
-              initial={{ opacity: 0, scaleX: 0 }}
+              initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
               whileInView={{ opacity: 1, scaleX: 1 }}
               viewport={{ once: true, amount: 0.5 }}
               transition={{ duration: 0.6, delay: actionDividerDelay }}
@@ -274,12 +282,14 @@ function InsightBlock({
   text,
   overrides,
   delay,
+  motionOff,
 }: {
   label: string;
   accent: "gold" | "red";
   text: string;
   overrides: StoryScene["highlights"];
   delay: number;
+  motionOff: boolean;
 }) {
   const accentBg = accent === "gold" ? "bg-sceneGold/50" : "bg-sceneRed/50";
   const labelColor = accent === "gold" ? "text-sceneGold/65" : "text-sceneRed/65";
@@ -297,7 +307,7 @@ function InsightBlock({
       </motion.p>
       <div className="relative mt-3 pl-4">
         <motion.span
-          initial={{ scaleY: 0 }}
+          initial={{ scaleY: motionOff ? 1 : 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, delay: delay + 0.1, ease: "easeOut" }}
