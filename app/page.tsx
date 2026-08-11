@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import OnboardingIntro from "@/components/OnboardingIntro";
 import { FortuneTopic, TOPIC_LABELS } from "@/components/CharacterGuide";
 import AnalyzingScreen from "@/components/AnalyzingScreen";
@@ -23,6 +23,15 @@ export default function Home() {
   const [stage, setStage] = useState<Stage>("gate");
   const [appData, setAppData] = useState<AppData | null>(null);
   const [pendingFormData, setPendingFormData] = useState<IntakeFormData | null>(null);
+
+  // The SPA swaps the analyzing screen for the result in the same document.
+  // Reset the preserved window scroll position before the result is painted so
+  // its first scene is never skipped.
+  useLayoutEffect(() => {
+    if (stage === "result") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [stage]);
 
   const handleEnter = () => setStage("form");
 
