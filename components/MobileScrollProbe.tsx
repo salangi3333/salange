@@ -39,7 +39,8 @@ type ScrollABVariant =
   | "timeline-pan-y"
   | "insight-state-off"
   | "result-pan-y"
-  | "motion-off";
+  | "motion-off"
+  | "root-touch-auto";
 
 // scrollAB로 들어올 수 있는 진단용 variant 값 목록 — 여기 없는 값(또는 값 없음)은
 // 전부 "control"로 표시한다. 새 A/B variant를 추가할 때는 이 목록에만 추가하면
@@ -50,6 +51,7 @@ const KNOWN_AB_VARIANTS: ScrollABVariant[] = [
   "insight-state-off",
   "result-pan-y",
   "motion-off",
+  "root-touch-auto",
 ];
 
 type GestureEndReason = "touchend" | "touchcancel" | "idle" | "interrupted" | null;

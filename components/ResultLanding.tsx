@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import MobileScrollProbe from "@/components/MobileScrollProbe";
 import { Lock } from "lucide-react";
@@ -195,6 +195,34 @@ export default function ResultLanding({
       return false;
     }
   });
+
+  // Query-only A/B: remove the root pan-y restriction for the result page.
+  // ResultLanding mounts on the client, so the layout effect runs before the
+  // result screen is painted and restores the prior inline values on unmount.
+  const [rootTouchAuto] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return new URLSearchParams(window.location.search).get("scrollAB") === "root-touch-auto";
+    } catch {
+      return false;
+    }
+  });
+  useLayoutEffect(() => {
+    if (!rootTouchAuto) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const previousHtmlTouchAction = html.style.touchAction;
+    const previousBodyTouchAction = body.style.touchAction;
+
+    html.style.touchAction = "auto";
+    body.style.touchAction = "auto";
+
+    return () => {
+      html.style.touchAction = previousHtmlTouchAction;
+      body.style.touchAction = previousBodyTouchAction;
+    };
+  }, [rootTouchAuto]);
 
   // StickyBottomBar 노출 제어 — MovieScene/RevealScene에서는 숨기고
   // InsightScene이 화면에 걸쳐 있는 동안에만 나타난다. 마지막 선녀
