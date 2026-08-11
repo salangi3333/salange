@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import MobileScrollProbe from "@/components/MobileScrollProbe";
+import ScrollTraceRecorder from "@/components/ScrollTraceRecorder";
 import { Lock } from "lucide-react";
 import StickyBottomBar from "@/components/StickyBottomBar";
 import Hero from "@/components/Hero";
@@ -336,6 +337,7 @@ export default function ResultLanding({
       {/* 임시 진단 — URL에 ?scrollDebug=1이 있을 때만 동작(그 외에는 완전히
           null 반환, 리스너도 안 붙음). 확인 끝나면 제거할 것. */}
       <MobileScrollProbe />
+      <ScrollTraceRecorder />
       {/* 결과 페이지(story) 진입 이후로는 끝까지 다크 브라운(sceneBg)을 유지한다.
           main에 배경을 걸어두면 아래 어떤 자식 컴포넌트가 자기 배경을 깜빡
           잊어도 흰 배경이 새어나오지 않는다 — 흰 띠 버그의 안전망. */}
