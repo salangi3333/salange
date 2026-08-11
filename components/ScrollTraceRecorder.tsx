@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type TraceSample = unknown[];
 
@@ -30,12 +30,23 @@ function statusCode(status: string): number {
 }
 
 export default function ScrollTraceRecorder() {
+  // 기록된 배치를 실제로 꺼내볼 방법이 없었던 것을 보완 — flush()가 만드는
+  // detail을 그대로 배열에도 쌓아두고, 화면 구석의 작은 버튼으로 그걸
+  // JSON 파일로 다운로드할 수 있게 한다. 기존 performance.mark 기반 기록
+  // 방식은 그대로 두고(다른 도구가 여전히 그걸로 볼 수 있게), 이건 추가
+  // 경로일 뿐이다. ?scrollTrace=1이 없으면 버튼도 전혀 렌더되지 않는다.
+  const batchesRef = useRef<unknown[]>([]);
+  const [enabled, setEnabled] = useState(false);
+  const [batchCount, setBatchCount] = useState(0);
+
   useEffect(() => {
     try {
       if (new URLSearchParams(window.location.search).get("scrollTrace") !== "1") return;
     } catch {
       return;
     }
+    setEnabled(true);
+    let mountedForExport = true;
 
     const ring = new Array<TraceSample | undefined>(TRACE_SAMPLE_LIMIT);
     let writeIndex = 0;
@@ -265,6 +276,9 @@ export default function ScrollTraceRecorder() {
         },
       };
       dropped = 0;
+
+      batchesRef.current.push(detail);
+      if (mountedForExport) setBatchCount(batchesRef.current.length);
 
       try {
         performance.mark(TRACE_MARK_NAME, { startTime: Math.max(0, firstT), detail });
@@ -588,9 +602,53 @@ export default function ScrollTraceRecorder() {
       document.fonts.removeEventListener("loadingerror", onFontError);
       window.clearTimeout(flushTimer);
       if (frameId !== 0) window.cancelAnimationFrame(frameId);
+      mountedForExport = false;
       flush("unmount");
     };
   }, []);
 
-  return null;
+  function handleDownload() {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      batchCount: batchesRef.current.length,
+      batches: batchesRef.current,
+    };
+    const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `scroll-trace-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  if (!enabled) return null;
+
+  // 화면 우측 하단의 작은 버튼 하나뿐 — 그 자리 외에는 pointer-events를
+  // 전혀 가로채지 않는다. ?scrollTrace=1일 때만 렌더된다.
+  return (
+    <button
+      type="button"
+      onClick={handleDownload}
+      style={{
+        position: "fixed",
+        right: 8,
+        bottom: 8,
+        zIndex: 999998,
+        padding: "8px 12px",
+        fontSize: 11,
+        borderRadius: 8,
+        border: "1px solid rgba(255,255,255,0.35)",
+        background: "rgba(0,0,0,0.75)",
+        color: "#0f0",
+        fontFamily: "monospace",
+      }}
+    >
+      트레이스 저장 ({batchCount})
+    </button>
+  );
 }
