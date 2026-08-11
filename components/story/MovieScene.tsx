@@ -83,7 +83,7 @@ export default function MovieScene({
   if (STATIC_STRUCTURE_TEST) {
     return (
       <section
-        className={`story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
+        className={`story-copy-ready story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
           index !== undefined && index % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
         }`}
       >
@@ -113,7 +113,7 @@ export default function MovieScene({
       data-probe-scene="movie"
       data-probe-id={scene.id}
       initial={false}
-      className={`story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
+      className={`story-copy-ready story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
         index !== undefined && index % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
       }`}
     >
