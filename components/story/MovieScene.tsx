@@ -3,7 +3,6 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { StoryScene } from "@/types/story";
 import { WordReveal } from "./textReveal";
-import { useMobileContinuousMotionOff } from "./useMobileContinuousMotionOff";
 
 /**
  * 챕터 오프닝 전용 "영화적" 장면. 문장을 설명하지 않고, 카메라 무빙과
@@ -69,8 +68,6 @@ export default function MovieScene({
   motionOff?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
-  const mobileContinuousMotionOff = useMobileContinuousMotionOff();
-  const continuousMotionOff = Boolean(reduceMotion) || mobileContinuousMotionOff;
   const label = scene.chapterLabel ?? "";
   const variant = CHAPTER_VARIANT[label] ?? { camera: "push", texture: "fog" };
   const initialScale = CAMERA_INITIAL_SCALE[variant.camera];
@@ -144,7 +141,7 @@ export default function MovieScene({
       />
 
       {/* 항상 켜져 있는 아주 느린 숨쉬기(Slow Zoom) — 진입 연출이 끝난 뒤에도 화면이 완전히 멈춰 보이지 않도록 */}
-      {!continuousMotionOff && (
+      {!reduceMotion && (
         <motion.div
           className="pointer-events-none absolute inset-0"
           animate={{ scale: [1, 1.035, 1] }}
@@ -174,8 +171,8 @@ export default function MovieScene({
       {variant.texture === "fog" && (
         <motion.div
           className="pointer-events-none absolute inset-0"
-          animate={continuousMotionOff ? { opacity: 0.3 } : { opacity: [0.2, 0.36, 0.2] }}
-          transition={continuousMotionOff ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          animate={reduceMotion ? { opacity: 0.3 } : { opacity: [0.2, 0.36, 0.2] }}
+          transition={reduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
           style={{
             background:
               "linear-gradient(180deg, rgba(28,24,21,0) 0%, rgba(28,24,21,0.55) 70%, rgba(28,24,21,0.85) 100%)",
@@ -207,9 +204,9 @@ export default function MovieScene({
               background:
                 variant.texture === "particles" ? "rgba(212,163,74,0.55)" : "rgba(255,247,234,0.4)",
             }}
-            animate={continuousMotionOff ? { opacity: 0.35 } : { opacity: [0.12, 0.46, 0.12], y: [0, -14, 0] }}
+            animate={reduceMotion ? { opacity: 0.35 } : { opacity: [0.12, 0.46, 0.12], y: [0, -14, 0] }}
             transition={
-              continuousMotionOff
+              reduceMotion
                 ? undefined
                 : { duration: 5 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: d.delay }
             }
@@ -219,8 +216,8 @@ export default function MovieScene({
       {/* 점묘 패턴 — 기존 SceneSection 배경 질감과의 통일감. 아주 느린 표류(패럴랙스감)를 준다 */}
       <motion.div
         className="pointer-events-none absolute inset-[-6%] opacity-[0.05]"
-        animate={continuousMotionOff ? undefined : { x: [0, 8, 0], y: [0, -6, 0] }}
-        transition={continuousMotionOff ? undefined : { duration: 16, repeat: Infinity, ease: "easeInOut" }}
+        animate={reduceMotion ? undefined : { x: [0, 8, 0], y: [0, -6, 0] }}
+        transition={reduceMotion ? undefined : { duration: 16, repeat: Infinity, ease: "easeInOut" }}
         style={{
           backgroundImage: "radial-gradient(circle, rgba(210,160,68,0.5) 1px, transparent 1px)",
           backgroundSize: "22px 22px",

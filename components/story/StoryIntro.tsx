@@ -2,10 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useTypewriterLines } from "@/components/useTypewriterLines";
-import { useMobileContinuousMotionOff } from "./useMobileContinuousMotionOff";
 
 export default function StoryIntro({ name }: { name: string }) {
-  const continuousMotionOff = useMobileContinuousMotionOff();
   const lines = [
     `${name}님,\n여덟 글자를 모두 펼쳐봤어요.`,
     "그런데 가장 먼저 보인 건\n강한 성격이 아니었습니다.",
@@ -53,8 +51,8 @@ export default function StoryIntro({ name }: { name: string }) {
         <span className="text-xs tracking-widest">아래로</span>
         <motion.span
           className="block h-8 w-px origin-top bg-sceneTextSub"
-          animate={continuousMotionOff ? { scaleY: 1 } : { scaleY: [0.3, 1, 0.3] }}
-          transition={continuousMotionOff ? undefined : { duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ scaleY: [0.3, 1, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         />
       </motion.div>
     </section>
