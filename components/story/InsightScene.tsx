@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { StoryScene } from "@/types/story";
 import { renderWithHighlights } from "./highlightText";
 import { WordReveal, LineReveal } from "./textReveal";
+import { useMobileContinuousMotionOff } from "./useMobileContinuousMotionOff";
 
 /**
  * 챕터별로 흩어져 있던 장점/문제(fact)/행동(action)/실제 사례(realLife)를
@@ -70,6 +71,7 @@ export default function InsightScene({
   // 그 전환 타이밍은 전혀 건드리지 않는다. 확인 끝나면 반드시 제거할 것.
   motionOff?: boolean;
 }) {
+  const continuousMotionOff = useMobileContinuousMotionOff();
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -143,8 +145,8 @@ export default function InsightScene({
       {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기 */}
       <motion.div
         className="pointer-events-none absolute inset-0"
-        animate={{ opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        animate={continuousMotionOff ? { opacity: 0.15 } : { opacity: [0.1, 0.2, 0.1] }}
+        transition={continuousMotionOff ? undefined : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
         style={{
           background: "radial-gradient(ellipse at 50% 20%, rgba(212,163,74,0.1), transparent 65%)",
         }}
