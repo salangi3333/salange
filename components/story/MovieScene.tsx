@@ -83,7 +83,7 @@ export default function MovieScene({
   if (STATIC_STRUCTURE_TEST) {
     return (
       <section
-        className={`relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
+        className={`story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
           index !== undefined && index % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
         }`}
       >
@@ -113,7 +113,7 @@ export default function MovieScene({
       data-probe-scene="movie"
       data-probe-id={scene.id}
       initial={false}
-      className={`relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
+      className={`story-paint-boundary relative flex flex-col items-center overflow-hidden px-6 py-12 text-center sm:min-h-[85svh] sm:justify-center sm:py-0 ${
         index !== undefined && index % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
       }`}
     >
@@ -140,7 +140,7 @@ export default function MovieScene({
       {/* 항상 켜져 있는 아주 느린 숨쉬기(Slow Zoom) — 진입 연출이 끝난 뒤에도 화면이 완전히 멈춰 보이지 않도록 */}
       {!reduceMotion && (
         <motion.div
-          className="pointer-events-none absolute inset-0"
+          className="story-ambient-layer story-slow-zoom pointer-events-none absolute inset-0"
           animate={{ scale: [1, 1.035, 1] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: duration }}
           style={{
@@ -167,7 +167,7 @@ export default function MovieScene({
       {/* 질감 레이어 */}
       {variant.texture === "fog" && (
         <motion.div
-          className="pointer-events-none absolute inset-0"
+          className="story-ambient-layer story-fog-layer pointer-events-none absolute inset-0"
           animate={reduceMotion ? { opacity: 0.3 } : { opacity: [0.2, 0.36, 0.2] }}
           transition={reduceMotion ? undefined : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
           style={{
@@ -192,7 +192,7 @@ export default function MovieScene({
         DUST_DOTS.map((d, i) => (
           <motion.span
             key={i}
-            className="pointer-events-none absolute block rounded-full"
+            className="story-ambient-layer story-particle-layer pointer-events-none absolute block rounded-full"
             style={{
               top: d.top,
               left: d.left,
@@ -212,7 +212,7 @@ export default function MovieScene({
 
       {/* 점묘 패턴 — 기존 SceneSection 배경 질감과의 통일감. 아주 느린 표류(패럴랙스감)를 준다 */}
       <motion.div
-        className="pointer-events-none absolute inset-[-6%] opacity-[0.05]"
+        className="pointer-events-none absolute inset-[-6%] hidden opacity-[0.05] sm:block"
         animate={reduceMotion ? undefined : { x: [0, 8, 0], y: [0, -6, 0] }}
         transition={reduceMotion ? undefined : { duration: 16, repeat: Infinity, ease: "easeInOut" }}
         style={{

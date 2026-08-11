@@ -135,11 +135,11 @@ export default function InsightScene({
       data-probe-scene="insight"
       data-probe-id={scene.id}
       initial={false}
-      className="relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
+      className="story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
     >
       {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기 */}
       <motion.div
-        className="pointer-events-none absolute inset-0"
+        className="story-ambient-layer story-insight-ambient pointer-events-none absolute inset-0"
         animate={{ opacity: [0.1, 0.2, 0.1] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         style={{
@@ -147,7 +147,7 @@ export default function InsightScene({
         }}
       />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 hidden opacity-[0.04] sm:block"
         style={{
           backgroundImage: "radial-gradient(circle, rgba(210,160,68,0.5) 1px, transparent 1px)",
           backgroundSize: "22px 22px",

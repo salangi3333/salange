@@ -97,3 +97,35 @@ p {
   writing-mode: vertical-rl;
   letter-spacing: 0.15em;
 }
+
+/* Mobile story scenes are expensive to rasterize for the first time on some
+   Android GPUs. Keep the cinematic entry transitions, but isolate each
+   scene's paint work and make only the always-running decorative layers
+   static on mobile. */
+@media (max-width: 767px) {
+  .story-paint-boundary {
+    contain: paint;
+  }
+
+  .story-paint-boundary [class*="shadow-["] {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24) !important;
+  }
+
+  .story-ambient-layer {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .story-slow-zoom {
+    opacity: 1 !important;
+  }
+
+  .story-fog-layer,
+  .story-particle-layer {
+    opacity: 0.28 !important;
+  }
+
+  .story-insight-ambient {
+    opacity: 0.15 !important;
+  }
+}

@@ -46,7 +46,7 @@ export default function RevealScene({
       data-probe-scene="reveal"
       data-probe-id={scene.id}
       initial={false}
-      className="relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-20"
+      className="story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-20"
     >
       {/* 임시 A/B 테스트 — repeat:Infinity 안개 숨쉬기를 정지 상태로 고정.
           최종 디자인(그라디언트 자체)은 그대로, 무한 반복 애니메이션만 중단.
@@ -59,7 +59,7 @@ export default function RevealScene({
         }}
       />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        className="pointer-events-none absolute inset-0 hidden opacity-[0.05] sm:block"
         style={{
           backgroundImage: "radial-gradient(circle, rgba(210,160,68,0.5) 1px, transparent 1px)",
           backgroundSize: "22px 22px",

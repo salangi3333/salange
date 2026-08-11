@@ -12,7 +12,7 @@ export default function StoryIntro({ name }: { name: string }) {
   const { completedLines, currentText, isDone } = useTypewriterLines(lines, 42, [700, 550]);
 
   return (
-    <section className="relative flex flex-col items-center gap-6 overflow-hidden bg-sceneBg px-6 py-16 text-center sm:min-h-[85svh] sm:justify-center">
+    <section className="story-paint-boundary relative flex flex-col items-center gap-6 overflow-hidden bg-sceneBg px-6 py-16 text-center sm:min-h-[85svh] sm:justify-center">
       <div
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{

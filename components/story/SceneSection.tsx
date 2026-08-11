@@ -89,12 +89,12 @@ export default function SceneSection({
       data-probe-scene="section"
       data-probe-id={scene.id}
       initial={false}
-      className={`relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
+      className={`story-paint-boundary relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
         index % 2 === 0 ? "bg-sceneBg" : "bg-sceneBgAlt"
       }`}
     >
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        className="pointer-events-none absolute inset-0 hidden opacity-[0.05] sm:block"
         style={{
           backgroundImage: "radial-gradient(circle, rgba(210,160,68,0.5) 1px, transparent 1px)",
           backgroundSize: "22px 22px",
