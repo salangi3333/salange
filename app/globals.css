@@ -104,17 +104,7 @@ p {
    static on mobile. */
 @media (max-width: 767px) {
   .story-paint-boundary {
-    contain: layout paint style;
-    isolation: isolate;
-  }
-
-  /* Galaxy S24 Ultra first-entry path: copy must not wait for viewport
-     animation while the scene's card/visual is being painted. Visual/card
-     motion remains intact because this only targets text descendants. */
-  .story-copy-ready :is(h1, h2, h3, p),
-  .story-copy-ready :is(h1, h2, h3, p) * {
-    opacity: 1 !important;
-    transform: none !important;
+    contain: paint;
   }
 
   .story-paint-boundary [class*="shadow-["] {

@@ -46,7 +46,7 @@ export default function RevealScene({
       data-probe-scene="reveal"
       data-probe-id={scene.id}
       initial={false}
-      className="story-copy-ready story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-20"
+      className="story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-20"
     >
       {/* 임시 A/B 테스트 — repeat:Infinity 안개 숨쉬기를 정지 상태로 고정.
           최종 디자인(그라디언트 자체)은 그대로, 무한 반복 애니메이션만 중단.

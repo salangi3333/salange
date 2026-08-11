@@ -135,7 +135,7 @@ export default function InsightScene({
       data-probe-scene="insight"
       data-probe-id={scene.id}
       initial={false}
-      className="story-copy-ready story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
+      className="story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
     >
       {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기 */}
       <motion.div

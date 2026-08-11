@@ -89,7 +89,7 @@ export default function SceneSection({
       data-probe-scene="section"
       data-probe-id={scene.id}
       initial={false}
-      className={`story-copy-ready story-paint-boundary relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
+      className={`story-paint-boundary relative flex ${heightClass} flex-col justify-center overflow-hidden px-6 ${paddingClass} ${
         index % 2 === 0 ? "bg-sceneBg" : "bg-sceneBgAlt"
       }`}
     >

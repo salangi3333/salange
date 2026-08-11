@@ -33,7 +33,7 @@ export default function PillarScene({
   sinsal: string[];
 }) {
   return (
-    <section className="story-copy-ready story-paint-boundary relative flex flex-col overflow-hidden bg-sceneBg px-6 py-16 sm:min-h-[85svh] sm:justify-center">
+    <section className="story-paint-boundary relative flex flex-col overflow-hidden bg-sceneBg px-6 py-16 sm:min-h-[85svh] sm:justify-center">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
