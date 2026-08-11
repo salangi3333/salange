@@ -19,6 +19,31 @@ const DEFAULT_TOPIC: FortuneTopic = "all";
 // 삭제하지 않고 보존하되, 현재 진입 흐름에서는 사용하지 않는다.
 type Stage = "gate" | "form" | "analyzing" | "result";
 
+function shouldPrewarmStoryFonts(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("scrollAB") === "font-prewarm"
+  );
+}
+
+async function prewarmStoryFonts(data: AppData): Promise<void> {
+  if (!shouldPrewarmStoryFonts() || typeof document === "undefined" || !document.fonts) return;
+
+  const family = getComputedStyle(document.documentElement)
+    .getPropertyValue("--font-serif-kr")
+    .trim();
+  const corpus = Array.from(new Set(JSON.stringify(data).replace(/[\x00-\x7F]/g, ""))).join("");
+  if (!family || !corpus) return;
+
+  const loads = ["500", "700", "900"].map((weight) =>
+    document.fonts.load(`${weight} 24px ${family}`, corpus)
+  );
+  await Promise.race([
+    Promise.all(loads),
+    new Promise<void>((resolve) => window.setTimeout(resolve, 6000)),
+  ]).catch(() => undefined);
+}
+
 export default function Home() {
   const [stage, setStage] = useState<Stage>("gate");
   const [appData, setAppData] = useState<AppData | null>(null);
@@ -40,9 +65,10 @@ export default function Home() {
     setStage("analyzing");
   };
 
-  const handleAnalyzingDone = () => {
+  const handleAnalyzingDone = async () => {
     if (!pendingFormData) return;
     const data = buildAppData(pendingFormData);
+    await prewarmStoryFonts(data);
     setAppData(data);
     setStage("result");
   };

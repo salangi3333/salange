@@ -40,6 +40,7 @@ type ScrollABVariant =
   | "insight-state-off"
   | "result-pan-y"
   | "motion-off"
+  | "font-prewarm"
   | "root-touch-auto";
 
 // scrollAB로 들어올 수 있는 진단용 variant 값 목록 — 여기 없는 값(또는 값 없음)은
@@ -51,6 +52,7 @@ const KNOWN_AB_VARIANTS: ScrollABVariant[] = [
   "insight-state-off",
   "result-pan-y",
   "motion-off",
+  "font-prewarm",
   "root-touch-auto",
 ];
 
