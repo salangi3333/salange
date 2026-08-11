@@ -130,7 +130,7 @@ export default function MovieScene({
               }
         }
         whileInView={reduceMotion ? undefined : { scale: 1, opacity: 1, filter: "blur(0px)" }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration, ease: "easeOut" }}
         style={{
           background: "radial-gradient(ellipse at 50% 40%, rgba(212,163,74,0.14), transparent 65%)",
@@ -155,7 +155,7 @@ export default function MovieScene({
           className="pointer-events-none absolute inset-y-[-20%] w-[45%]"
           initial={{ left: "-55%", opacity: 0 }}
           whileInView={{ left: "125%", opacity: [0, 0.38, 0] }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 2.2, delay: duration * 0.6, ease: "easeInOut" }}
           style={{
             background: "linear-gradient(100deg, transparent 20%, rgba(255,247,234,0.16) 50%, transparent 80%)",
@@ -181,7 +181,7 @@ export default function MovieScene({
           className="pointer-events-none absolute inset-0"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 1.6, delay: 0.4 }}
           style={{
             background: "linear-gradient(115deg, transparent 30%, rgba(212,163,74,0.16) 48%, transparent 62%)",
@@ -247,7 +247,7 @@ export default function MovieScene({
           <motion.span
             initial={{ opacity: 0, y: 8 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.9 }}
             className="font-serif-kr text-4xl font-bold text-sceneGold"
           >
@@ -264,7 +264,7 @@ export default function MovieScene({
           <motion.p
             initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.7, delay: narrativeDelay }}
             className="max-w-[38ch] whitespace-pre-line font-serif-kr text-[14.5px] italic leading-[1.85] tracking-[0.01em] text-sceneBody/90 sm:text-[13.5px] sm:leading-[1.9] sm:text-sceneBody/80"
           >
@@ -274,7 +274,7 @@ export default function MovieScene({
         <motion.span
           initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.8, delay: dividerDelay }}
           className="mt-2 block h-px w-16 bg-sceneGold/50"
         />

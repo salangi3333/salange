@@ -167,7 +167,7 @@ export default function InsightScene({
             className="pointer-events-none absolute inset-0"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: [0, 0.4, 0] }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 1.8, delay: headlineEnd + 0.2, ease: "easeInOut" }}
             style={{
               background: "radial-gradient(ellipse at 50% 50%, rgba(212,163,74,0.2), transparent 70%)",
@@ -185,7 +185,7 @@ export default function InsightScene({
         <motion.span
           initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.7, delay: dividerDelay }}
           className="block h-px w-10 bg-sceneGold/40"
         />
@@ -195,7 +195,7 @@ export default function InsightScene({
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.6, delay: breathDelay }}
             className="whitespace-pre-line font-serif-kr text-[15px] italic tracking-[0.02em] text-sceneTextSub/90 sm:text-[12.5px] sm:text-sceneTextSub/80"
           >
@@ -233,7 +233,7 @@ export default function InsightScene({
             <motion.span
               initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
               whileInView={{ opacity: 1, scaleX: 1 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.6, delay: actionDividerDelay }}
               className="block h-px w-8 bg-sceneGold/30"
             />
@@ -256,7 +256,7 @@ export default function InsightScene({
           <motion.p
             initial={{ opacity: 0, y: 6 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.7, delay: quoteDelay }}
             className="max-w-[30ch] whitespace-pre-line text-center font-serif-kr text-[16px] font-bold italic leading-[1.7] text-sceneText/90 sm:text-[17px]"
             style={{ wordBreak: "keep-all" }}
@@ -296,7 +296,7 @@ function InsightBlock({
       <motion.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.5, delay }}
         className={`font-serif-kr text-[20px] font-semibold italic leading-snug tracking-[0.02em] sm:text-[13px] sm:font-normal sm:leading-normal ${labelColor}`}
       >
@@ -306,7 +306,7 @@ function InsightBlock({
         <motion.span
           initial={{ scaleY: motionOff ? 1 : 0 }}
           whileInView={{ scaleY: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.7, delay: delay + 0.1, ease: "easeOut" }}
           style={{ transformOrigin: "top" }}
           className={`absolute inset-y-0 left-0 w-[2px] ${accentBg}`}

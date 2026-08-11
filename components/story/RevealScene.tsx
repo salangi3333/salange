@@ -77,7 +77,7 @@ export default function RevealScene({
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.6, delay: 0.7 }}
             className="text-[14px] italic text-sceneTextSub/90 sm:text-[13px] sm:text-sceneTextSub/80"
           >
@@ -113,7 +113,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
         <motion.div
           initial={{ rotateY: motionOff ? 0 : 80, opacity: 0 }}
           whileInView={{ rotateY: 0, opacity: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
           style={{ transformOrigin: "right center" }}
           className="min-w-0 flex-1 rounded-l-card border border-sceneGold/30 bg-sceneCard px-4 py-6 text-left shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
@@ -123,7 +123,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
               key={e.label}
               initial={{ opacity: 0, y: 6 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.5, delay: 0.9 + i * 0.3 }}
               className="mb-2 last:mb-0"
             >
@@ -135,7 +135,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
         <motion.div
           initial={{ rotateY: motionOff ? 0 : -80, opacity: 0 }}
           whileInView={{ rotateY: 0, opacity: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 1.1, delay: 0.15, ease: "easeOut" }}
           style={{ transformOrigin: "left center" }}
           className="min-w-0 flex-1 rounded-r-card border border-sceneGold/30 bg-sceneCard px-4 py-6 text-left shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
@@ -145,7 +145,7 @@ function RevealBook({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
               key={e.label}
               initial={{ opacity: 0, y: 6 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.5, delay: 1.1 + i * 0.3 }}
               className="mb-2 last:mb-0"
             >
@@ -168,7 +168,7 @@ function RevealSeal({ scene }: { scene: StoryScene }) {
       <motion.div
         initial={{ scale: 1, rotate: 0, opacity: 1 }}
         whileInView={{ scale: [1, 1.15, 0], rotate: [0, 0, -10], opacity: [1, 1, 0] }}
-        viewport={{ once: true, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.9, times: [0, 0.5, 1], ease: "easeIn" }}
         className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-sceneRed/70 text-sceneRed"
       >
@@ -177,7 +177,7 @@ function RevealSeal({ scene }: { scene: StoryScene }) {
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 1.0, delay: 1.0 }}
         className="max-w-[32ch] whitespace-pre-line font-serif-kr text-[18px] font-bold leading-[1.6] text-sceneText sm:text-2xl"
         style={{ wordBreak: "keep-all" }}
@@ -197,7 +197,7 @@ function RevealDoor({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
         <motion.div
           initial={{ clipPath: motionOff ? "inset(0 100% 0 0)" : "inset(0 0 0 0)" }}
           whileInView={{ clipPath: "inset(0 100% 0 0)" }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 1.3, delay: 0.15, ease: "easeOut" }}
           className="absolute inset-0 bg-sceneBgAlt"
           style={{
@@ -209,7 +209,7 @@ function RevealDoor({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
           <motion.span
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.6, delay: 0.9 }}
             className="relative z-10 font-serif-kr text-2xl font-bold text-sceneGold"
           >
@@ -230,14 +230,14 @@ function RevealCard({ scene, motionOff }: { scene: StoryScene; motionOff: boolea
       <motion.div
         initial={{ rotateY: motionOff ? 180 : 0 }}
         whileInView={{ rotateY: 180 }}
-        viewport={{ once: true, amount: 0.6 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.8, delay: 0.15, ease: "easeInOut" }}
         className="flex h-28 w-52 items-center justify-center rounded-card border border-sceneGold/30 bg-sceneCard shadow-[0_10px_28px_rgba(0,0,0,0.35)]"
       >
         <motion.span
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          viewport={{ once: true, amount: 0.6 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.4, delay: 0.55 }}
           style={{ transform: "rotateY(180deg)" }}
           className="px-3 text-center font-serif-kr text-lg font-bold text-sceneCardText"
@@ -260,7 +260,7 @@ function RevealLight({ scene }: { scene: StoryScene }) {
         className="pointer-events-none absolute inset-y-0 left-0 w-1/2"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 1.0, delay: 0.15 }}
         style={{ background: "linear-gradient(90deg, rgba(212,163,74,0.22), transparent)" }}
       />
@@ -268,7 +268,7 @@ function RevealLight({ scene }: { scene: StoryScene }) {
         className="pointer-events-none absolute inset-y-0 right-0 w-1/2"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 1.0, delay: 0.4 }}
         style={{ background: "linear-gradient(270deg, rgba(124,147,196,0.22), transparent)" }}
       />
@@ -277,7 +277,7 @@ function RevealLight({ scene }: { scene: StoryScene }) {
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.6, delay: 0.5 }}
             className="text-center"
           >
@@ -290,7 +290,7 @@ function RevealLight({ scene }: { scene: StoryScene }) {
           <motion.div
             initial={{ opacity: 0, x: 10 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
+            viewport={{ once: true, amount: 0.05 }}
             transition={{ duration: 0.6, delay: 0.8 }}
             className="text-center"
           >
@@ -325,7 +325,7 @@ function RevealScroll({
       <motion.div
         initial={{ opacity: 0, scale: motionOff ? 1 : 0.98 }}
         whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true, amount: 0.15 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
         className="w-full"
       >
@@ -343,7 +343,7 @@ function RevealSilhouette({ scene, tenYear }: { scene: StoryScene; tenYear?: Yea
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.7, delay: 0.2 }}
         className="w-full"
       >
@@ -369,7 +369,7 @@ function RevealHeadline({ scene, delay }: { scene: StoryScene; delay: number }) 
         className="pointer-events-none absolute inset-0"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: [0, 0.5, 0] }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 1.6, delay: delay + 0.3, ease: "easeInOut" }}
         style={{
           background: "radial-gradient(ellipse at 50% 50%, rgba(212,163,74,0.22), transparent 70%)",
@@ -378,7 +378,7 @@ function RevealHeadline({ scene, delay }: { scene: StoryScene; delay: number }) 
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.8, delay }}
         className="relative max-w-[28ch] whitespace-pre-line font-serif-kr text-[19px] font-bold leading-[1.55] text-sceneText sm:text-2xl sm:leading-[1.6]"
         style={{ wordBreak: "keep-all" }}

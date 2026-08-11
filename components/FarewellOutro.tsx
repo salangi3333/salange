@@ -43,7 +43,7 @@ export default function FarewellOutro({
         data-probe-scene="farewell"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.05 }}
         transition={{ duration: 0.8 }}
         className="relative flex flex-col overflow-hidden bg-sceneBg sm:min-h-[90svh] sm:flex-row sm:items-center"
       >
@@ -86,7 +86,7 @@ export default function FarewellOutro({
               key={i}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.6 }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.6, delay: i === lines.length - 1 ? 1.5 : i * 0.6 }}
               className={`whitespace-pre-line font-serif-kr leading-relaxed tracking-[0.01em] text-sceneText ${
                 i === 0
@@ -111,7 +111,7 @@ export default function FarewellOutro({
               key={i}
               initial={{ opacity: 0, y: 8 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
+              viewport={{ once: true, amount: 0.05 }}
               transition={{ duration: 0.6, delay: i * 0.5 }}
               className={`whitespace-pre-line font-serif-kr leading-relaxed tracking-[0.01em] ${
                 line.weight === "main"
@@ -129,7 +129,7 @@ export default function FarewellOutro({
         <motion.span
           initial={{ opacity: 0, scaleX: motionOff ? 1 : 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.8, delay: 2.0 }}
           className="block h-px w-8 bg-sceneGold/30"
         />
@@ -138,7 +138,7 @@ export default function FarewellOutro({
           onClick={scrollToCTA}
           initial={{ opacity: 0, y: 8 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.6, delay: 2.4 }}
           className="mt-1 flex items-center gap-2 rounded-pill border border-sceneGold/50 bg-sceneGold/10 px-7 py-3.5 text-[15px] font-bold text-sceneGold shadow-[0_8px_24px_rgba(212,163,74,0.18)] transition-colors active:bg-sceneGold/20"
         >
