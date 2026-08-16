@@ -1,3 +1,4 @@
+import { PillarCell, SajuUser } from "@/types";
 import { StoryScene } from "@/types/story";
 import { Element, ELEMENT_LABEL } from "./hanjaTables";
 import { AppData } from "./sajuContent";
@@ -43,11 +44,29 @@ export interface ReportTenYearItem {
   locked: boolean;
 }
 
+/** 표에 그대로 렌더할 수 있게 이미 문자열로 정리해 둔 한 칸(글자). 시간 미상 등
+ * 원본 셀이 null인 경우 "?"/"미상" 자리표시로 대체한다(값을 지어내지 않음). */
+export interface ReportPillarCell {
+  label?: string; // 시주/일주/월주/년주 — 천간 칸에만 존재
+  hanja: string;
+  hangul: string;
+  element: string; // 이미 "水(수)" 형태로 변환된 표시용 문자열
+  sipseong?: string;
+  isDay?: boolean;
+}
+
+export interface ReportPillars {
+  stems: ReportPillarCell[]; // [시주, 일주, 월주, 년주] 순서
+  branches: ReportPillarCell[]; // 위와 같은 순서의 지지
+}
+
 export interface ReportResult {
   /** user.typeLabel 그대로 (예: "OO 속 OO형") */
   summaryTitle: string;
   /** user.dayPillar 그대로 (예: "무술(戊戌) 일주") */
   dayMasterLabel: string;
+  /** user.pillars/branches 그대로 — 표시용 문자열로만 변환 */
+  pillars: ReportPillars;
   /** user.sinsal 그대로 — 계산된 12신살(+천을귀인) 배열 */
   sinsal: string[];
   /** buildElementAnalysis(chars)의 오행 개수를 백분율로 환산 */
@@ -88,6 +107,28 @@ function groupTenYear(items: YearFortuneItem[]): ReportTenYearItem[] {
       locked: true,
     };
   });
+}
+
+const STEM_KEYS: { key: "hour" | "day" | "month" | "year"; label: string }[] = [
+  { key: "hour", label: "시주" },
+  { key: "day", label: "일주" },
+  { key: "month", label: "월주" },
+  { key: "year", label: "년주" },
+];
+
+function cellToDisplay(cell: PillarCell | null): Omit<ReportPillarCell, "label" | "isDay"> {
+  if (!cell) return { hanja: "?", hangul: "미상", element: "", sipseong: "" };
+  return { hanja: cell.hanja, hangul: cell.hangul, element: ELEMENT_LABEL[cell.element], sipseong: cell.sipseong };
+}
+
+function buildPillars(user: SajuUser): ReportPillars {
+  const stems = STEM_KEYS.map(({ key, label }) => ({
+    label,
+    isDay: key === "day",
+    ...cellToDisplay(user.pillars[key]),
+  }));
+  const branches = STEM_KEYS.map(({ key }) => cellToDisplay(user.pillars.branches[key]));
+  return { stems, branches };
 }
 
 const CHAPTER_SCENE_IDS = [
@@ -141,6 +182,7 @@ export function buildReportResult(appData: AppData): ReportResult {
   return {
     summaryTitle: user.typeLabel,
     dayMasterLabel: user.dayPillar,
+    pillars: buildPillars(user),
     sinsal: user.sinsal,
     elementBalance: buildElementBalance(chars),
     chapters: buildChapters(scenes),

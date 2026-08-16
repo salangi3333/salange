@@ -26,12 +26,13 @@ import { ReportResult } from "@/lib/reportMapper";
  * 카드는 각 챕터의 "정말 중요한 문장 1개"에만 쓴다.
  *
  * `report` prop — lib/reportMapper.ts의 buildReportResult(appData)가 만든
- * 실제 개인화 데이터. 아직 app/result-v2/page.tsx가 실사용자 입력에
- * 연결되지 않았으므로 prop 없이 렌더링하면 DEFAULT_REPORT(기존과 동일한
- * 자리채움 문구)로 대체된다 — 이번 단계에서는 화면에 보이는 기본 내용이
- * 바뀌지 않는다. killpoint/title/highlight/body/신살/오행 분포/10년 흐름
- * 제목은 실제 데이터가 오면 사람마다 달라지고, 기운 비교 카드(03)와 시기
- * 카드(04)의 구체적 값은 아직 스키마에 없어 자리채움 그대로 남아 있다.
+ * 실제 개인화 데이터. app/result-v2/page.tsx가 쿼리스트링의 생년월일시를
+ * calculateSaju/buildAppData로 계산해 넘겨준다 — 쿼리가 없으면 prop 자체가
+ * undefined가 되어 DEFAULT_REPORT(기존과 동일한 자리채움 문구)로 대체된다.
+ * 사주팔자 표/신살/오행 분포/01~04 killpoint·title·highlight/10년 흐름
+ * 제목이 이 prop을 통해 사람마다 달라진다. 기운 비교 카드(03)와 시기
+ * 카드(04)의 구체적 값(목(木)/수(水), 2026년/경쟁운)은 아직 스키마에 없어
+ * 자리채움 그대로 남아 있다.
  */
 
 // 오행 5색 — tailwind.config.js의 wood/fire/earth/metal/water 토큰과
@@ -50,6 +51,20 @@ const ELEMENT_COLORS = {
 const DEFAULT_REPORT: ReportResult = {
   summaryTitle: "",
   dayMasterLabel: "",
+  pillars: {
+    stems: [
+      { label: "시주", hanja: "壬", hangul: "임", element: "水(수)", sipseong: "정재" },
+      { label: "일주", hanja: "戊", hangul: "무", element: "土(토)", sipseong: "일간", isDay: true },
+      { label: "월주", hanja: "甲", hangul: "갑", element: "木(목)", sipseong: "편관" },
+      { label: "년주", hanja: "丙", hangul: "병", element: "火(화)", sipseong: "편인" },
+    ],
+    branches: [
+      { hanja: "戌", hangul: "술", element: "土(토)" },
+      { hanja: "子", hangul: "자", element: "水(수)" },
+      { hanja: "寅", hangul: "인", element: "木(목)" },
+      { hanja: "午", hangul: "오", element: "火(화)" },
+    ],
+  },
   sinsal: ["화개살", "역마살", "도화살"],
   elementBalance: [
     { key: "wood", label: "목(木)", value: 15 },
@@ -112,22 +127,9 @@ const DEFAULT_REPORT: ReportResult = {
 };
 
 // 사주팔자 표는 기존 PillarScene의 시각적 톤(다크 배경 + 아이보리 카드 +
-// 금빛 강조, 일간 칸 하이라이트)만 참고했고 구현은 새로 작성했다. 데이터는
-// 실제 계산 결과가 아니라 레이아웃 확인용 더미 값이다. (표 자체는 이번
-// 단계 범위에 포함되지 않아 report prop과 아직 연결하지 않았다.)
-const DUMMY_STEMS = [
-  { label: "시주", hanja: "壬", hangul: "임", element: "水(수)", sipseong: "정재" },
-  { label: "일주", hanja: "戊", hangul: "무", element: "土(토)", sipseong: "일간", isDay: true },
-  { label: "월주", hanja: "甲", hangul: "갑", element: "木(목)", sipseong: "편관" },
-  { label: "년주", hanja: "丙", hangul: "병", element: "火(화)", sipseong: "편인" },
-];
-
-const DUMMY_BRANCHES = [
-  { hanja: "戌", hangul: "술", element: "土(토)" },
-  { hanja: "子", hangul: "자", element: "水(수)" },
-  { hanja: "寅", hangul: "인", element: "木(목)" },
-  { hanja: "午", hangul: "오", element: "火(화)" },
-];
+// 금빛 강조, 일간 칸 하이라이트)만 참고했고 구현은 새로 작성했다. 실제
+// 데이터는 report.pillars(=user.pillars/branches를 표시용 문자열로 변환한
+// 것)에서 온다 — report가 없으면 DEFAULT_REPORT.pillars로 대체된다.
 
 /** 챕터 공통 머리(한자 라벨 + 제목 + 킬포인트) — 정적, 애니메이션 없음 */
 function ChapterHead({
@@ -279,7 +281,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           </h1>
 
           <div className="mt-8 grid grid-cols-4 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
-            {DUMMY_STEMS.map((s) => (
+            {data.pillars.stems.map((s) => (
               <div
                 key={s.label}
                 className={`flex flex-col items-center gap-1 border-r border-sceneGold/15 px-1 py-4 last:border-r-0 ${
@@ -294,7 +296,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
                 <span className="text-[10px] text-sceneCardText/60">{s.sipseong}</span>
               </div>
             ))}
-            {DUMMY_BRANCHES.map((b, i) => (
+            {data.pillars.branches.map((b, i) => (
               <div
                 key={`branch-${i}`}
                 className="flex flex-col items-center gap-1 border-r border-t border-sceneGold/15 px-1 py-4 last:border-r-0"
