@@ -318,9 +318,6 @@ export default function ResultLandingV2() {
               </span>
             ))}
           </div>
-
-          {/* 오행 밸런스 — 정적 SVG 다이어그램, 애니메이션 없음 */}
-          <FiveElementDiagram />
         </div>
       </section>
 
@@ -413,6 +410,18 @@ export default function ResultLandingV2() {
           </div>
 
           <HighlightCard text={CHAPTERS[3].highlight} />
+        </div>
+      </section>
+
+      {/* ── 오행 밸런스 — 독립 섹션, 정적 SVG 다이어그램. 원본 결과지에서도
+          첫 사주팔자 표가 아니라 뒤쪽 챕터에 배치되어 있던 걸 그대로 따랐다 ── */}
+      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2">
+          <span className="font-serif-kr text-3xl font-bold text-sceneGold">五行</span>
+          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+            지금, 기운이 흐르는 방향
+          </h2>
+          <FiveElementDiagram />
         </div>
       </section>
 
