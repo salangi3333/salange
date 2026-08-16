@@ -5,11 +5,11 @@ import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
  * 분리된 새 결과 페이지. 목적은 두 가지 동시 달성:
  *   1) Galaxy S24 Ultra 등 실제 모바일에서 native window 스크롤이 매끄럽게
- *      동작하는 구조를 유지한다 (검증 완료, 변경하지 않음).
+ *      동작하는 구조를 유지한다 (검증 완료, 절대 변경하지 않는다).
  *   2) 기존 결과 페이지의 검정·금빛·아이보리 톤, 사주팔자 표, 선녀/배경
- *      이미지, 폰트 분위기 등 "공들인 비주얼"을 되살린다.
+ *      이미지, 오행, 동양적 디테일 등 "공들인 비주얼"을 정적으로 되살린다.
  *
- * 지켜야 하는 제약(전부 의도적):
+ * 지켜야 하는 제약(전부 의도적 — 되돌리지 말 것):
  * - Framer Motion 등 JS 애니메이션 라이브러리를 import하지 않는다.
  * - IntersectionObserver 기반 whileInView 진입 애니메이션, typewriter,
  *   글자/문장 단위 지연 등장을 쓰지 않는다 — 뷰포트에 들어온 본문은
@@ -19,23 +19,33 @@ import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
  * - 별도 scroll container / scroll-snap / fixed·sticky 요소를 두지 않는다.
  * - 무료 구간에는 결제 고정바·가격·할인·카운트다운을 노출하지 않는다.
  *
+ * 챕터마다 시각 구조를 의도적으로 다르게 구성했다(같은 카드가 반복되는
+ * "템플릿 반복" 느낌을 줄이기 위해) — 01/02는 본문 중심으로 담백하게,
+ * 03은 기운 비교 카드, 04는 시기 카드를 추가로 붙였다. 아이보리 강조
+ * 카드는 각 챕터의 "정말 중요한 문장 1개"에만 쓴다.
+ *
  * 아래 본문은 전부 짧은 자리채움 텍스트다. 실제 사주 해석 원고가 아니며,
  * 디자인이 확정된 뒤 실제 원고로 교체될 예정이다. 사주 계산 로직(lib/
  * calculateSaju 등)은 이 컴포넌트가 전혀 참조하지 않는다.
  */
 
+// 오행 5색 — tailwind.config.js의 wood/fire/earth/metal/water 토큰과
+// 동일한 값. SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다.
+const ELEMENT_COLORS = {
+  wood: "#4C7A4A",
+  fire: "#C0392B",
+  earth: "#8A6D3B",
+  metal: "#8C8C88",
+  water: "#3B6EA5",
+};
+
 type ChapterSection = {
   id: string;
   chapterLabel: string;
   title: string;
-  body: string;
-  // 신살/키워드 한 단어를 금테두리 박스로 강조 — 모든 챕터에 있을 필요는
-  // 없어 optional로 둔다. 정적 요소이며 애니메이션 없음.
-  keyword?: string;
+  killpoint: string;
+  body: string[];
   highlight: string;
-  // "사람과 인연" 챕터 전용 — 나를 채우는 기운 / 긴장하게 되는 기운 2단
-  // 비교 카드. 정적 요소이며 애니메이션 없음.
-  compare?: { leftLabel: string; leftValue: string; rightLabel: string; rightValue: string; note: string };
 };
 
 const CHAPTERS: ChapterSection[] = [
@@ -43,38 +53,44 @@ const CHAPTERS: ChapterSection[] = [
     id: "chapter-01",
     chapterLabel: "第一章",
     title: "타고난 본질",
-    body: "(임시 문구) 일간을 중심으로 타고난 기질을 짧게 정리하는 본문이 이 자리에 들어갑니다.",
-    keyword: "일간 · 무토(戊土)",
+    killpoint: "이 사람을 한 문장으로 요약하면",
+    body: [
+      "(임시 문구) 일간을 중심으로 타고난 기질을 정리하는 첫 번째 문단이 이 자리에 들어갑니다.",
+      "(임시 문구) 그 기질이 실제 삶에서 어떻게 드러나는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+    ],
     highlight: "(핵심 문장 자리채움) 이 사람을 한 문장으로 요약하는 문장이 들어갑니다.",
   },
   {
     id: "chapter-02",
     chapterLabel: "第二章",
     title: "성격의 이면",
-    body: "(임시 문구) 겉으로 보이는 모습과 실제 내면의 차이를 짚는 본문이 이 자리에 들어갑니다.",
-    keyword: "화개살",
+    killpoint: "화개살 — 혼자일 때 진짜 내가 보인다",
+    body: [
+      "(임시 문구) 겉으로 보이는 모습을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+      "(임시 문구) 그 이면의 실제 성향을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+    ],
     highlight: "(핵심 문장 자리채움) 잘 드러나지 않는 진짜 성향을 짚는 문장이 들어갑니다.",
   },
   {
     id: "chapter-03",
     chapterLabel: "第三章",
     title: "사람과 인연",
-    body: "(임시 문구) 관계에서 반복되는 패턴을 짚는 본문이 이 자리에 들어갑니다.",
-    compare: {
-      leftLabel: "나를 채우는 기운",
-      leftValue: "목(木)",
-      rightLabel: "긴장하게 되는 기운",
-      rightValue: "수(水)",
-      note: "(임시 문구) 목 기운의 사람과는 편안함을, 수 기운의 사람과는 긴장을 느끼기 쉽습니다.",
-    },
+    killpoint: "가까워지는 속도와 멀어지는 이유는 다르다",
+    body: [
+      "(임시 문구) 관계에서 반복되는 패턴을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+      "(임시 문구) 그 패턴이 어디서 비롯되는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+    ],
     highlight: "(핵심 문장 자리채움) 인연이 가까워지고 멀어지는 지점을 짚는 문장이 들어갑니다.",
   },
   {
     id: "chapter-04",
     chapterLabel: "第四章",
     title: "재물",
-    body: "(임시 문구) 돈이 들어오고 나가는 흐름을 짚는 본문이 이 자리에 들어갑니다.",
-    keyword: "2026년 · 경쟁운",
+    killpoint: "2026년, 돈의 흐름이 한 번 바뀝니다",
+    body: [
+      "(임시 문구) 돈이 들어오고 나가는 평소 흐름을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+      "(임시 문구) 올해 특히 주의할 지점을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+    ],
     highlight: "(핵심 문장 자리채움) 재물이 새는 지점과 지키는 법을 짚는 문장이 들어갑니다.",
   },
 ];
@@ -98,7 +114,148 @@ const DUMMY_BRANCHES = [
 
 const DUMMY_SINSAL = ["화개살", "역마살", "도화살"];
 
-const TEN_YEAR_PREVIEW = ["다가올 3년", "그다음 3년", "그 이후 4년"];
+// 오행 다이어그램용 더미 분포(0~100). 실제 계산 결과가 아니라 레이아웃
+// 확인용 값이다.
+const DUMMY_ELEMENT_BALANCE = [
+  { key: "wood" as const, label: "목(木)", value: 15 },
+  { key: "fire" as const, label: "화(火)", value: 35 },
+  { key: "earth" as const, label: "토(土)", value: 25 },
+  { key: "metal" as const, label: "금(金)", value: 10 },
+  { key: "water" as const, label: "수(水)", value: 15 },
+];
+
+// 실제 사주 데이터가 들어오면 period/title이 사람마다 달라진다 — 지금은
+// 자리채움. "다가올 3년"처럼 순전히 기능적인 라벨 대신, 실제로는 개인화된
+// 소제목이 들어갈 자리라는 걸 보여주는 형태로 만들었다.
+const TEN_YEAR_PREVIEW = [
+  { period: "2028 – 2030", title: "(개인별 핵심 흐름 제목)" },
+  { period: "2031 – 2033", title: "(개인별 핵심 흐름 제목)" },
+  { period: "2034 – 2037", title: "(개인별 핵심 흐름 제목)" },
+];
+
+/** 챕터 공통 머리(한자 라벨 + 제목 + 킬포인트) — 정적, 애니메이션 없음 */
+function ChapterHead({
+  chapterLabel,
+  title,
+  killpoint,
+}: {
+  chapterLabel: string;
+  title: string;
+  killpoint: string;
+}) {
+  return (
+    <>
+      <span className="font-serif-kr text-3xl font-bold text-sceneGold">{chapterLabel}</span>
+      <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+        {title}
+      </h2>
+      <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
+        {killpoint}
+      </p>
+    </>
+  );
+}
+
+/** 핵심 문장 카드 — 아이보리 + 금빛 좌측 강조선. 챕터당 "정말 중요한 문장" 1개에만 사용 */
+function HighlightCard({ text }: { text: string }) {
+  return (
+    <div className="relative mt-6 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard py-4 pl-5 pr-4">
+      <span className="absolute inset-y-0 left-0 w-[3px] bg-sceneGold" />
+      <p className="font-serif-kr text-[15px] font-bold leading-relaxed text-sceneCardText">{text}</p>
+    </div>
+  );
+}
+
+/** 작은 인장(印章) 디테일 — 정적 SVG, 애니메이션 없음 */
+function SealMark() {
+  return (
+    <svg
+      width="34"
+      height="34"
+      viewBox="0 0 34 34"
+      aria-hidden
+      style={{ transform: "rotate(-6deg)" }}
+      className="text-sceneRed/70"
+    >
+      <rect x="2" y="2" width="30" height="30" rx="3" fill="none" stroke="currentColor" strokeWidth="2" />
+      <text x="17" y="23" textAnchor="middle" fontSize="16" fontFamily="serif" fill="currentColor">
+        命
+      </text>
+    </svg>
+  );
+}
+
+/** 붓선 스타일 구분선 — 정적 SVG, 애니메이션 없음 */
+function BrushDivider() {
+  return (
+    <svg width="120" height="10" viewBox="0 0 120 10" aria-hidden className="mx-auto text-sceneGold/50">
+      <path
+        d="M2 6 C 20 3, 40 8, 60 5 C 80 2, 100 7, 118 4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+/** 오행 밸런스 다이어그램 — 오각형 배치의 정적 SVG. 애니메이션 없음 */
+function FiveElementDiagram() {
+  const cx = 140;
+  const cy = 130;
+  const r = 92;
+  // 오각형 5개 꼭짓점 좌표 (12시 방향부터 시계방향)
+  const points = DUMMY_ELEMENT_BALANCE.map((el, i) => {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    return {
+      ...el,
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle),
+    };
+  });
+
+  return (
+    <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-6">
+      <svg viewBox="0 0 280 260" style={{ width: "100%", height: "auto" }} aria-hidden role="img">
+        {/* 상생 순환을 잇는 정적 연결선 */}
+        {points.map((p, i) => {
+          const next = points[(i + 1) % points.length];
+          return (
+            <line
+              key={`line-${i}`}
+              x1={p.x}
+              y1={p.y}
+              x2={next.x}
+              y2={next.y}
+              stroke="rgba(212,163,74,0.25)"
+              strokeWidth={1}
+            />
+          );
+        })}
+        {points.map((p) => (
+          <g key={p.key}>
+            <circle cx={p.x} cy={p.y} r={18 + p.value * 0.4} fill={ELEMENT_COLORS[p.key]} opacity={0.85} />
+            <text x={p.x} y={p.y + 5} textAnchor="middle" fontSize="14" fill="#FFF7EA" fontWeight={700}>
+              {p.label[0]}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
+        {DUMMY_ELEMENT_BALANCE.map((el) => (
+          <li key={el.key} className="flex items-center gap-1.5 text-[11px] text-sceneTextSub">
+            <span
+              className="inline-block h-2 w-2 rounded-full"
+              style={{ backgroundColor: ELEMENT_COLORS[el.key] }}
+            />
+            {el.label} {el.value}%
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function ResultLandingV2() {
   return (
@@ -115,7 +272,10 @@ export default function ResultLandingV2() {
         />
 
         <div className="relative mx-auto w-full max-w-content">
-          <p className="text-center text-sm tracking-[0.2em] text-sceneGold/80">命式 · 사주팔자</p>
+          <div className="flex items-center justify-center gap-2">
+            <SealMark />
+            <p className="text-sm tracking-[0.2em] text-sceneGold/80">命式 · 사주팔자</p>
+          </div>
           <h1 className="mt-2 text-center font-serif-kr text-2xl font-bold text-sceneText">
             타고난 여덟 글자
           </h1>
@@ -159,72 +319,104 @@ export default function ResultLandingV2() {
             ))}
           </div>
 
-          <p className="mt-8 text-center text-[15px] leading-relaxed text-sceneBody/90">
-            이 여덟 글자를 기준으로 아래 내용을 읽어봅니다.
-          </p>
+          {/* 오행 밸런스 — 정적 SVG 다이어그램, 애니메이션 없음 */}
+          <FiveElementDiagram />
         </div>
       </section>
 
-      {/* ── 01~04 챕터: 동일한 레이아웃 반복 ───────────────────────── */}
-      {CHAPTERS.map((chapter, i) => (
-        <section
-          key={chapter.id}
-          className={`border-b border-white/5 px-6 py-14 sm:py-16 ${
-            i % 2 === 1 ? "bg-sceneBgAlt" : "bg-sceneBg"
-          }`}
-        >
-          <div className="mx-auto w-full max-w-content2">
-            <span className="font-serif-kr text-3xl font-bold text-sceneGold">{chapter.chapterLabel}</span>
-            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {chapter.title}
-            </h2>
-            <span className="mt-4 block h-px w-14 bg-sceneGold/40" />
+      <div className="border-b border-white/5 bg-sceneBg py-6">
+        <BrushDivider />
+      </div>
 
-            {/* 키워드 강조 박스 — 금테두리, 정적. 챕터마다 있을 필요는 없음 */}
-            {chapter.keyword && (
-              <div className="mt-6 flex items-center justify-center rounded-card border border-sceneGold/40 bg-sceneBgAlt px-6 py-8">
-                <span className="font-serif-kr text-[22px] font-bold text-sceneGold">{chapter.keyword}</span>
-              </div>
-            )}
-
-            <p className="mt-6 text-[16px] leading-[1.9] text-sceneBody">{chapter.body}</p>
-
-            {/* 기운 비교 카드 — "사람과 인연" 챕터 전용, 정적 2단 레이아웃 */}
-            {chapter.compare && (
-              <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-6">
-                <div className="flex items-center justify-around text-center">
-                  <div>
-                    <p className="text-[12px] text-sceneTextSub">{chapter.compare.leftLabel}</p>
-                    <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneGold">
-                      {chapter.compare.leftValue}
-                    </p>
-                  </div>
-                  <span className="h-8 w-px bg-white/10" />
-                  <div>
-                    <p className="text-[12px] text-sceneTextSub">{chapter.compare.rightLabel}</p>
-                    <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneSilver">
-                      {chapter.compare.rightValue}
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-5 text-center text-[15px] leading-relaxed text-sceneText/90">
-                  {chapter.compare.note}
-                </p>
-              </div>
-            )}
-
-            {/* 핵심 문장 — 아이보리 카드 + 금빛 좌측 강조선. 정적, 애니메이션 없음 */}
-            <div className="relative mt-6 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard py-4 pl-5 pr-4">
-              <span className="absolute inset-y-0 left-0 w-[3px] bg-sceneGold" />
-              <p className="font-serif-kr text-[15px] font-bold leading-relaxed text-sceneCardText">
-                {chapter.highlight}
+      {/* ── 01~04 챕터: 챕터마다 시각 구조를 다르게 구성 ───────────── */}
+      {/* 第一章 — 본문 중심, 추가 카드 없음(담백하게) */}
+      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2">
+          <ChapterHead {...CHAPTERS[0]} />
+          <div className="mt-6 space-y-4">
+            {CHAPTERS[0].body.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {p}
               </p>
-            </div>
+            ))}
           </div>
-        </section>
-      ))}
+          <HighlightCard text={CHAPTERS[0].highlight} />
+        </div>
+      </section>
 
-      {/* ── 선녀 이미지 패널 — 정적 이미지, 반복 애니메이션 없음 ───── */}
+      {/* 第二章 — 본문 중심, 추가 카드 없음(담백하게) */}
+      <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2">
+          <ChapterHead {...CHAPTERS[1]} />
+          <div className="mt-6 space-y-4">
+            {CHAPTERS[1].body.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+          <HighlightCard text={CHAPTERS[1].highlight} />
+        </div>
+      </section>
+
+      {/* 第三章 — 기운 비교 카드 추가 */}
+      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2">
+          <ChapterHead {...CHAPTERS[2]} />
+          <div className="mt-6 space-y-4">
+            {CHAPTERS[2].body.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          {/* 기운 비교 카드 — 정적 2단 레이아웃 */}
+          <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-6">
+            <div className="flex items-center justify-around text-center">
+              <div>
+                <p className="text-[12px] text-sceneTextSub">나를 채우는 기운</p>
+                <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneGold">목(木)</p>
+              </div>
+              <span className="h-8 w-px bg-white/10" />
+              <div>
+                <p className="text-[12px] text-sceneTextSub">긴장하게 되는 기운</p>
+                <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneSilver">수(水)</p>
+              </div>
+            </div>
+            <p className="mt-5 text-center text-[14px] leading-relaxed text-sceneText/90">
+              (임시 문구) 목 기운의 사람과는 편안함을, 수 기운의 사람과는 긴장을 느끼기 쉽습니다.
+            </p>
+          </div>
+
+          <HighlightCard text={CHAPTERS[2].highlight} />
+        </div>
+      </section>
+
+      {/* 第四章 — 시기 카드 추가 */}
+      <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2">
+          <ChapterHead {...CHAPTERS[3]} />
+          <div className="mt-6 space-y-4">
+            {CHAPTERS[3].body.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          {/* 시기 카드 — 가로형, 기운 비교 카드와 다른 형태 */}
+          <div className="mt-6 flex items-center gap-4 rounded-card border-l-2 border-sceneGold bg-sceneBg px-5 py-4">
+            <span className="font-serif-kr text-[20px] font-bold text-sceneGold">2026년</span>
+            <span className="h-6 w-px bg-white/10" />
+            <span className="text-[15px] font-medium text-sceneText/90">경쟁운</span>
+          </div>
+
+          <HighlightCard text={CHAPTERS[3].highlight} />
+        </div>
+      </section>
+
+      {/* ── 선녀 이미지 패널 — 정적 이미지, 반복 사용하지 않고 잠금 직전 1회만 ── */}
       <section className="relative overflow-hidden border-b border-white/5 bg-sceneBg">
         <div
           className="relative aspect-[96/100] w-full bg-cover sm:aspect-auto sm:h-[70vh]"
@@ -236,8 +428,7 @@ export default function ResultLandingV2() {
           <div
             className="absolute inset-0"
             style={{
-              background:
-                "linear-gradient(180deg, rgba(16,19,29,0) 45%, rgba(16,19,29,0.92) 100%)",
+              background: "linear-gradient(180deg, rgba(16,19,29,0) 45%, rgba(16,19,29,0.92) 100%)",
             }}
           />
           <p
@@ -269,19 +460,21 @@ export default function ResultLandingV2() {
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             앞으로 10년 미리보기
           </h2>
-          <span className="mt-4 block h-px w-14 bg-sceneGold/40" />
-          <p className="mt-6 text-[16px] leading-[1.9] text-sceneBody">
-            (임시 문구) 10년 흐름 요약이 이 자리에 들어갑니다.
+          <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
+            10년을 세 구간으로 나눠 먼저 보여드립니다
           </p>
 
           <ul className="mt-6 flex flex-col gap-3">
-            {TEN_YEAR_PREVIEW.map((label) => (
+            {TEN_YEAR_PREVIEW.map((item) => (
               <li
-                key={label}
+                key={item.period}
                 className="flex items-center justify-between rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4"
               >
-                <span className="text-[15px] font-medium text-sceneText/90">{label}</span>
-                <Lock size={16} className="text-sceneGold/70" />
+                <div>
+                  <p className="font-serif-kr text-[15px] font-bold text-sceneGold">{item.period}</p>
+                  <p className="mt-0.5 text-[13px] text-sceneTextSub">{item.title}</p>
+                </div>
+                <Lock size={16} className="shrink-0 text-sceneGold/70" />
               </li>
             ))}
           </ul>
