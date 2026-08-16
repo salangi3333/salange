@@ -1,10 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { StoryScene } from "@/types/story";
 import { renderWithHighlights } from "./highlightText";
 import { WordReveal, LineReveal } from "./textReveal";
+
+// 모바일(≤767px, globals.css의 .story-ambient-layer 미디어쿼리와 동일 기준)에서는
+// 아래 "안개 숨쉬기" 장식 레이어의 repeat:Infinity Framer Motion 애니메이션을 아예
+// 실행하지 않는다. 기존에는 CSS(!important)로 최종 화면만 정지시켰는데, 그래도
+// Framer Motion의 JS 애니메이션 루프 자체는 매 프레임 계속 돌아 스타일을 갱신하고
+// 있었다 — 이게 누적되어(장면을 지날수록 동시에 도는 루프가 늘어남) 스크롤 중
+// 메인 스레드 스케줄링을 방해하던 원인으로 진단됨. 데스크톱은 기존 애니메이션 그대로 유지.
+function useIsMobileAmbient() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 /**
  * 챕터별로 흩어져 있던 장점/문제(fact)/행동(action)/실제 사례(realLife)를
@@ -71,6 +89,7 @@ export default function InsightScene({
   motionOff?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const isMobileAmbient = useIsMobileAmbient();
 
   useEffect(() => {
     const el = ref.current;
@@ -137,15 +156,26 @@ export default function InsightScene({
       initial={false}
       className="story-paint-boundary relative flex h-auto flex-col justify-center overflow-hidden bg-sceneBg px-6 py-10 sm:py-24"
     >
-      {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기 */}
-      <motion.div
-        className="story-ambient-layer story-insight-ambient pointer-events-none absolute inset-0"
-        animate={{ opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          background: "radial-gradient(ellipse at 50% 20%, rgba(212,163,74,0.1), transparent 65%)",
-        }}
-      />
+      {/* 배경이 완전히 정지해 보이지 않도록 — 아주 약한 안개 숨쉬기.
+          모바일에서는 CSS가 어차피 opacity를 고정값으로 덮어써 시각적으로 정지 상태였으므로,
+          정적 div로 대체해도 화면상 차이는 없다. */}
+      {isMobileAmbient ? (
+        <div
+          className="story-ambient-layer story-insight-ambient pointer-events-none absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse at 50% 20%, rgba(212,163,74,0.1), transparent 65%)",
+          }}
+        />
+      ) : (
+        <motion.div
+          className="story-ambient-layer story-insight-ambient pointer-events-none absolute inset-0"
+          animate={{ opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            background: "radial-gradient(ellipse at 50% 20%, rgba(212,163,74,0.1), transparent 65%)",
+          }}
+        />
+      )}
       <div
         className="pointer-events-none absolute inset-0 hidden opacity-[0.04] sm:block"
         style={{

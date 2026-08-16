@@ -1,8 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { StoryScene } from "@/types/story";
 import { WordReveal } from "./textReveal";
+
+// 모바일(≤767px, globals.css의 .story-ambient-layer 미디어쿼리와 동일 기준)에서는
+// 아래 "숨쉬기" 장식 레이어들의 repeat:Infinity Framer Motion 애니메이션을 아예
+// 실행하지 않는다. 기존에는 CSS(!important)로 최종 화면만 정지시켰는데, 그래도
+// Framer Motion의 JS 애니메이션 루프 자체는 매 프레임 계속 돌아 스타일을 갱신하고
+// 있었다 — 이게 누적되어(장면을 지날수록 동시에 도는 루프가 늘어남) 스크롤 중
+// 메인 스레드 스케줄링을 방해하던 원인으로 진단됨. 데스크톱은 기존 애니메이션 그대로 유지.
+function useIsMobileAmbient() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 /**
  * 챕터 오프닝 전용 "영화적" 장면. 문장을 설명하지 않고, 카메라 무빙과
@@ -68,6 +87,7 @@ export default function MovieScene({
   motionOff?: boolean;
 }) {
   const reduceMotion = useReducedMotion();
+  const isMobileAmbient = useIsMobileAmbient();
   const label = scene.chapterLabel ?? "";
   const variant = CHAPTER_VARIANT[label] ?? { camera: "push", texture: "fog" };
   const initialScale = CAMERA_INITIAL_SCALE[variant.camera];
@@ -137,8 +157,17 @@ export default function MovieScene({
         }}
       />
 
-      {/* 항상 켜져 있는 아주 느린 숨쉬기(Slow Zoom) — 진입 연출이 끝난 뒤에도 화면이 완전히 멈춰 보이지 않도록 */}
-      {!reduceMotion && (
+      {/* 항상 켜져 있는 아주 느린 숨쉬기(Slow Zoom) — 진입 연출이 끝난 뒤에도 화면이 완전히 멈춰 보이지 않도록.
+          모바일에서는 CSS가 어차피 transform을 지워 시각적으로 정지 상태였으므로, 정적 div로 대체해도
+          화면상 차이는 없다. */}
+      {!reduceMotion && (isMobileAmbient ? (
+        <div
+          className="story-ambient-layer story-slow-zoom pointer-events-none absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse at 60% 30%, rgba(23,20,18,0), rgba(23,20,18,0.6) 78%)",
+          }}
+        />
+      ) : (
         <motion.div
           className="story-ambient-layer story-slow-zoom pointer-events-none absolute inset-0"
           animate={{ scale: [1, 1.035, 1] }}
@@ -147,7 +176,7 @@ export default function MovieScene({
             background: "radial-gradient(ellipse at 60% 30%, rgba(23,20,18,0), rgba(23,20,18,0.6) 78%)",
           }}
         />
-      )}
+      ))}
 
       {/* Light Sweep — 은은한 빛줄기가 화면을 한 번 가로질러 지나간다 */}
       {!reduceMotion && (
@@ -165,7 +194,15 @@ export default function MovieScene({
       )}
 
       {/* 질감 레이어 */}
-      {variant.texture === "fog" && (
+      {variant.texture === "fog" && (isMobileAmbient && !reduceMotion ? (
+        <div
+          className="story-ambient-layer story-fog-layer pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(28,24,21,0) 0%, rgba(28,24,21,0.55) 70%, rgba(28,24,21,0.85) 100%)",
+          }}
+        />
+      ) : (
         <motion.div
           className="story-ambient-layer story-fog-layer pointer-events-none absolute inset-0"
           animate={reduceMotion ? { opacity: 0.3 } : { opacity: [0.2, 0.36, 0.2] }}
@@ -175,7 +212,7 @@ export default function MovieScene({
               "linear-gradient(180deg, rgba(28,24,21,0) 0%, rgba(28,24,21,0.55) 70%, rgba(28,24,21,0.85) 100%)",
           }}
         />
-      )}
+      ))}
       {variant.texture === "beam" && (
         <motion.div
           className="pointer-events-none absolute inset-0"
@@ -189,26 +226,41 @@ export default function MovieScene({
         />
       )}
       {(variant.texture === "dust" || variant.texture === "particles") &&
-        DUST_DOTS.map((d, i) => (
-          <motion.span
-            key={i}
-            className="story-ambient-layer story-particle-layer pointer-events-none absolute block rounded-full"
-            style={{
-              top: d.top,
-              left: d.left,
-              width: variant.texture === "particles" ? 4 : 2.5,
-              height: variant.texture === "particles" ? 4 : 2.5,
-              background:
-                variant.texture === "particles" ? "rgba(212,163,74,0.55)" : "rgba(255,247,234,0.4)",
-            }}
-            animate={reduceMotion ? { opacity: 0.35 } : { opacity: [0.12, 0.46, 0.12], y: [0, -14, 0] }}
-            transition={
-              reduceMotion
-                ? undefined
-                : { duration: 5 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: d.delay }
-            }
-          />
-        ))}
+        DUST_DOTS.map((d, i) =>
+          isMobileAmbient && !reduceMotion ? (
+            <span
+              key={i}
+              className="story-ambient-layer story-particle-layer pointer-events-none absolute block rounded-full"
+              style={{
+                top: d.top,
+                left: d.left,
+                width: variant.texture === "particles" ? 4 : 2.5,
+                height: variant.texture === "particles" ? 4 : 2.5,
+                background:
+                  variant.texture === "particles" ? "rgba(212,163,74,0.55)" : "rgba(255,247,234,0.4)",
+              }}
+            />
+          ) : (
+            <motion.span
+              key={i}
+              className="story-ambient-layer story-particle-layer pointer-events-none absolute block rounded-full"
+              style={{
+                top: d.top,
+                left: d.left,
+                width: variant.texture === "particles" ? 4 : 2.5,
+                height: variant.texture === "particles" ? 4 : 2.5,
+                background:
+                  variant.texture === "particles" ? "rgba(212,163,74,0.55)" : "rgba(255,247,234,0.4)",
+              }}
+              animate={reduceMotion ? { opacity: 0.35 } : { opacity: [0.12, 0.46, 0.12], y: [0, -14, 0] }}
+              transition={
+                reduceMotion
+                  ? undefined
+                  : { duration: 5 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: d.delay }
+              }
+            />
+          )
+        )}
 
       {/* 점묘 패턴 — 기존 SceneSection 배경 질감과의 통일감. 아주 느린 표류(패럴랙스감)를 준다 */}
       <motion.div
