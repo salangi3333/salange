@@ -1,5 +1,6 @@
 import { Lock } from "lucide-react";
 import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
+import { ReportResult } from "@/lib/reportMapper";
 
 /**
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
@@ -24,9 +25,13 @@ import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
  * 03은 기운 비교 카드, 04는 시기 카드를 추가로 붙였다. 아이보리 강조
  * 카드는 각 챕터의 "정말 중요한 문장 1개"에만 쓴다.
  *
- * 아래 본문은 전부 짧은 자리채움 텍스트다. 실제 사주 해석 원고가 아니며,
- * 디자인이 확정된 뒤 실제 원고로 교체될 예정이다. 사주 계산 로직(lib/
- * calculateSaju 등)은 이 컴포넌트가 전혀 참조하지 않는다.
+ * `report` prop — lib/reportMapper.ts의 buildReportResult(appData)가 만든
+ * 실제 개인화 데이터. 아직 app/result-v2/page.tsx가 실사용자 입력에
+ * 연결되지 않았으므로 prop 없이 렌더링하면 DEFAULT_REPORT(기존과 동일한
+ * 자리채움 문구)로 대체된다 — 이번 단계에서는 화면에 보이는 기본 내용이
+ * 바뀌지 않는다. killpoint/title/highlight/body/신살/오행 분포/10년 흐름
+ * 제목은 실제 데이터가 오면 사람마다 달라지고, 기운 비교 카드(03)와 시기
+ * 카드(04)의 구체적 값은 아직 스키마에 없어 자리채움 그대로 남아 있다.
  */
 
 // 오행 5색 — tailwind.config.js의 wood/fire/earth/metal/water 토큰과
@@ -39,65 +44,77 @@ const ELEMENT_COLORS = {
   water: "#3B6EA5",
 };
 
-type ChapterSection = {
-  id: string;
-  chapterLabel: string;
-  title: string;
-  killpoint: string;
-  body: string[];
-  highlight: string;
+// report prop이 없을 때 쓰는 기본값 — 기존에 하드코딩되어 있던 것과
+// 완전히 같은 문구/구조다. 이 값 자체를 실제 원고로 바꾸는 작업은
+// 이번 단계 범위가 아니다(추후 별도 원고 연결 예정).
+const DEFAULT_REPORT: ReportResult = {
+  summaryTitle: "",
+  dayMasterLabel: "",
+  sinsal: ["화개살", "역마살", "도화살"],
+  elementBalance: [
+    { key: "wood", label: "목(木)", value: 15 },
+    { key: "fire", label: "화(火)", value: 35 },
+    { key: "earth", label: "토(土)", value: 25 },
+    { key: "metal", label: "금(金)", value: 10 },
+    { key: "water", label: "수(水)", value: 15 },
+  ],
+  chapters: [
+    {
+      id: "chapter-01",
+      chapterLabel: "第一章",
+      title: "타고난 본질",
+      killpoint: "이 사람을 한 문장으로 요약하면",
+      body: [
+        "(임시 문구) 일간을 중심으로 타고난 기질을 정리하는 첫 번째 문단이 이 자리에 들어갑니다.",
+        "(임시 문구) 그 기질이 실제 삶에서 어떻게 드러나는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+      ],
+      highlight: "(핵심 문장 자리채움) 이 사람을 한 문장으로 요약하는 문장이 들어갑니다.",
+    },
+    {
+      id: "chapter-02",
+      chapterLabel: "第二章",
+      title: "성격의 이면",
+      killpoint: "화개살 — 혼자일 때 진짜 내가 보인다",
+      body: [
+        "(임시 문구) 겉으로 보이는 모습을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+        "(임시 문구) 그 이면의 실제 성향을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+      ],
+      highlight: "(핵심 문장 자리채움) 잘 드러나지 않는 진짜 성향을 짚는 문장이 들어갑니다.",
+    },
+    {
+      id: "chapter-03",
+      chapterLabel: "第三章",
+      title: "사람과 인연",
+      killpoint: "가까워지는 속도와 멀어지는 이유는 다르다",
+      body: [
+        "(임시 문구) 관계에서 반복되는 패턴을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+        "(임시 문구) 그 패턴이 어디서 비롯되는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+      ],
+      highlight: "(핵심 문장 자리채움) 인연이 가까워지고 멀어지는 지점을 짚는 문장이 들어갑니다.",
+    },
+    {
+      id: "chapter-04",
+      chapterLabel: "第四章",
+      title: "재물",
+      killpoint: "2026년, 돈의 흐름이 한 번 바뀝니다",
+      body: [
+        "(임시 문구) 돈이 들어오고 나가는 평소 흐름을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
+        "(임시 문구) 올해 특히 주의할 지점을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
+      ],
+      highlight: "(핵심 문장 자리채움) 재물이 새는 지점과 지키는 법을 짚는 문장이 들어갑니다.",
+    },
+  ],
+  tenYearPreview: [
+    { period: "2028 – 2030", title: "(개인별 핵심 흐름 제목)", locked: true },
+    { period: "2031 – 2033", title: "(개인별 핵심 흐름 제목)", locked: true },
+    { period: "2034 – 2037", title: "(개인별 핵심 흐름 제목)", locked: true },
+  ],
 };
-
-const CHAPTERS: ChapterSection[] = [
-  {
-    id: "chapter-01",
-    chapterLabel: "第一章",
-    title: "타고난 본질",
-    killpoint: "이 사람을 한 문장으로 요약하면",
-    body: [
-      "(임시 문구) 일간을 중심으로 타고난 기질을 정리하는 첫 번째 문단이 이 자리에 들어갑니다.",
-      "(임시 문구) 그 기질이 실제 삶에서 어떻게 드러나는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
-    ],
-    highlight: "(핵심 문장 자리채움) 이 사람을 한 문장으로 요약하는 문장이 들어갑니다.",
-  },
-  {
-    id: "chapter-02",
-    chapterLabel: "第二章",
-    title: "성격의 이면",
-    killpoint: "화개살 — 혼자일 때 진짜 내가 보인다",
-    body: [
-      "(임시 문구) 겉으로 보이는 모습을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
-      "(임시 문구) 그 이면의 실제 성향을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
-    ],
-    highlight: "(핵심 문장 자리채움) 잘 드러나지 않는 진짜 성향을 짚는 문장이 들어갑니다.",
-  },
-  {
-    id: "chapter-03",
-    chapterLabel: "第三章",
-    title: "사람과 인연",
-    killpoint: "가까워지는 속도와 멀어지는 이유는 다르다",
-    body: [
-      "(임시 문구) 관계에서 반복되는 패턴을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
-      "(임시 문구) 그 패턴이 어디서 비롯되는지 짚는 두 번째 문단이 이 자리에 들어갑니다.",
-    ],
-    highlight: "(핵심 문장 자리채움) 인연이 가까워지고 멀어지는 지점을 짚는 문장이 들어갑니다.",
-  },
-  {
-    id: "chapter-04",
-    chapterLabel: "第四章",
-    title: "재물",
-    killpoint: "2026년, 돈의 흐름이 한 번 바뀝니다",
-    body: [
-      "(임시 문구) 돈이 들어오고 나가는 평소 흐름을 짚는 첫 번째 문단이 이 자리에 들어갑니다.",
-      "(임시 문구) 올해 특히 주의할 지점을 짚는 두 번째 문단이 이 자리에 들어갑니다.",
-    ],
-    highlight: "(핵심 문장 자리채움) 재물이 새는 지점과 지키는 법을 짚는 문장이 들어갑니다.",
-  },
-];
 
 // 사주팔자 표는 기존 PillarScene의 시각적 톤(다크 배경 + 아이보리 카드 +
 // 금빛 강조, 일간 칸 하이라이트)만 참고했고 구현은 새로 작성했다. 데이터는
-// 실제 계산 결과가 아니라 레이아웃 확인용 더미 값이다.
+// 실제 계산 결과가 아니라 레이아웃 확인용 더미 값이다. (표 자체는 이번
+// 단계 범위에 포함되지 않아 report prop과 아직 연결하지 않았다.)
 const DUMMY_STEMS = [
   { label: "시주", hanja: "壬", hangul: "임", element: "水(수)", sipseong: "정재" },
   { label: "일주", hanja: "戊", hangul: "무", element: "土(토)", sipseong: "일간", isDay: true },
@@ -110,27 +127,6 @@ const DUMMY_BRANCHES = [
   { hanja: "子", hangul: "자", element: "水(수)" },
   { hanja: "寅", hangul: "인", element: "木(목)" },
   { hanja: "午", hangul: "오", element: "火(화)" },
-];
-
-const DUMMY_SINSAL = ["화개살", "역마살", "도화살"];
-
-// 오행 다이어그램용 더미 분포(0~100). 실제 계산 결과가 아니라 레이아웃
-// 확인용 값이다.
-const DUMMY_ELEMENT_BALANCE = [
-  { key: "wood" as const, label: "목(木)", value: 15 },
-  { key: "fire" as const, label: "화(火)", value: 35 },
-  { key: "earth" as const, label: "토(土)", value: 25 },
-  { key: "metal" as const, label: "금(金)", value: 10 },
-  { key: "water" as const, label: "수(水)", value: 15 },
-];
-
-// 실제 사주 데이터가 들어오면 period/title이 사람마다 달라진다 — 지금은
-// 자리채움. "다가올 3년"처럼 순전히 기능적인 라벨 대신, 실제로는 개인화된
-// 소제목이 들어갈 자리라는 걸 보여주는 형태로 만들었다.
-const TEN_YEAR_PREVIEW = [
-  { period: "2028 – 2030", title: "(개인별 핵심 흐름 제목)" },
-  { period: "2031 – 2033", title: "(개인별 핵심 흐름 제목)" },
-  { period: "2034 – 2037", title: "(개인별 핵심 흐름 제목)" },
 ];
 
 /** 챕터 공통 머리(한자 라벨 + 제목 + 킬포인트) — 정적, 애니메이션 없음 */
@@ -201,12 +197,12 @@ function BrushDivider() {
 }
 
 /** 오행 밸런스 다이어그램 — 오각형 배치의 정적 SVG. 애니메이션 없음 */
-function FiveElementDiagram() {
+function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance"] }) {
   const cx = 140;
   const cy = 130;
   const r = 92;
   // 오각형 5개 꼭짓점 좌표 (12시 방향부터 시계방향)
-  const points = DUMMY_ELEMENT_BALANCE.map((el, i) => {
+  const points = balance.map((el, i) => {
     const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
     return {
       ...el,
@@ -243,7 +239,7 @@ function FiveElementDiagram() {
         ))}
       </svg>
       <ul className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1.5">
-        {DUMMY_ELEMENT_BALANCE.map((el) => (
+        {balance.map((el) => (
           <li key={el.key} className="flex items-center gap-1.5 text-[11px] text-sceneTextSub">
             <span
               className="inline-block h-2 w-2 rounded-full"
@@ -257,7 +253,9 @@ function FiveElementDiagram() {
   );
 }
 
-export default function ResultLandingV2() {
+export default function ResultLandingV2({ report }: { report?: ReportResult } = {}) {
+  const data = report ?? DEFAULT_REPORT;
+
   return (
     <main className="bg-sceneBg text-sceneText">
       {/* ── 사주팔자 / 일간 ───────────────────────────────────────── */}
@@ -309,7 +307,7 @@ export default function ResultLandingV2() {
           </div>
 
           <div className="mt-5 flex flex-wrap justify-center gap-2">
-            {DUMMY_SINSAL.map((tag) => (
+            {data.sinsal.map((tag) => (
               <span
                 key={tag}
                 className="rounded-pill border border-sceneGold/40 bg-sceneCard px-3 py-1.5 text-xs font-medium text-sceneCardText shadow-sm"
@@ -329,39 +327,39 @@ export default function ResultLandingV2() {
       {/* 第一章 — 본문 중심, 추가 카드 없음(담백하게) */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <ChapterHead {...CHAPTERS[0]} />
+          <ChapterHead {...data.chapters[0]} />
           <div className="mt-6 space-y-4">
-            {CHAPTERS[0].body.map((p, idx) => (
+            {data.chapters[0].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}
           </div>
-          <HighlightCard text={CHAPTERS[0].highlight} />
+          <HighlightCard text={data.chapters[0].highlight} />
         </div>
       </section>
 
       {/* 第二章 — 본문 중심, 추가 카드 없음(담백하게) */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <ChapterHead {...CHAPTERS[1]} />
+          <ChapterHead {...data.chapters[1]} />
           <div className="mt-6 space-y-4">
-            {CHAPTERS[1].body.map((p, idx) => (
+            {data.chapters[1].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}
           </div>
-          <HighlightCard text={CHAPTERS[1].highlight} />
+          <HighlightCard text={data.chapters[1].highlight} />
         </div>
       </section>
 
       {/* 第三章 — 기운 비교 카드 추가 */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <ChapterHead {...CHAPTERS[2]} />
+          <ChapterHead {...data.chapters[2]} />
           <div className="mt-6 space-y-4">
-            {CHAPTERS[2].body.map((p, idx) => (
+            {data.chapters[2].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
@@ -386,16 +384,16 @@ export default function ResultLandingV2() {
             </p>
           </div>
 
-          <HighlightCard text={CHAPTERS[2].highlight} />
+          <HighlightCard text={data.chapters[2].highlight} />
         </div>
       </section>
 
       {/* 第四章 — 시기 카드 추가 */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <ChapterHead {...CHAPTERS[3]} />
+          <ChapterHead {...data.chapters[3]} />
           <div className="mt-6 space-y-4">
-            {CHAPTERS[3].body.map((p, idx) => (
+            {data.chapters[3].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
@@ -409,7 +407,7 @@ export default function ResultLandingV2() {
             <span className="text-[15px] font-medium text-sceneText/90">경쟁운</span>
           </div>
 
-          <HighlightCard text={CHAPTERS[3].highlight} />
+          <HighlightCard text={data.chapters[3].highlight} />
         </div>
       </section>
 
@@ -421,7 +419,7 @@ export default function ResultLandingV2() {
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             지금, 기운이 흐르는 방향
           </h2>
-          <FiveElementDiagram />
+          <FiveElementDiagram balance={data.elementBalance} />
         </div>
       </section>
 
@@ -474,7 +472,7 @@ export default function ResultLandingV2() {
           </p>
 
           <ul className="mt-6 flex flex-col gap-3">
-            {TEN_YEAR_PREVIEW.map((item) => (
+            {data.tenYearPreview.map((item) => (
               <li
                 key={item.period}
                 className="flex items-center justify-between rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4"
