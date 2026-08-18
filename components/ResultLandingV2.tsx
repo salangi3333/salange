@@ -155,11 +155,15 @@ function ChapterHead({
 }) {
   return (
     <>
-      <span className="font-serif-kr text-3xl font-bold text-sceneGold">{chapterLabel}</span>
+      {/* 챕터 한자 표기 — 중앙 정렬(대분류 제목). 아래 해석 제목/본문은 좌측 정렬 유지 */}
+      <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+        {chapterLabel}
+      </span>
       <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
         {title}
       </h2>
-      <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
+      {/* 킬포인트 — 챕터당 가장 중요한 한 문장. 붉은색은 이 자리에만 쓴다 */}
+      <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
         {killpoint}
       </p>
     </>
@@ -429,7 +433,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           첫 사주팔자 표가 아니라 뒤쪽 챕터에 배치되어 있던 걸 그대로 따랐다 ── */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <span className="font-serif-kr text-3xl font-bold text-sceneGold">五行</span>
+          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">五行</span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             지금, 기운이 흐르는 방향
           </h2>
@@ -516,7 +520,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       {/* ── 앞으로 10년 미리보기 ─────────────────────────────────── */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <span className="font-serif-kr text-3xl font-bold text-sceneGold">第五章</span>
+          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">第五章</span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             앞으로 10년 미리보기
           </h2>
