@@ -94,13 +94,21 @@ const DEFAULT_REPORT: ReportResult = {
   chapterOne: {
     chapterLabel: "第一章",
     title: "타고난 본질",
-    goldHook: "(자리채움) 당신은 원래 그런 사람이 아니었습니다.\n그렇게 될 수밖에 없었던 겁니다.",
-    bodyBefore: [
-      '(자리채움) 타고난 기질은 "예시 기질 문구"에 가깝습니다.',
-      "(자리채움) 첫인상에서 드러나는 실제 계산 문장이 이 자리에 들어갑니다.",
+    goldHook: "(자리채움) 타고난 개척자, 그러나 가지치기를 두려워하지 않아야 한다",
+    body1: ['(자리채움) 타고난 기질과 명리적 근거 문단이 이 자리에 들어갑니다.'],
+    body2: [
+      "(자리채움) 실제 생활에서 드러나는 방식을 짚는 문단이 이 자리에 들어갑니다.",
+      "(자리채움) 일지 보정 문장이 이 자리에 들어갑니다.",
     ],
-    redInsight: "(자리채움 · 핵심 통찰) 이 챕터에서 가장 중요한 한 문장이 이 자리에 들어갑니다.",
-    bodyAfter: ["(자리채움) 그 통찰이 실제 생활에서 드러나는 방식을 짚는 문장이 이 자리에 들어갑니다."],
+    redInsight: "(자리채움 · 핵심 통찰) 이 챕터에서 가장 중요한 맹점 한 문장이 이 자리에 들어갑니다.",
+    body3: [
+      "(자리채움) 이 특징이 장점이 되는 순간을 짚는 문단이 이 자리에 들어갑니다.",
+      "(자리채움) 이 특징이 문제가 되는 순간을 짚는 문단이 이 자리에 들어갑니다.",
+    ],
+    body4: [
+      "(자리채움) 관계에서 드러나는 인식 차이를 짚는 문단이 이 자리에 들어갑니다.",
+      "(자리채움) 실제 행동에서 드러나는 대조를 짚는 문단이 이 자리에 들어갑니다.",
+    ],
     cardText: "(자리채움) 기억해야 할 행동 조언 한 문장이 이 자리에 들어갑니다.",
   },
   chapters: [
@@ -370,27 +378,47 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             {data.chapterOne.title}
           </h2>
 
-          {/* GOLD 훅 — 챕터 진입 직후 첫 핵심 문장 */}
+          {/* GOLD 훅 — 챕터 진입 직후 첫 핵심 문장(1개) */}
           <p className="mt-4 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneGold sm:text-[19px]">
             {data.chapterOne.goldHook}
           </p>
 
+          {/* 본문1 — 타고난 기질과 명리적 근거 */}
           <div className="mt-6 space-y-4">
-            {data.chapterOne.bodyBefore.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+            {data.chapterOne.body1.map((p, idx) => (
+              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          {/* 본문2 — 실제 생활에서 드러나는 방식 */}
+          <div className="mt-4 space-y-4">
+            {data.chapterOne.body2.map((p, idx) => (
+              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}
           </div>
 
           {/* RED — 이 챕터 전체에서 유일한 핵심 통찰 문장 */}
-          <p className="mt-6 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+          <p className="mt-6 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
             {data.chapterOne.redInsight}
           </p>
 
+          {/* 본문3 — 장점이 되는 순간과 문제가 되는 순간 */}
           <div className="mt-6 space-y-4">
-            {data.chapterOne.bodyAfter.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+            {data.chapterOne.body3.map((p, idx) => (
+              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          {/* 본문4 — 관계/일/선택에서 실제로 드러나는 방식 */}
+          <div className="mt-4 space-y-4">
+            {data.chapterOne.body4.map((p, idx) => (
+              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}

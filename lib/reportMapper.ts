@@ -1,9 +1,10 @@
 import { PillarCell, SajuUser } from "@/types";
 import { StoryScene } from "@/types/story";
-import { Element, ELEMENT_LABEL } from "./hanjaTables";
+import { Element, ELEMENT_LABEL, GAN_ELEMENT } from "./hanjaTables";
 import { AppData } from "./sajuContent";
-import { buildFullStoryScenes } from "./storyScenes";
+import { buildFullStoryScenes, CH1_STRENGTH, CH1_TRUTH_SCENE, CH1_ALONE_SCENE } from "./storyScenes";
 import { YearFortuneItem, buildElementAnalysis, buildTenYearFortune } from "./aiLifeReport";
+import { GAN_PROFILE, ZHI_PROFILE } from "./ganZhiProfiles";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -37,24 +38,35 @@ export interface ReportChapter {
 }
 
 /**
- * 01 "타고난 본질" 챕터 전용 — 최종 샘플 품질 구조(골드 훅 → 상세 해석 →
- * 레드 핵심 통찰 1개 → 상세 해석 → 아이보리 카드). 02~04는 아직 이 구조로
+ * 01 "타고난 본질" 챕터 전용 — 최종 샘플 품질 구조. 02~04는 아직 이 구조로
  * 옮기지 않았으므로 기존 ReportChapter/buildChapters()를 그대로 쓴다 —
  * 이 타입은 오직 01 챕터 렌더링에만 쓰인다.
+ *
+ * 전부 이미 존재하는 실제 데이터에서만 가져온다(새 문장 창작 없음):
+ * GAN_PROFILE[dayGan]/ZHI_PROFILE[dayZhi](일간·일지별로 이미 써 있는
+ * 잠재력/근거 문단, 10간×12지 전량 보유) + storyScenes.ts의 CH1_* 오행별
+ * 표(사실/장점/문제/실제사례/행동조언). 사람마다 dayGan·dayZhi·dayElement가
+ * 다르므로 아래 필드 전부가 사람마다 달라진다.
  */
 export interface ChapterOneDetail {
   chapterLabel: string;
   title: string;
-  /** ch1-insight.headline 그대로(이름 개인화, 2줄) — GOLD 훅 */
+  /** GAN_PROFILE[dayGan].resultQuoteFragment 그대로 — GOLD 훅, 이름 없이 1문장 */
   goldHook: string;
-  /** RED 문장 이전 본문 — ch1-reveal.headline(gan.coreTrait)과
-   * ch1-reveal.narrative[0]로 구성. 새 문장을 짓지 않고 실제 값만 담는다. */
-  bodyBefore: string[];
-  /** ch1-insight.fact 그대로 — 챕터 전체에서 유일한 RED 문장 */
+  /** 타고난 기질 + 명리적 근거 — gan.potential.paragraphs[0] 그대로
+   * (이미 "무토(戊土) 일간은..." 식으로 명리 용어가 문장에 들어있다) */
+  body1: string[];
+  /** 실제 생활에서 드러나는 방식 — gan.potential.paragraphs[2](이미 "실제로
+   * ~"로 시작하는 문단)과 zhi.potentialNote(일지 보정) */
+  body2: string[];
+  /** ch1-insight.fact 그대로 — 챕터 전체에서 유일한 RED 문장(가장 중요한 맹점) */
   redInsight: string;
-  /** RED 문장 이후 본문 — ch1-insight.realLife 그대로 */
-  bodyAfter: string[];
-  /** ch1-insight.action 그대로 — 아이보리 카드 문장 */
+  /** 장점이 되는 순간(CH1_STRENGTH) + 문제가 되는 순간(CH1_ALONE_SCENE), 오행별 */
+  body3: string[];
+  /** 관계에서 드러나는 인식 차이(CH1_TRUTH_SCENE) + 실제 행동 대조
+   * (ch1-insight.realLife=CH1_INNER_EXAMPLE), 오행별 */
+  body4: string[];
+  /** ch1-insight.action 그대로 — 아이보리 카드(행동 조언) */
   cardText: string;
 }
 
@@ -196,26 +208,31 @@ function buildChapters(scenes: StoryScene[]): ReportChapter[] {
   });
 }
 
-function buildChapterOneDetail(scenes: StoryScene[]): ChapterOneDetail {
+function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterOneDetail {
   const cover = scenes.find((s) => s.id === "ch1-cover");
-  const reveal = scenes.find((s) => s.id === "ch1-reveal");
   const insight = scenes.find((s) => s.id === "ch1-insight");
 
-  // gan.coreTrait — 일간별 고정 문구가 아니라 reveal scene의 headline에
-  // 이미 담겨 있는 실제 계산 결과를 최소한의 연결 문장으로만 감쌌다.
-  const coreTrait = reveal?.headline;
-  const firstImpression = reveal?.narrative[0];
+  const dayGan = appData.user.pillars.day.hanja;
+  const dayZhi = appData.user.pillars.branches.day.hanja;
+  const dayElement = GAN_ELEMENT[dayGan];
+  const gan = GAN_PROFILE[dayGan];
+  const zhi = ZHI_PROFILE[dayZhi];
 
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
     title: cover?.chapterTitle ?? "",
-    goldHook: insight?.headline ?? "",
-    bodyBefore: [
-      coreTrait ? `타고난 기질은 "${coreTrait}"에 가깝습니다.` : "",
-      firstImpression ?? "",
-    ].filter((v): v is string => Boolean(v)),
+    goldHook: gan.resultQuoteFragment,
+    body1: [gan.potential.paragraphs[0]?.text].filter((v): v is string => Boolean(v)),
+    body2: [gan.potential.paragraphs[2]?.text, zhi.potentialNote].filter(
+      (v): v is string => Boolean(v)
+    ),
     redInsight: insight?.fact ?? "",
-    bodyAfter: [insight?.realLife].filter((v): v is string => Boolean(v)),
+    body3: [CH1_STRENGTH[dayElement], CH1_ALONE_SCENE[dayElement]].filter(
+      (v): v is string => Boolean(v)
+    ),
+    body4: [CH1_TRUTH_SCENE[dayElement], insight?.realLife].filter(
+      (v): v is string => Boolean(v)
+    ),
     cardText: insight?.action ?? "",
   };
 }
@@ -242,7 +259,7 @@ export function buildReportResult(appData: AppData): ReportResult {
     elementStrongest: elementAnalysis.strongest,
     elementWeakest: elementAnalysis.weakest,
     chapters: buildChapters(scenes),
-    chapterOne: buildChapterOneDetail(scenes),
+    chapterOne: buildChapterOneDetail(appData, scenes),
     tenYearPreview: groupTenYear(tenYear),
   };
 }
