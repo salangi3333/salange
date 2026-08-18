@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useState } from "react";
+import OnboardingIntroV2 from "./OnboardingIntroV2";
 import IntakeForm from "./IntakeForm";
 import AnalyzingScreenV2 from "./AnalyzingScreenV2";
 import ResultLandingV2 from "./ResultLandingV2";
@@ -9,18 +10,19 @@ import { buildAppData } from "@/lib/sajuContent";
 import { buildReportResult, ReportResult } from "@/lib/reportMapper";
 
 /**
- * ResultLandingV2용 입력 → 전환 → 결과 흐름. 기존 app/page.tsx의 gate →
- * form → analyzing → result SPA 패턴과 같은 방식(클라이언트 state로 단계
- * 전환)을 쓰지만, 이 파일은 app/page.tsx를 전혀 건드리지 않는 완전히 독립된
- * 컴포넌트다. IntakeForm은 기존 컴포넌트를 수정 없이 그대로 재사용하고,
- * 계산도 기존 calculateSaju → buildAppData 파이프라인 그대로 재사용한다 —
- * 이 파일은 그 결과를 buildReportResult()로 한 번 더 매핑해 ResultLandingV2에
- * 넘기는 역할만 한다. 새 명리 계산 없음.
+ * ResultLandingV2용 오프닝 → 입력 → 전환 → 결과 흐름. 기존 app/page.tsx의
+ * gate → form → analyzing → result SPA 패턴과 같은 방식(클라이언트 state로
+ * 단계 전환)을 쓰지만, 이 파일은 app/page.tsx를 전혀 건드리지 않는 완전히
+ * 독립된 컴포넌트다. OnboardingIntroV2/IntakeForm/AnalyzingScreenV2는 각각
+ * 기존 화면을 참고해 새로 작성했거나(오프닝/분석) 수정 없이 그대로
+ * 재사용했고(입력폼), 계산도 기존 calculateSaju → buildAppData 파이프라인
+ * 그대로 재사용한다 — 이 파일은 그 결과를 buildReportResult()로 한 번 더
+ * 매핑해 ResultLandingV2에 넘기는 역할만 한다. 새 명리 계산 없음.
  */
-type Stage = "form" | "analyzing" | "result";
+type Stage = "gate" | "form" | "analyzing" | "result";
 
 export default function ResultV2Flow() {
-  const [stage, setStage] = useState<Stage>("form");
+  const [stage, setStage] = useState<Stage>("gate");
   const [pendingFormData, setPendingFormData] = useState<IntakeFormData | null>(null);
   const [report, setReport] = useState<ReportResult | null>(null);
 
@@ -44,6 +46,10 @@ export default function ResultV2Flow() {
     setReport(buildReportResult(appData));
     setStage("result");
   };
+
+  if (stage === "gate") {
+    return <OnboardingIntroV2 onEnter={() => setStage("form")} />;
+  }
 
   if (stage === "analyzing") {
     return <AnalyzingScreenV2 name={pendingFormData?.name ?? ""} onDone={handleAnalyzingDone} />;

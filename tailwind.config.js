@@ -86,11 +86,13 @@ module.exports = {
           "0%": { opacity: "0", transform: "scale(0.92)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
-        // 점 하나가 "밝아지는" 상태로 고정되는 1회성 전환. 인덱스별로 delay만
-        // 다르게 줘서 점 3개가 순서대로 밝아지는 것처럼 보이게 한다(반복 없음).
-        resultV2DotOn: {
-          "0%": { opacity: "0.25", transform: "scale(0.85)" },
-          "100%": { opacity: "1", transform: "scale(1)" },
+        // 기존 AnalyzingScreen.tsx의 오행 점 펄스(opacity/scale 물결) 모양을
+        // 그대로 참고하되, repeat:Infinity 대신 유한 반복(2회)으로 바꿨다 —
+        // 화면이 끝나면 언마운트되어 사라지지만, 코드 자체에도 "infinite"를
+        // 남기지 않기 위함.
+        resultV2DotPulse: {
+          "0%, 100%": { opacity: "0.3", transform: "scale(0.85)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
         },
       },
       animation: {
@@ -98,7 +100,9 @@ module.exports = {
         pulseDot: "pulseDot 1.6s ease-in-out infinite",
         resultV2FadeIn: "resultV2FadeIn 0.4s ease-out",
         resultV2ImageIn: "resultV2ImageIn 0.5s ease-out forwards",
-        resultV2DotOn: "resultV2DotOn 0.35s ease-out forwards",
+        // 유한 반복 2회 — "infinite" 아님. 다섯 점이 각자 다른 delay로 겹쳐
+        // 돌면서 기존 화면의 "여러 색이 순서대로 밝아지는" 느낌을 낸다.
+        resultV2DotPulse: "resultV2DotPulse 0.9s ease-in-out 2",
       },
     },
   },
