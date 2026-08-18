@@ -1,4 +1,5 @@
 import ResultLandingV2 from "@/components/ResultLandingV2";
+import ResultV2Flow from "@/components/ResultV2Flow";
 import { IntakeFormData } from "@/lib/sajuEngine";
 import { buildAppData } from "@/lib/sajuContent";
 import { buildReportResult } from "@/lib/reportMapper";
@@ -7,12 +8,13 @@ import { buildReportResult } from "@/lib/reportMapper";
  * 기존 gate → form → analyzing → result 흐름(app/page.tsx)과 완전히
  * 분리된 새 경로 — 이 파일은 그 흐름을 전혀 건드리지 않는다.
  *
- * 실제 개인화 데이터로 미리보기하려면 쿼리스트링으로 생년월일시를 넘긴다.
+ * 쿼리스트링으로 생년월일시를 넘기면(빠른 확인/테스트용) 그 값으로 바로
+ * ResultLandingV2를 렌더링한다.
  * 예: /result-v2?year=1990&month=3&day=14&hour=8&minute=30&gender=male
- * 쿼리가 없으면(=오늘 기존 사용자가 보는 상태) report를 넘기지 않고,
- * ResultLandingV2는 지금까지와 동일한 자리채움 기본값(DEFAULT_REPORT)을
- * 그대로 보여준다 — 이 페이지가 아직 실제 gate/form 흐름에 연결된 건
- * 아니라는 뜻이다(다음 단계).
+ *
+ * 쿼리가 없으면(=실제 사용자가 이 경로로 처음 들어온 상태) <ResultV2Flow/>가
+ * 이름/성별/생년월일/출생시간 입력 → 선녀 전환 화면 → 결과 진입까지의
+ * 실제 흐름을 처리한다(components/ResultV2Flow.tsx 참고).
  *
  * calculateSaju/buildAppData/buildReportResult 외 새 계산 로직은 없다.
  */
@@ -55,7 +57,9 @@ export default function ResultV2Page({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const intake = parseIntakeFromQuery(searchParams);
-  const report = intake ? buildReportResult(buildAppData(intake)) : undefined;
+  if (intake) {
+    return <ResultLandingV2 report={buildReportResult(buildAppData(intake))} />;
+  }
 
-  return <ResultLandingV2 report={report} />;
+  return <ResultV2Flow />;
 }

@@ -74,10 +74,17 @@ module.exports = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.4" },
         },
+        // ResultLandingV2 전환 화면(AnalyzingScreenV2) 전용 — 1회만 재생되는
+        // 짧은 opacity fade. repeat 없음, "허용된 아주 짧은 fade 1회"에 해당.
+        resultV2FadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
       animation: {
         scrollUp: "scrollUp 20s linear infinite",
         pulseDot: "pulseDot 1.6s ease-in-out infinite",
+        resultV2FadeIn: "resultV2FadeIn 0.4s ease-out",
       },
     },
   },
