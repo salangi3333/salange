@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
 import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
 import { ReportResult } from "@/lib/reportMapper";
+import { Element } from "@/lib/hanjaTables";
 
 /**
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
@@ -53,6 +54,14 @@ const ELEMENT_COLORS = {
 
 // 오행 각 기운의 뜻 — 사람마다 달라지는 데이터가 아니라 고정된 사전적 의미라
 // ReportResult가 아니라 여기 정적으로 둔다(기존 화면의 범례와 동일한 문구).
+// 사주팔자 표 칸을 오행별로 옅게 물들이기 위한 헬퍼 — ELEMENT_COLORS를
+// 그대로 쓰되 알파(약 15%)만 붙인다. 시간 미상 등 elementKey가 없는 칸은
+// 무채색(색 없음)으로 둔다 — 값을 지어내지 않는다.
+function elementTint(key?: Element): string | undefined {
+  if (!key) return undefined;
+  return `${ELEMENT_COLORS[key]}26`;
+}
+
 const ELEMENT_MEANING: Record<ReportResult["elementStrongest"], string> = {
   wood: "성장 · 배움 · 새로운 시작",
   fire: "열정 · 추진력 · 표현",
@@ -69,16 +78,24 @@ const DEFAULT_REPORT: ReportResult = {
   dayMasterLabel: "",
   pillars: {
     stems: [
-      { label: "시주", hanja: "壬", hangul: "임", element: "水(수)", sipseong: "정재" },
-      { label: "일주", hanja: "戊", hangul: "무", element: "土(토)", sipseong: "일간", isDay: true },
-      { label: "월주", hanja: "甲", hangul: "갑", element: "木(목)", sipseong: "편관" },
-      { label: "년주", hanja: "丙", hangul: "병", element: "火(화)", sipseong: "편인" },
+      { label: "시주", hanja: "壬", hangul: "임", element: "水(수)", elementKey: "water", sipseong: "정재" },
+      {
+        label: "일주",
+        hanja: "戊",
+        hangul: "무",
+        element: "土(토)",
+        elementKey: "earth",
+        sipseong: "일간",
+        isDay: true,
+      },
+      { label: "월주", hanja: "甲", hangul: "갑", element: "木(목)", elementKey: "wood", sipseong: "편관" },
+      { label: "년주", hanja: "丙", hangul: "병", element: "火(화)", elementKey: "fire", sipseong: "편인" },
     ],
     branches: [
-      { hanja: "戌", hangul: "술", element: "土(토)" },
-      { hanja: "子", hangul: "자", element: "水(수)" },
-      { hanja: "寅", hangul: "인", element: "木(목)" },
-      { hanja: "午", hangul: "오", element: "火(화)" },
+      { hanja: "戌", hangul: "술", element: "土(토)", elementKey: "earth" },
+      { hanja: "子", hangul: "자", element: "水(수)", elementKey: "water" },
+      { hanja: "寅", hangul: "인", element: "木(목)", elementKey: "wood" },
+      { hanja: "午", hangul: "오", element: "火(화)", elementKey: "fire" },
     ],
   },
   sinsal: ["화개살", "역마살", "도화살"],
@@ -327,8 +344,9 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               <div
                 key={s.label}
                 className={`flex flex-col items-center gap-1 border-r border-sceneGold/15 px-1 py-4 last:border-r-0 ${
-                  s.isDay ? "border-b-2 border-sceneGold bg-sceneGold/10" : ""
+                  s.isDay ? "border-b-2 border-sceneGold" : ""
                 }`}
+                style={{ backgroundColor: elementTint(s.elementKey) }}
               >
                 {s.isDay && <span className="text-[10px] font-bold text-sceneGold">★ 일간</span>}
                 <span className="text-[11px] text-sceneCardText/60">{s.label}</span>
@@ -342,6 +360,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               <div
                 key={`branch-${i}`}
                 className="flex flex-col items-center gap-1 border-r border-t border-sceneGold/15 px-1 py-4 last:border-r-0"
+                style={{ backgroundColor: elementTint(b.elementKey) }}
               >
                 <span className="font-serif-kr text-xl font-bold text-sceneCardText">{b.hanja}</span>
                 <span className="text-[11px] text-sceneCardText/60">{b.hangul}</span>

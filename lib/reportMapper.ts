@@ -85,6 +85,9 @@ export interface ReportPillarCell {
   hanja: string;
   hangul: string;
   element: string; // 이미 "水(수)" 형태로 변환된 표시용 문자열
+  /** 오행 원본 키 — 칸 배경색을 오행별로 칠할 때 쓴다. 시간 미상 등 셀이
+   * 없으면 undefined(회색/무채색으로 표시, 값을 지어내지 않음). */
+  elementKey?: Element;
   sipseong?: string;
   isDay?: boolean;
 }
@@ -159,7 +162,13 @@ const STEM_KEYS: { key: "hour" | "day" | "month" | "year"; label: string }[] = [
 
 function cellToDisplay(cell: PillarCell | null): Omit<ReportPillarCell, "label" | "isDay"> {
   if (!cell) return { hanja: "?", hangul: "미상", element: "", sipseong: "" };
-  return { hanja: cell.hanja, hangul: cell.hangul, element: ELEMENT_LABEL[cell.element], sipseong: cell.sipseong };
+  return {
+    hanja: cell.hanja,
+    hangul: cell.hangul,
+    element: ELEMENT_LABEL[cell.element],
+    elementKey: cell.element,
+    sipseong: cell.sipseong,
+  };
 }
 
 function buildPillars(user: SajuUser): ReportPillars {
