@@ -47,11 +47,11 @@ import { Element } from "@/lib/hanjaTables";
 // tailwind.config.js의 wood/fire/earth/metal/water 토큰도 이 값과 맞춰뒀다.
 // SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다.
 const ELEMENT_COLORS = {
-  wood: "#2F5D8A",
-  fire: "#C0392B",
-  earth: "#B8860B",
-  metal: "#7A7A76",
-  water: "#232019",
+  wood: "#173F70",
+  fire: "#9C1F13",
+  earth: "#8A5D00",
+  metal: "#4C4A45",
+  water: "#141210",
 };
 
 // 오행 각 기운의 뜻 — 사람마다 달라지는 데이터가 아니라 고정된 사전적 의미라
