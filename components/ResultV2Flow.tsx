@@ -19,10 +19,10 @@ import { buildReportResult, ReportResult } from "@/lib/reportMapper";
  * 그대로 재사용한다 — 이 파일은 그 결과를 buildReportResult()로 한 번 더
  * 매핑해 ResultLandingV2에 넘기는 역할만 한다. 새 명리 계산 없음.
  */
-type Stage = "gate" | "form" | "analyzing" | "result";
+type Stage = "intro" | "form" | "analyzing" | "result";
 
 export default function ResultV2Flow() {
-  const [stage, setStage] = useState<Stage>("gate");
+  const [stage, setStage] = useState<Stage>("intro");
   const [pendingFormData, setPendingFormData] = useState<IntakeFormData | null>(null);
   const [report, setReport] = useState<ReportResult | null>(null);
 
@@ -47,7 +47,7 @@ export default function ResultV2Flow() {
     setStage("result");
   };
 
-  if (stage === "gate") {
+  if (stage === "intro") {
     return <OnboardingIntroV2 onEnter={() => setStage("form")} />;
   }
 
