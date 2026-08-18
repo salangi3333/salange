@@ -74,17 +74,31 @@ module.exports = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.4" },
         },
-        // ResultLandingV2 전환 화면(AnalyzingScreenV2) 전용 — 1회만 재생되는
-        // 짧은 opacity fade. repeat 없음, "허용된 아주 짧은 fade 1회"에 해당.
+        // ResultLandingV2 전환 화면(AnalyzingScreenV2) 전용 — 전부 1회만
+        // 재생되고 끝나는 애니메이션이다(repeat 없음). 화면 자체가 언마운트
+        // 되면(결과로 전환되면) 재생 중이었어도 즉시 사라진다 — ResultLandingV2
+        // 안에서는 이 keyframe들이 전혀 쓰이지 않는다.
         resultV2FadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
+        },
+        resultV2ImageIn: {
+          "0%": { opacity: "0", transform: "scale(0.92)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        // 점 하나가 "밝아지는" 상태로 고정되는 1회성 전환. 인덱스별로 delay만
+        // 다르게 줘서 점 3개가 순서대로 밝아지는 것처럼 보이게 한다(반복 없음).
+        resultV2DotOn: {
+          "0%": { opacity: "0.25", transform: "scale(0.85)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
       animation: {
         scrollUp: "scrollUp 20s linear infinite",
         pulseDot: "pulseDot 1.6s ease-in-out infinite",
         resultV2FadeIn: "resultV2FadeIn 0.4s ease-out",
+        resultV2ImageIn: "resultV2ImageIn 0.5s ease-out forwards",
+        resultV2DotOn: "resultV2DotOn 0.35s ease-out forwards",
       },
     },
   },

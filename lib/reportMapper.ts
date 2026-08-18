@@ -71,6 +71,9 @@ export interface ReportResult {
   sinsal: string[];
   /** buildElementAnalysis(chars)의 오행 개수를 백분율로 환산 */
   elementBalance: { key: Element; label: string; value: number }[];
+  /** buildElementAnalysis(chars)의 strongest/weakest 그대로 — 가장 강한/약한 오행 */
+  elementStrongest: Element;
+  elementWeakest: Element;
   /** ch1~ch4의 cover/reveal/insight scene을 조합해 만든 4개 챕터 */
   chapters: ReportChapter[];
   /** buildTenYearFortune()의 10개 연도를 3구간으로 묶은 것 */
@@ -81,8 +84,9 @@ function firstLine(text: string): string {
   return text.split("\n")[0]?.trim() ?? text;
 }
 
-function buildElementBalance(chars: string[]): ReportResult["elementBalance"] {
-  const { counts } = buildElementAnalysis(chars);
+function buildElementBalance(
+  counts: Record<Element, number>
+): ReportResult["elementBalance"] {
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0) || 1;
   return (Object.keys(counts) as Element[]).map((key) => ({
     key,
@@ -178,13 +182,16 @@ export function buildReportResult(appData: AppData): ReportResult {
 
   const scenes = buildFullStoryScenes(appData);
   const tenYear = buildTenYearFortune(dayGan, birthYear, seed);
+  const elementAnalysis = buildElementAnalysis(chars);
 
   return {
     summaryTitle: user.typeLabel,
     dayMasterLabel: user.dayPillar,
     pillars: buildPillars(user),
     sinsal: user.sinsal,
-    elementBalance: buildElementBalance(chars),
+    elementBalance: buildElementBalance(elementAnalysis.counts),
+    elementStrongest: elementAnalysis.strongest,
+    elementWeakest: elementAnalysis.weakest,
     chapters: buildChapters(scenes),
     tenYearPreview: groupTenYear(tenYear),
   };

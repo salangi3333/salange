@@ -45,6 +45,16 @@ const ELEMENT_COLORS = {
   water: "#3B6EA5",
 };
 
+// 오행 각 기운의 뜻 — 사람마다 달라지는 데이터가 아니라 고정된 사전적 의미라
+// ReportResult가 아니라 여기 정적으로 둔다(기존 화면의 범례와 동일한 문구).
+const ELEMENT_MEANING: Record<ReportResult["elementStrongest"], string> = {
+  wood: "성장 · 배움 · 새로운 시작",
+  fire: "열정 · 추진력 · 표현",
+  earth: "안정 · 현실 · 책임",
+  metal: "결단 · 원칙 · 정리",
+  water: "지혜 · 직관 · 유연함",
+};
+
 // report prop이 없을 때 쓰는 기본값 — 기존에 하드코딩되어 있던 것과
 // 완전히 같은 문구/구조다. 이 값 자체를 실제 원고로 바꾸는 작업은
 // 이번 단계 범위가 아니다(추후 별도 원고 연결 예정).
@@ -73,6 +83,8 @@ const DEFAULT_REPORT: ReportResult = {
     { key: "metal", label: "금(金)", value: 10 },
     { key: "water", label: "수(水)", value: 15 },
   ],
+  elementStrongest: "fire",
+  elementWeakest: "metal",
   chapters: [
     {
       id: "chapter-01",
@@ -422,6 +434,45 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             지금, 기운이 흐르는 방향
           </h2>
           <FiveElementDiagram balance={data.elementBalance} />
+
+          {/* 오행 범례 — 각 기운의 뜻(고정 사전적 정의). 정적, 애니메이션 없음 */}
+          <div className="mt-4 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-5">
+            <ul className="flex flex-col gap-3">
+              {data.elementBalance.map((el) => (
+                <li key={el.key} className="flex items-center gap-3 text-[14px]">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: ELEMENT_COLORS[el.key] }}
+                  />
+                  <span className="w-14 shrink-0 font-serif-kr font-bold text-sceneText">{el.label}</span>
+                  <span className="text-sceneTextSub">{ELEMENT_MEANING[el.key]}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* 강한/약한 오행 요약 — 실제 계산값(elementStrongest/Weakest) 기반 */}
+          <p className="mt-6 text-center text-[15px] leading-[1.9] text-sceneBody">
+            현재는{" "}
+            <strong className="font-bold text-sceneGold">
+              {ELEMENT_MEANING[data.elementStrongest]}
+            </strong>
+            을 뜻하는{" "}
+            <strong className="font-bold text-sceneGold">
+              {data.elementBalance.find((el) => el.key === data.elementStrongest)?.label}
+            </strong>
+            의 기운이 강하게 나타납니다.
+            <br />
+            반면{" "}
+            <strong className="font-bold text-sceneGold">
+              {ELEMENT_MEANING[data.elementWeakest]}
+            </strong>
+            을 뜻하는{" "}
+            <strong className="font-bold text-sceneGold">
+              {data.elementBalance.find((el) => el.key === data.elementWeakest)?.label}
+            </strong>
+            의 기운은 보완이 필요합니다.
+          </p>
         </div>
       </section>
 
