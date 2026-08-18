@@ -523,7 +523,8 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 선녀 이미지 패널 — 정적 이미지, 반복 사용하지 않고 잠금 직전 1회만 ── */}
+      {/* ── 선녀 이미지 패널 — 정적 이미지, 반복 사용하지 않고 잠금 직전 1회만.
+          이미지 위에 문구를 겹치지 않고, 이미지 아래에 별도 문단으로 배치한다 ── */}
       <section className="relative overflow-hidden border-b border-white/5 bg-sceneBg">
         <div
           className="relative aspect-[96/100] w-full bg-cover sm:aspect-auto sm:h-[70vh]"
@@ -531,20 +532,13 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             backgroundImage: `url(${RESULT_GUIDE_IMAGE})`,
             backgroundPosition: "56% 20%",
           }}
+        />
+        <p
+          className="px-6 py-10 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
+          style={{ wordBreak: "keep-all" }}
         >
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(180deg, rgba(16,19,29,0) 45%, rgba(16,19,29,0.92) 100%)",
-            }}
-          />
-          <p
-            className="absolute inset-x-0 bottom-8 px-6 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
-            style={{ wordBreak: "keep-all" }}
-          >
-            지나온 삶은 바꿀 수 없지만, 이제부터는 달라질 수 있습니다.
-          </p>
-        </div>
+          지나온 삶은 바꿀 수 없지만, 이제부터는 달라질 수 있습니다.
+        </p>
       </section>
 
       {/* ── 잠금 경계 ────────────────────────────────────────────── */}
