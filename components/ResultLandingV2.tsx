@@ -42,24 +42,26 @@ import { Element } from "@/lib/hanjaTables";
  * 없어 자리채움 그대로 남아 있다.
  */
 
-// 오행 5색 — tailwind.config.js의 wood/fire/earth/metal/water 토큰과
-// 동일한 값. SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다.
+// 오행 5색 — 전통 오방색(五方色) 기준: 목=청(파랑), 화=적(빨강), 토=황(노랑),
+// 금=백(카드가 밝은 아이보리라 흰색 대신 시인성 있는 회색으로 대체), 수=흑(검정).
+// tailwind.config.js의 wood/fire/earth/metal/water 토큰도 이 값과 맞춰뒀다.
+// SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다.
 const ELEMENT_COLORS = {
-  wood: "#4C7A4A",
+  wood: "#2F5D8A",
   fire: "#C0392B",
-  earth: "#8A6D3B",
-  metal: "#8C8C88",
-  water: "#3B6EA5",
+  earth: "#B8860B",
+  metal: "#7A7A76",
+  water: "#232019",
 };
 
 // 오행 각 기운의 뜻 — 사람마다 달라지는 데이터가 아니라 고정된 사전적 의미라
 // ReportResult가 아니라 여기 정적으로 둔다(기존 화면의 범례와 동일한 문구).
-// 사주팔자 표 칸을 오행별로 옅게 물들이기 위한 헬퍼 — ELEMENT_COLORS를
-// 그대로 쓰되 알파(약 15%)만 붙인다. 시간 미상 등 elementKey가 없는 칸은
-// 무채색(색 없음)으로 둔다 — 값을 지어내지 않는다.
-function elementTint(key?: Element): string | undefined {
+// 사주팔자 표의 한자 글자색을 오행별로 물들이는 헬퍼 — 실제 만세력 표기
+// 관례대로 칸 배경이 아니라 글자 자체를 오방색으로 칠한다. 시간 미상 등
+// elementKey가 없는 칸은 무채색(기본 글자색)으로 둔다 — 값을 지어내지 않는다.
+function elementTextColor(key?: Element): string | undefined {
   if (!key) return undefined;
-  return `${ELEMENT_COLORS[key]}26`;
+  return ELEMENT_COLORS[key];
 }
 
 const ELEMENT_MEANING: Record<ReportResult["elementStrongest"], string> = {
@@ -339,34 +341,64 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             타고난 여덟 글자
           </h1>
 
-          <div className="mt-8 grid grid-cols-4 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
-            {data.pillars.stems.map((s) => (
-              <div
-                key={s.label}
-                className={`flex flex-col items-center gap-1 border-r border-sceneGold/15 px-1 py-4 last:border-r-0 ${
-                  s.isDay ? "border-b-2 border-sceneGold" : ""
-                }`}
-                style={{ backgroundColor: elementTint(s.elementKey) }}
-              >
-                {s.isDay && <span className="text-[10px] font-bold text-sceneGold">★ 일간</span>}
-                <span className="text-[11px] text-sceneCardText/60">{s.label}</span>
-                <span className="font-serif-kr text-[26px] font-bold text-sceneCardText">{s.hanja}</span>
-                <span className="text-[11px] text-sceneCardText/60">{s.hangul}</span>
-                <span className="text-[10px] font-medium text-sceneGold/90">{s.element}</span>
-                <span className="text-[10px] text-sceneCardText/60">{s.sipseong}</span>
+          {/* 만세력 표 형식 — 좌측에 천간/지지 행 라벨, 상단에 시주/일주/월주/년주
+              열 헤더를 두고, 칸 배경이 아니라 한자 글자색을 오행별로 칠한다. */}
+          <div className="mt-8 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard shadow-[0_8px_24px_rgba(0,0,0,0.35)]">
+            <div className="grid grid-cols-[2.75rem_repeat(4,1fr)]">
+              <div className="border-b border-r border-sceneGold/15" />
+              {data.pillars.stems.map((s) => (
+                <div
+                  key={`head-${s.label}`}
+                  className={`border-b border-r border-sceneGold/15 py-2 text-center text-[11px] last:border-r-0 ${
+                    s.isDay ? "font-bold text-sceneGold" : "text-sceneCardText/60"
+                  }`}
+                >
+                  {s.label}
+                </div>
+              ))}
+
+              <div className="flex items-center justify-center border-r border-sceneGold/15 text-[11px] text-sceneCardText/50">
+                천간
               </div>
-            ))}
-            {data.pillars.branches.map((b, i) => (
-              <div
-                key={`branch-${i}`}
-                className="flex flex-col items-center gap-1 border-r border-t border-sceneGold/15 px-1 py-4 last:border-r-0"
-                style={{ backgroundColor: elementTint(b.elementKey) }}
-              >
-                <span className="font-serif-kr text-xl font-bold text-sceneCardText">{b.hanja}</span>
-                <span className="text-[11px] text-sceneCardText/60">{b.hangul}</span>
-                <span className="text-[10px] font-medium text-sceneGold/90">{b.element}</span>
+              {data.pillars.stems.map((s) => (
+                <div
+                  key={s.label}
+                  className={`flex flex-col items-center gap-1 border-r border-sceneGold/15 px-1 py-4 last:border-r-0 ${
+                    s.isDay ? "border-b-2 border-sceneGold" : ""
+                  }`}
+                >
+                  {s.isDay && <span className="text-[10px] font-bold text-sceneGold">★ 일간</span>}
+                  <span
+                    className="font-serif-kr text-[26px] font-bold"
+                    style={{ color: elementTextColor(s.elementKey) }}
+                  >
+                    {s.hanja}
+                  </span>
+                  <span className="text-[11px] text-sceneCardText/60">{s.hangul}</span>
+                  <span className="text-[10px] font-medium text-sceneGold/90">{s.element}</span>
+                  <span className="text-[10px] text-sceneCardText/60">{s.sipseong}</span>
+                </div>
+              ))}
+
+              <div className="flex items-center justify-center border-r border-t border-sceneGold/15 text-[11px] text-sceneCardText/50">
+                지지
               </div>
-            ))}
+              {data.pillars.branches.map((b, i) => (
+                <div
+                  key={`branch-${i}`}
+                  className="flex flex-col items-center gap-1 border-r border-t border-sceneGold/15 px-1 py-4 last:border-r-0"
+                >
+                  <span
+                    className="font-serif-kr text-xl font-bold"
+                    style={{ color: elementTextColor(b.elementKey) }}
+                  >
+                    {b.hanja}
+                  </span>
+                  <span className="text-[11px] text-sceneCardText/60">{b.hangul}</span>
+                  <span className="text-[10px] font-medium text-sceneGold/90">{b.element}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="mt-5 flex flex-wrap justify-center gap-2">
