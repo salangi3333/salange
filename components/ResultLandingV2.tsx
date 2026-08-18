@@ -21,18 +21,24 @@ import { ReportResult } from "@/lib/reportMapper";
  * - 무료 구간에는 결제 고정바·가격·할인·카운트다운을 노출하지 않는다.
  *
  * 챕터마다 시각 구조를 의도적으로 다르게 구성했다(같은 카드가 반복되는
- * "템플릿 반복" 느낌을 줄이기 위해) — 01/02는 본문 중심으로 담백하게,
- * 03은 기운 비교 카드, 04는 시기 카드를 추가로 붙였다. 아이보리 강조
- * 카드는 각 챕터의 "정말 중요한 문장 1개"에만 쓴다.
+ * "템플릿 반복" 느낌을 줄이기 위해) — 02는 본문 중심으로 담백하게, 03은
+ * 기운 비교 카드, 04는 시기 카드를 추가로 붙였다. 아이보리 강조 카드는
+ * 각 챕터의 "정말 중요한 문장 1개"에만 쓴다.
+ *
+ * 01(타고난 본질)만 최종 샘플 품질 구조로 확장했다: GOLD 훅(챕터 진입 시
+ * 첫 핵심 문장) → 상세 해석 본문 → RED 핵심 통찰(챕터 전체에서 유일,
+ * 장식 아님) → 상세 해석 본문 → 아이보리 카드(행동 조언). 02~04는 아직
+ * 이 구조로 옮기지 않았다 — data.chapters[1..3] + ChapterHead를 그대로
+ * 쓴다. 01은 별도로 data.chapterOne(lib/reportMapper.ts)을 쓴다.
  *
  * `report` prop — lib/reportMapper.ts의 buildReportResult(appData)가 만든
  * 실제 개인화 데이터. app/result-v2/page.tsx가 쿼리스트링의 생년월일시를
  * calculateSaju/buildAppData로 계산해 넘겨준다 — 쿼리가 없으면 prop 자체가
  * undefined가 되어 DEFAULT_REPORT(기존과 동일한 자리채움 문구)로 대체된다.
- * 사주팔자 표/신살/오행 분포/01~04 killpoint·title·highlight/10년 흐름
- * 제목이 이 prop을 통해 사람마다 달라진다. 기운 비교 카드(03)와 시기
- * 카드(04)의 구체적 값(목(木)/수(水), 2026년/경쟁운)은 아직 스키마에 없어
- * 자리채움 그대로 남아 있다.
+ * 사주팔자 표/신살/오행 분포/01 챕터 전체/02~04 killpoint·title·highlight/
+ * 10년 흐름 제목이 이 prop을 통해 사람마다 달라진다. 기운 비교 카드(03)와
+ * 시기 카드(04)의 구체적 값(목(木)/수(水), 2026년/경쟁운)은 아직 스키마에
+ * 없어 자리채움 그대로 남아 있다.
  */
 
 // 오행 5색 — tailwind.config.js의 wood/fire/earth/metal/water 토큰과
@@ -85,6 +91,18 @@ const DEFAULT_REPORT: ReportResult = {
   ],
   elementStrongest: "fire",
   elementWeakest: "metal",
+  chapterOne: {
+    chapterLabel: "第一章",
+    title: "타고난 본질",
+    goldHook: "(자리채움) 당신은 원래 그런 사람이 아니었습니다.\n그렇게 될 수밖에 없었던 겁니다.",
+    bodyBefore: [
+      '(자리채움) 타고난 기질은 "예시 기질 문구"에 가깝습니다.',
+      "(자리채움) 첫인상에서 드러나는 실제 계산 문장이 이 자리에 들어갑니다.",
+    ],
+    redInsight: "(자리채움 · 핵심 통찰) 이 챕터에서 가장 중요한 한 문장이 이 자리에 들어갑니다.",
+    bodyAfter: ["(자리채움) 그 통찰이 실제 생활에서 드러나는 방식을 짚는 문장이 이 자리에 들어갑니다."],
+    cardText: "(자리채움) 기억해야 할 행동 조언 한 문장이 이 자리에 들어갑니다.",
+  },
   chapters: [
     {
       id: "chapter-01",
@@ -342,18 +360,43 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       </div>
 
       {/* ── 01~04 챕터: 챕터마다 시각 구조를 다르게 구성 ───────────── */}
-      {/* 第一章 — 본문 중심, 추가 카드 없음(담백하게) */}
+      {/* 第一章 — 최종 샘플 구조: GOLD 훅 → 본문 → RED 핵심 통찰(챕터당 1개) → 본문 → 아이보리 카드 */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2">
-          <ChapterHead {...data.chapters[0]} />
+          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+            {data.chapterOne.chapterLabel}
+          </span>
+          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+            {data.chapterOne.title}
+          </h2>
+
+          {/* GOLD 훅 — 챕터 진입 직후 첫 핵심 문장 */}
+          <p className="mt-4 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneGold sm:text-[19px]">
+            {data.chapterOne.goldHook}
+          </p>
+
           <div className="mt-6 space-y-4">
-            {data.chapters[0].body.map((p, idx) => (
+            {data.chapterOne.bodyBefore.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}
           </div>
-          <HighlightCard text={data.chapters[0].highlight} />
+
+          {/* RED — 이 챕터 전체에서 유일한 핵심 통찰 문장 */}
+          <p className="mt-6 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+            {data.chapterOne.redInsight}
+          </p>
+
+          <div className="mt-6 space-y-4">
+            {data.chapterOne.bodyAfter.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {p}
+              </p>
+            ))}
+          </div>
+
+          <HighlightCard text={data.chapterOne.cardText} />
         </div>
       </section>
 

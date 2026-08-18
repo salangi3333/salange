@@ -36,6 +36,28 @@ export interface ReportChapter {
   evidence?: { terms: string[]; summary: string };
 }
 
+/**
+ * 01 "타고난 본질" 챕터 전용 — 최종 샘플 품질 구조(골드 훅 → 상세 해석 →
+ * 레드 핵심 통찰 1개 → 상세 해석 → 아이보리 카드). 02~04는 아직 이 구조로
+ * 옮기지 않았으므로 기존 ReportChapter/buildChapters()를 그대로 쓴다 —
+ * 이 타입은 오직 01 챕터 렌더링에만 쓰인다.
+ */
+export interface ChapterOneDetail {
+  chapterLabel: string;
+  title: string;
+  /** ch1-insight.headline 그대로(이름 개인화, 2줄) — GOLD 훅 */
+  goldHook: string;
+  /** RED 문장 이전 본문 — ch1-reveal.headline(gan.coreTrait)과
+   * ch1-reveal.narrative[0]로 구성. 새 문장을 짓지 않고 실제 값만 담는다. */
+  bodyBefore: string[];
+  /** ch1-insight.fact 그대로 — 챕터 전체에서 유일한 RED 문장 */
+  redInsight: string;
+  /** RED 문장 이후 본문 — ch1-insight.realLife 그대로 */
+  bodyAfter: string[];
+  /** ch1-insight.action 그대로 — 아이보리 카드 문장 */
+  cardText: string;
+}
+
 export interface ReportTenYearItem {
   period: string;
   /** 해당 구간에서 점수가 가장 높은 해의 세운 키워드 — buildTenYearFortune() 결과 그대로 */
@@ -76,6 +98,9 @@ export interface ReportResult {
   elementWeakest: Element;
   /** ch1~ch4의 cover/reveal/insight scene을 조합해 만든 4개 챕터 */
   chapters: ReportChapter[];
+  /** 01 챕터만 최종 샘플 구조로 확장한 것 — ResultLandingV2는 01 렌더링에
+   * chapters[0] 대신 이 필드를 쓴다. 02~04는 여전히 chapters[1..3]을 쓴다. */
+  chapterOne: ChapterOneDetail;
   /** buildTenYearFortune()의 10개 연도를 3구간으로 묶은 것 */
   tenYearPreview: ReportTenYearItem[];
 }
@@ -171,6 +196,30 @@ function buildChapters(scenes: StoryScene[]): ReportChapter[] {
   });
 }
 
+function buildChapterOneDetail(scenes: StoryScene[]): ChapterOneDetail {
+  const cover = scenes.find((s) => s.id === "ch1-cover");
+  const reveal = scenes.find((s) => s.id === "ch1-reveal");
+  const insight = scenes.find((s) => s.id === "ch1-insight");
+
+  // gan.coreTrait — 일간별 고정 문구가 아니라 reveal scene의 headline에
+  // 이미 담겨 있는 실제 계산 결과를 최소한의 연결 문장으로만 감쌌다.
+  const coreTrait = reveal?.headline;
+  const firstImpression = reveal?.narrative[0];
+
+  return {
+    chapterLabel: cover?.chapterLabel ?? "第一章",
+    title: cover?.chapterTitle ?? "",
+    goldHook: insight?.headline ?? "",
+    bodyBefore: [
+      coreTrait ? `타고난 기질은 "${coreTrait}"에 가깝습니다.` : "",
+      firstImpression ?? "",
+    ].filter((v): v is string => Boolean(v)),
+    redInsight: insight?.fact ?? "",
+    bodyAfter: [insight?.realLife].filter((v): v is string => Boolean(v)),
+    cardText: insight?.action ?? "",
+  };
+}
+
 /**
  * AppData(=이미 계산+개인화된 결과) → ResultLandingV2가 바로 쓸 수 있는
  * ReportResult로 변환한다. 새 계산 없음 — 기존 함수 호출과 필드 선택만.
@@ -193,6 +242,7 @@ export function buildReportResult(appData: AppData): ReportResult {
     elementStrongest: elementAnalysis.strongest,
     elementWeakest: elementAnalysis.weakest,
     chapters: buildChapters(scenes),
+    chapterOne: buildChapterOneDetail(scenes),
     tenYearPreview: groupTenYear(tenYear),
   };
 }
