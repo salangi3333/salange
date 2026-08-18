@@ -4,7 +4,8 @@ import { Element, ELEMENT_LABEL, GAN_ELEMENT } from "./hanjaTables";
 import { AppData } from "./sajuContent";
 import { buildFullStoryScenes, CH1_STRENGTH, CH1_TRUTH_SCENE, CH1_ALONE_SCENE } from "./storyScenes";
 import { YearFortuneItem, buildElementAnalysis, buildTenYearFortune } from "./aiLifeReport";
-import { GAN_PROFILE, ZHI_PROFILE } from "./ganZhiProfiles";
+import { GAN_PROFILE } from "./ganZhiProfiles";
+import { buildChapterOneNarrative } from "./chapterOneNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -53,18 +54,20 @@ export interface ChapterOneDetail {
   title: string;
   /** GAN_PROFILE[dayGan].resultQuoteFragment 그대로 — GOLD 훅, 이름 없이 1문장 */
   goldHook: string;
-  /** 타고난 기질 + 명리적 근거 — gan.potential.paragraphs[0] 그대로
-   * (이미 "무토(戊土) 일간은..." 식으로 명리 용어가 문장에 들어있다) */
+  /** 1.타고난 본질 + 2.핵심 명리 요소(일간·일지) + 3.사주 안의 다른 여섯(넷)
+   * 글자와 기운 — chapterOneNarrative.ts가 사람마다 실제 계산된 십성/오행
+   * 값(SajuUser.pillars, buildElementAnalysis)으로 조립한다. 새 명리 계산
+   * 없음 — 십성 10종의 표준 의미를 담은 문장뱅크에 실제 값을 대입할 뿐이다. */
   body1: string[];
-  /** 실제 생활에서 드러나는 방식 — gan.potential.paragraphs[2](이미 "실제로
-   * ~"로 시작하는 문단)과 zhi.potentialNote(일지 보정) */
+  /** 4.기질(GAN_PROFILE 다만 문단 + ZHI_PROFILE 노트) + 5.실제 삶에서
+   * 나타나는 모습(gan.potential.paragraphs[2] + ch1-insight.realLife) */
   body2: string[];
   /** ch1-insight.fact 그대로 — 챕터 전체에서 유일한 RED 문장(가장 중요한 맹점) */
   redInsight: string;
-  /** 장점이 되는 순간(CH1_STRENGTH) + 문제가 되는 순간(CH1_ALONE_SCENE), 오행별 */
+  /** 7.강점이 지나칠 때 생기는 그림자 — 장점(CH1_STRENGTH) + 그 힘이
+   * 스스로를 향할 때(CH1_ALONE_SCENE), 오행별 */
   body3: string[];
-  /** 관계에서 드러나는 인식 차이(CH1_TRUTH_SCENE) + 실제 행동 대조
-   * (ch1-insight.realLife=CH1_INNER_EXAMPLE), 오행별 */
+  /** 8.관계에서 나타나는 구체적 모습(CH1_TRUTH_SCENE), 오행별 */
   body4: string[];
   /** ch1-insight.action 그대로 — 아이보리 카드(행동 조언) */
   cardText: string;
@@ -222,26 +225,28 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
   const insight = scenes.find((s) => s.id === "ch1-insight");
 
   const dayGan = appData.user.pillars.day.hanja;
-  const dayZhi = appData.user.pillars.branches.day.hanja;
   const dayElement = GAN_ELEMENT[dayGan];
   const gan = GAN_PROFILE[dayGan];
-  const zhi = ZHI_PROFILE[dayZhi];
+
+  const narrative = buildChapterOneNarrative(appData);
 
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
     title: cover?.chapterTitle ?? "",
     goldHook: gan.resultQuoteFragment,
-    body1: [gan.potential.paragraphs[0]?.text].filter((v): v is string => Boolean(v)),
-    body2: [gan.potential.paragraphs[2]?.text, zhi.potentialNote].filter(
+    body1: narrative.identity,
+    body2: [...narrative.temperament, gan.potential.paragraphs[2]?.text, insight?.realLife].filter(
       (v): v is string => Boolean(v)
     ),
     redInsight: insight?.fact ?? "",
-    body3: [CH1_STRENGTH[dayElement], CH1_ALONE_SCENE[dayElement]].filter(
-      (v): v is string => Boolean(v)
-    ),
-    body4: [CH1_TRUTH_SCENE[dayElement], insight?.realLife].filter(
-      (v): v is string => Boolean(v)
-    ),
+    body3: [
+      CH1_STRENGTH[dayElement],
+      [
+        "그런데 같은 힘이 스스로를 향하면 다른 얼굴이 됩니다.",
+        CH1_ALONE_SCENE[dayElement],
+      ].join("\n"),
+    ].filter((v): v is string => Boolean(v)),
+    body4: [CH1_TRUTH_SCENE[dayElement]].filter((v): v is string => Boolean(v)),
     cardText: insight?.action ?? "",
   };
 }

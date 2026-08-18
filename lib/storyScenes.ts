@@ -1,36 +1,18 @@
 import { StoryScene } from "@/types/story";
 import { AppData } from "./sajuContent";
 import { GAN_PROFILE } from "./ganZhiProfiles";
-import { Element, ELEMENT_LABEL, GAN_ELEMENT } from "./hanjaTables";
+import {
+  Element,
+  ELEMENT_LABEL,
+  GAN_ELEMENT,
+  elementThatGenerates,
+  elementThatOvercomes,
+} from "./hanjaTables";
 import {
   buildElementAnalysis,
   buildPersonalTraitNotes,
   buildTenYearFortune,
 } from "./aiLifeReport";
-
-const GENERATES: Record<Element, Element> = {
-  wood: "fire",
-  fire: "earth",
-  earth: "metal",
-  metal: "water",
-  water: "wood",
-};
-
-const OVERCOMES: Record<Element, Element> = {
-  wood: "earth",
-  fire: "metal",
-  earth: "water",
-  metal: "wood",
-  water: "fire",
-};
-
-function elementThatGenerates(target: Element): Element {
-  return (Object.keys(GENERATES) as Element[]).find((e) => GENERATES[e] === target)!;
-}
-
-function elementThatOvercomes(target: Element): Element {
-  return (Object.keys(OVERCOMES) as Element[]).find((e) => OVERCOMES[e] === target)!;
-}
 
 function firstSentence(text: string): string {
   const idx = text.indexOf(".");

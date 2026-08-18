@@ -165,3 +165,45 @@ const CHEONEUL_GWIIN: Record<string, string[]> = {
 export function isCheoneulGwiin(dayGan: string, targetZhi: string): boolean {
   return (CHEONEUL_GWIIN[dayGan] || []).includes(targetZhi);
 }
+
+// 오행 상생상극 고정표 — storyScenes.ts(5장)와 natalStructure.ts(득령)가
+// 함께 쓰는 공용 유틸이라 여기(hanjaTables.ts)로 옮겨 중복 정의를 막는다.
+export const GENERATES: Record<Element, Element> = {
+  wood: "fire",
+  fire: "earth",
+  earth: "metal",
+  metal: "water",
+  water: "wood",
+};
+
+export const OVERCOMES: Record<Element, Element> = {
+  wood: "earth",
+  fire: "metal",
+  earth: "water",
+  metal: "wood",
+  water: "fire",
+};
+
+export function elementThatGenerates(target: Element): Element {
+  return (Object.keys(GENERATES) as Element[]).find((e) => GENERATES[e] === target)!;
+}
+
+export function elementThatOvercomes(target: Element): Element {
+  return (Object.keys(OVERCOMES) as Element[]).find((e) => OVERCOMES[e] === target)!;
+}
+
+// lunar-javascript가 중국어(간체)로 반환하는 12운성을 한글로 매핑한다.
+export const DI_SHI_KO: Record<string, string> = {
+  长生: "장생",
+  沐浴: "목욕",
+  冠带: "관대",
+  临官: "건록",
+  帝旺: "제왕",
+  衰: "쇠",
+  病: "병",
+  死: "사",
+  墓: "묘",
+  绝: "절",
+  胎: "태",
+  养: "양",
+};

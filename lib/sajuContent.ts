@@ -221,6 +221,7 @@ export function buildAppDataFromCalc(calc: SajuCalculation, name: string): AppDa
     sinsal: calc.sinsal,
     stats: generateStats(calc.dayGan, seed),
     charCount: calc.charCount,
+    natal: calc.natal,
   };
 
   return {

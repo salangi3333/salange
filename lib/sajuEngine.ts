@@ -6,9 +6,11 @@ import {
   GAN_ELEMENT,
   ZHI_ELEMENT,
   SIPSEONG_KO,
+  DI_SHI_KO,
   getSinsalName,
   isCheoneulGwiin,
 } from "./hanjaTables";
+import { NatalRaw, PillarExtra } from "@/types";
 
 export interface IntakeFormData {
   name: string;
@@ -58,6 +60,10 @@ export interface SajuCalculation {
   charCount: number;
   chars: string[];
   birthYear: number;
+  /** CALCULATION층 raw 값(지장간/12운성/공망/납음). 01장 화면에 바로 쓰지
+   * 않는다 — 새 계산이 아니라 lunar-javascript가 이미 반환하는 값을 그대로
+   * 옮겨 담을 뿐이다. */
+  natal: NatalRaw;
 }
 
 function buildPillar(gan: string, sipseongRaw: string): PillarResult {
@@ -75,6 +81,13 @@ function buildBranch(zhi: string, sipseongRaw: string): PillarResult {
     hangul: ZHI_HANGUL[zhi],
     element: ZHI_ELEMENT[zhi],
     sipseong: SIPSEONG_KO[sipseongRaw] || sipseongRaw,
+  };
+}
+
+function buildPillarExtra(hideGan: string[], diShiRaw: string): PillarExtra {
+  return {
+    hideGan,
+    diShi: DI_SHI_KO[diShiRaw] || diShiRaw,
   };
 }
 
@@ -148,6 +161,17 @@ export function calculateSaju(input: IntakeFormData): SajuCalculation {
     ? [dayGan, monthGan, yearGan, dayZhi, monthZhi, yearZhi]
     : [timeGan, dayGan, monthGan, yearGan, timeZhi, dayZhi, monthZhi, yearZhi];
 
+  const natal: NatalRaw = {
+    pillars: {
+      year: buildPillarExtra(ec.getYearHideGan(), ec.getYearDiShi()),
+      month: buildPillarExtra(ec.getMonthHideGan(), ec.getMonthDiShi()),
+      day: buildPillarExtra(ec.getDayHideGan(), ec.getDayDiShi()),
+      hour: input.timeUnknown ? null : buildPillarExtra(ec.getTimeHideGan(), ec.getTimeDiShi()),
+    },
+    dayXunKong: ec.getDayXunKong(),
+    dayNaYin: ec.getDayNaYin(),
+  };
+
   return {
     dayGan,
     dayMasterElement: GAN_ELEMENT[dayGan],
@@ -160,5 +184,6 @@ export function calculateSaju(input: IntakeFormData): SajuCalculation {
     charCount: input.timeUnknown ? 6 : 8,
     chars,
     birthYear: y,
+    natal,
   };
 }
