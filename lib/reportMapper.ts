@@ -41,6 +41,21 @@ export interface ReportChapter {
   highlight: string;
   /** reveal scene의 evidence를 그대로 옮긴 것. 화면에 아직 노출하지 않아도 구조는 준비해 둔다 */
   evidence?: { terms: string[]; summary: string };
+  /** 第二章("타고난 기질") 전용 확장 구조 — 있으면 ResultLandingV2가 소제목
+   * 2개 + RED 한 줄 + 블러 다리로 된 풍부한 레이아웃을 쓰고, 없으면(챕터
+   * 3/4는 계속 없음) 기존 flat body.map 레이아웃을 그대로 쓴다. subheadingA/
+   * subheadingB/bodyA/bodyB/redLine 전부 GAN_PROFILE[dayGan].temperament +
+   * ZHI_PROFILE[dayZhi].temperamentNote(이미 storyblocks로 조립된 실제
+   * 값)에서만 가져온다 — 새 문장 창작 없음. teaser.blurred는 chapters[2]
+   * (第三章, 이미 개인화된 실제 재물 문단)의 실제 문장을 인용한다. */
+  richBody?: {
+    subheadingA: string;
+    bodyA: string[];
+    redLine: string;
+    subheadingB: string;
+    bodyB: string[];
+    teaser?: { lead: string; blurred: string };
+  };
 }
 
 /**
@@ -332,11 +347,30 @@ export function buildReportResult(appData: AppData): ReportResult {
   // 장에 있는 문장"을 인용하는 설계이기 때문.
   const temperamentBlock = appData.storyblocks.find((b) => b.title === "타고난 기질");
   if (chapters[1] && temperamentBlock) {
+    const paras = temperamentBlock.paragraphs.map((p) => p.text).filter(Boolean);
+    // paras 순서: [0]gan.temperament[0], [1]gan.temperament[1],
+    // [2]gan.temperament[2], [3]zhi.temperamentNote — buildStoryblocks()가
+    // 조립한 그대로다(sajuContent.ts). 소제목 2개로 나눠 구조에 무게를
+    // 싣는다 — 새 문장 없이 배치만 바꾼 것.
+    const wealthPara = chapters[2]?.body?.[1] ?? chapters[2]?.body?.[0];
     chapters[1] = {
       ...chapters[1],
       title: `${user.name}님의 타고난 기질`,
       killpoint: temperamentBlock.heading,
-      body: temperamentBlock.paragraphs.map((p) => p.text).filter(Boolean),
+      body: paras,
+      richBody: {
+        subheadingA: "겉과 속이 다른 온도",
+        bodyA: paras.slice(0, 2),
+        redLine: paras[2] ?? "",
+        subheadingB: "진짜 모습이 드러나는 순간",
+        bodyB: paras.slice(3),
+        teaser: wealthPara
+          ? {
+              lead: "이렇게 좁고 깊게 파고드는 성향, 사실 돈이 되는 방식도 따로 있습니다 —",
+              blurred: firstSentence(wealthPara),
+            }
+          : undefined,
+      },
     };
   }
 

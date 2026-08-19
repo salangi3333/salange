@@ -655,18 +655,58 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* 第二章 — 본문 중심, 추가 카드 없음(담백하게) */}
+      {/* 第二章 — richBody가 있으면(타고난 기질) 소제목 2개 + RED 한 줄 +
+          블러 다리로 된 풍부한 레이아웃, 없으면 기존 담백한 레이아웃 */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <ChapterHead {...data.chapters[1]} />
-          <div className="mt-6 space-y-4">
-            {data.chapters[1].body.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                {p}
-              </p>
-            ))}
-          </div>
-          <HighlightCard text={data.chapters[1].highlight} />
+          {data.chapters[1].richBody ? (
+            <>
+              <ChapterOneSubheading>{data.chapters[1].richBody.subheadingA}</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapters[1].richBody.bodyA.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {p}
+                  </p>
+                ))}
+              </div>
+
+              {data.chapters[1].richBody.redLine && (
+                <p className="mt-8 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+                  {data.chapters[1].richBody.redLine}
+                </p>
+              )}
+
+              <ChapterOneSubheading>{data.chapters[1].richBody.subheadingB}</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapters[1].richBody.bodyB.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {p}
+                  </p>
+                ))}
+              </div>
+
+              <HighlightCard text={data.chapters[1].highlight} />
+
+              {data.chapters[1].richBody.teaser && (
+                <BlurBridge
+                  lead={data.chapters[1].richBody.teaser.lead}
+                  blurred={data.chapters[1].richBody.teaser.blurred}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mt-6 space-y-4">
+                {data.chapters[1].body.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {p}
+                  </p>
+                ))}
+              </div>
+              <HighlightCard text={data.chapters[1].highlight} />
+            </>
+          )}
         </div>
       </section>
 
