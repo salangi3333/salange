@@ -143,6 +143,21 @@ function firstLine(text: string): string {
   return text.split("\n")[0]?.trim() ?? text;
 }
 
+/**
+ * GOLD 훅을 "OOO님의 타고난 운명은..." 형태로 이름을 넣어 연다. 10간의
+ * resultQuoteFragment(ganZhiProfiles.ts)가 전부 "타고난 X, 그러나 Y" 고정
+ * 형태를 쓰고 있다는 걸 그대로 이용한 것 — 새 문장 창작이나 개인화 로직
+ * 추가가 아니라, 이미 있는 문구를 이름과 함께 재배열할 뿐이다. 그래서
+ * 10간 전부에서 동일하게 동작하고 사람마다 이름만 실제 값으로 바뀐다.
+ */
+function buildPersonalizedGoldHook(name: string, fragment: string): string {
+  const commaIdx = fragment.indexOf(",");
+  if (commaIdx === -1) return `${name}님의 타고난 운명은 — ${fragment}`;
+  const trait = fragment.slice(0, commaIdx).replace(/^타고난\s*/, "").trim();
+  const caveat = fragment.slice(commaIdx + 1).replace(/^\s*그러나\s*/, "").trim();
+  return `${name}님의 타고난 운명은 '${trait}'입니다. 그러나 ${caveat}`;
+}
+
 /** 블러 다리(teaser)용 — 마침표 기준 첫 문장만 잘라 쓴다. 문장 전체가 아니라
  * 일부만 인용해야 "궁금증"이 남기 때문. 새 문장 창작 없음, 자르기만 한다. */
 function firstSentence(text: string): string {
@@ -277,7 +292,7 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
     title: cover?.chapterTitle ?? "",
-    goldHook: gan.resultQuoteFragment,
+    goldHook: buildPersonalizedGoldHook(appData.user.name, gan.resultQuoteFragment),
     body1: narrative.identity,
     body2: [...narrative.temperament, gan.potential.paragraphs[2]?.text, realLife || undefined].filter(
       (v): v is string => Boolean(v)
