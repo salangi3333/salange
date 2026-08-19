@@ -143,17 +143,6 @@ function firstLine(text: string): string {
   return text.split("\n")[0]?.trim() ?? text;
 }
 
-/**
- * GOLD 훅을 "OOO님의 타고난 운명은 이렇습니다." 한 줄로 열고, 그 아래에
- * 기존 resultQuoteFragment(ganZhiProfiles.ts, 10간 전량 보유)를 그대로
- * 둔다. 이전 버전은 fragment 문장 중간에 이름을 억지로 끼워 넣어 말투가
- * 어색해졌던 걸(평서형 "-다"와 존댓말이 한 문장에 섞임) 수정한 것 —
- * fragment 자체는 손대지 않고 그 앞에 이름이 들어간 줄을 하나 더할
- * 뿐이라, 문장 다듬기 없이도 10간 전부에서 자연스럽다.
- */
-function buildPersonalizedGoldHook(name: string, fragment: string): string {
-  return `${name}님의 타고난 운명은 이렇습니다.\n${fragment}`;
-}
 
 /** 블러 다리(teaser)용 — 마침표 기준 첫 문장만 잘라 쓴다. 문장 전체가 아니라
  * 일부만 인용해야 "궁금증"이 남기 때문. 새 문장 창작 없음, 자르기만 한다. */
@@ -288,8 +277,13 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
 
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
-    title: cover?.chapterTitle ?? "",
-    goldHook: buildPersonalizedGoldHook(appData.user.name, gan.resultQuoteFragment),
+    // 챕터 제목 자체를 이름 기반으로 바꾼다 — "남들이 보는 나, 그리고
+    // 실제의 나"라는 고정 제목 대신, 맨 위에서부터 바로 "OOO님의 타고난
+    // 운명"으로 시작하게 한다(사용자 요청: 챕터 시작이 이름+운명이어야
+    // 함). 기존 goldHook 줄에 이름을 또 넣으면 중복이라 goldHook은
+    // 원래의 resultQuoteFragment 그대로 둔다.
+    title: `${appData.user.name}님의 타고난 운명`,
+    goldHook: gan.resultQuoteFragment,
     body1: narrative.identity,
     body2: [...narrative.temperament, gan.potential.paragraphs[2]?.text, realLife || undefined].filter(
       (v): v is string => Boolean(v)
