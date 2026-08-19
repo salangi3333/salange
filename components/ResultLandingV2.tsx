@@ -42,6 +42,12 @@ import { Element } from "@/lib/hanjaTables";
  * 없어 자리채움 그대로 남아 있다.
  */
 
+// 결제 CTA에 표시할 가격 문구 — 사업 결정(가격)이 아직 안 나왔으므로 빈
+// 문자열로 둔다. 빈 값이면 CTA 카드에서 가격 줄 자체가 렌더되지 않는다.
+// 가격이 정해지면 예: "19,900원" 처럼 채우면 된다. 할인/카운트다운은
+// 넣지 않는다(과장 유도 금지 — 파일 상단 설계 원칙 참고).
+const PRICE_LABEL = "28,000원";
+
 // 오행 5색 — 전통 오방색(五方色) 기준: 목=청(파랑), 화=적(빨강), 토=황(노랑),
 // 금=백(카드가 밝은 아이보리라 흰색 대신 시인성 있는 회색으로 대체), 수=흑(검정).
 // tailwind.config.js의 wood/fire/earth/metal/water 토큰도 이 값과 맞춰뒀다.
@@ -741,11 +747,36 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14">
         <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 rounded-card border border-sceneGold/30 bg-sceneCard px-6 py-10 text-center">
           <Lock size={22} className="text-sceneGold" />
-          <p className="font-serif-kr text-[18px] font-bold text-sceneCardText">
-            여기까지 무료로 확인할 수 있습니다
+          <p className="font-serif-kr text-[19px] font-bold leading-snug text-sceneCardText">
+            여기까지는, 겉면입니다
           </p>
-          <p className="max-w-[36ch] text-[14.5px] leading-relaxed text-sceneCardText/70">
-            (임시 문구) 아래부터는 잠긴 구간입니다. 나머지 챕터와 10년 흐름은 결제 후 확인할 수 있습니다.
+          <p className="max-w-[38ch] text-[14.5px] leading-relaxed text-sceneCardText/75">
+            관계에서 반복되는 패턴, 돈이 새는 지점, 사랑 앞에서 달라지는 얼굴,
+            그리고 앞으로 10년의 흐름 — 아직 하나도 열지 않았습니다.
+          </p>
+        </div>
+      </section>
+
+      {/* ── 신뢰 요소 — 실제 후기 대신, 이 서비스가 실제로 하는 계산을
+          투명하게 보여준다(가짜 후기/인원수 조작 없음, 전부 사실). ──── */}
+      <section className="border-b border-white/5 bg-sceneBg px-6 py-12">
+        <div className="mx-auto w-full max-w-content2">
+          <p className="text-center text-[13px] font-medium tracking-[0.08em] text-sceneGold/80">
+            왜 이 풀이가 다른가
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {["정통 만세력 계산", "십성·오행 실측", "왕상휴수사 판별", "합·충 구조 분석"].map((label) => (
+              <div
+                key={label}
+                className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-3 py-4 text-center"
+              >
+                <p className="text-[12.5px] font-medium leading-snug text-sceneTextSub">{label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mx-auto mt-5 max-w-[38ch] text-center text-[13px] leading-relaxed text-sceneTextSub/80">
+            생년월일시를 실제 명리학 계산식에 그대로 넣어 뽑아낸 결과입니다.
+            틀에 박힌 문구를 이름만 바꿔 드리지 않습니다.
           </p>
         </div>
       </section>
@@ -758,7 +789,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             앞으로 10년 미리보기
           </h2>
           <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
-            10년을 세 구간으로 나눠 먼저 보여드립니다
+            앞으로 10년, 방향이 세 번 바뀝니다
           </p>
 
           <ul className="mt-6 flex flex-col gap-3">
@@ -778,20 +809,39 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 결제 영역 (구조만 — 실제 문구/가격은 미확정) ────────────
-          fixed/sticky 아님, 문서 흐름 안의 일반 섹션. 가격/할인/카운트다운
-          없음 — 결제 CTA가 처음 등장하는 지점이라는 구조만 준비한다. */}
+      {/* ── 결제 영역 — fixed/sticky 아님, 문서 흐름 안의 일반 섹션.
+          할인/카운트다운 없음(과장 유도 금지). 가격 숫자만 별도 확정 후
+          PRICE_LABEL 자리에 채운다 — 지금은 빈 문자열로 숨겨둔다. */}
       <section className="bg-sceneBg px-6 py-16 sm:py-20">
         <div className="mx-auto flex w-full max-w-content flex-col items-center gap-5 rounded-card border border-accentGoldTo/40 bg-gradient-to-b from-sceneBgAlt to-sceneBg px-6 py-10 text-center">
           <p className="font-serif-kr text-[19px] font-bold text-sceneGold">전체 해석 잠금 해제</p>
           <p className="max-w-[34ch] text-[14.5px] leading-relaxed text-sceneTextSub">
-            (임시 문구 — 가격/문구 미확정) 나머지 챕터와 10년 흐름 전체를 확인할 수 있습니다.
+            지금부터는 당신만의 이야기입니다.
           </p>
+
+          <ul className="mt-1 flex w-full flex-col gap-2 text-left">
+            {[
+              "第二章 · 관계에서 반복되는 패턴",
+              "第三章 · 돈이 새는 지점과 버는 방식",
+              "第四章 · 사랑 앞에서 달라지는 얼굴",
+              "五行 · 앞으로 10년 전체 흐름",
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2 text-[14px] text-sceneTextSub">
+                <span className="mt-[3px] text-sceneGold">✦</span>
+                {line}
+              </li>
+            ))}
+          </ul>
+
+          {PRICE_LABEL && (
+            <p className="mt-1 font-serif-kr text-[22px] font-bold text-sceneGoldLight">{PRICE_LABEL}</p>
+          )}
+
           <button
             type="button"
             className="mt-1 w-full rounded-pill border border-accentGoldTo/50 bg-gradient-to-r from-accentGoldFrom to-accentGoldTo px-6 py-3.5 text-[15px] font-bold text-dark"
           >
-            전체 해석 확인하기
+            지금, 전체 사주 풀이 받기 →
           </button>
         </div>
       </section>
