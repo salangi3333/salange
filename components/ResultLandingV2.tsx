@@ -225,6 +225,101 @@ function HighlightCard({ text }: { text: string }) {
   );
 }
 
+/**
+ * 01장 전용 편집 소제목. 챕터 대제목(第一章, 중앙 정렬)과는 다르게 좌측
+ * 정렬 + 짧은 금색 마커 — "목차 항목"이 아니라 "다음 장면으로의 전환"
+ * 느낌만 준다. 위 여백만으로 단락 전환을 표시하고, 별도 구분선/빈 공간은
+ * 두지 않는다.
+ */
+function ChapterOneSubheading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-10 mb-3 flex items-center gap-2 first:mt-0">
+      <span aria-hidden className="h-px w-4 bg-sceneGold/70" />
+      <h3 className="font-serif-kr text-[15px] font-bold tracking-wide text-sceneGold">{children}</h3>
+    </div>
+  );
+}
+
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * 01장 gold 강조 — 전부 "본문 안의 짧은 구절만" 골라 감싸는 순수 렌더링
+ * 유틸이다. 문장 전체를 gold로 바꾸지 않는다(문단 대부분은 일반 본문색
+ * 그대로). 어떤 유저가 오든 항상 같은 규칙(고정된 어휘/위치)으로 골라내는
+ * 것이지, 특정 사용자 문장을 손으로 골라 하드코딩한 게 아니다.
+ */
+function GoldPhrases({ text, phrases }: { text: string; phrases: string[] }) {
+  const found = phrases.filter((p) => text.includes(p));
+  if (found.length === 0) return <>{text}</>;
+  const pattern = new RegExp(`(${found.map(escapeForRegExp).join("|")})`, "g");
+  const parts = text.split(pattern);
+  return (
+    <>
+      {parts.map((part, i) =>
+        found.includes(part) ? (
+          <strong key={i} className="font-bold text-sceneGold">
+            {part}
+          </strong>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
+/** 첫 쉼표 앞 구절만 gold(쉼표가 없으면 문장 전체 — 원래 짧은 문장이라 그대로 둠). */
+function GoldLeadClause({ text }: { text: string }) {
+  const idx = text.indexOf(",");
+  if (idx === -1) {
+    return (
+      <strong className="font-bold text-sceneGold">{text}</strong>
+    );
+  }
+  return (
+    <>
+      <strong className="font-bold text-sceneGold">{text.slice(0, idx)}</strong>
+      {text.slice(idx)}
+    </>
+  );
+}
+
+/** 첫 줄바꿈 앞(=body3[1]에서 항상 고정으로 붙는 전환 문장 한 줄)만 gold. */
+function GoldFirstLine({ text }: { text: string }) {
+  const idx = text.indexOf("\n");
+  if (idx === -1) {
+    return <strong className="font-bold text-sceneGold">{text}</strong>;
+  }
+  return (
+    <>
+      <strong className="font-bold text-sceneGold">{text.slice(0, idx)}</strong>
+      {text.slice(idx)}
+    </>
+  );
+}
+
+/** 문장 안의 따옴표(" ") 인용구만 gold — 오행 5종 CH1_TRUTH_SCENE 전부
+ * 같은 패턴(짧은 인용구 한 개)을 쓰기 때문에 사용자와 무관하게 적용된다. */
+function GoldQuoted({ text }: { text: string }) {
+  const match = text.match(/[“"]([^”"]+)[”"]/);
+  if (!match) return <>{text}</>;
+  const full = match[0];
+  const idx = text.indexOf(full);
+  return (
+    <>
+      {text.slice(0, idx)}
+      <strong className="font-bold text-sceneGold">{full}</strong>
+      {text.slice(idx + full.length)}
+    </>
+  );
+}
+
+/** buildSynthesis()가 조합에 쓰는 고정 어휘 그대로 — chapterOneNarrative.ts
+ * 원문을 바꾸지 않고, 렌더링 단계에서 이 단어들이 나오면 gold로만 감싼다. */
+const CHAPTER_ONE_FORCE_NOUNS = ["거드는 힘", "짓누르는 힘", "풀어내는 힘", "쌓는 힘", "받쳐주는 힘"];
+
 /** 작은 인장(印章) 디테일 — 정적 SVG, 애니메이션 없음 */
 function SealMark() {
   return (
@@ -434,43 +529,65 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             {data.chapterOne.goldHook}
           </p>
 
-          {/* 본문1 — 타고난 기질과 명리적 근거 */}
-          <div className="mt-6 space-y-4">
-            {data.chapterOne.body1.map((p, idx) => (
+          {/* 소제목① 예리함은 어디서 오는가 — body1[0:4](본질+일간·일지). gold 없음. */}
+          <ChapterOneSubheading>예리함은 어디서 오는가</ChapterOneSubheading>
+          <div className="space-y-4">
+            {data.chapterOne.body1.slice(0, 4).map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
                 {p}
               </p>
             ))}
           </div>
 
-          {/* 본문2 — 실제 생활에서 드러나는 방식 */}
-          <div className="mt-4 space-y-4">
+          {/* 소제목② 이 사람 안에서 부딪히는 힘들 — body1[4:](다른 글자와 기운).
+              마지막 문장(종합 문장)에서만, 그 안의 짧은 어휘만 gold. */}
+          <ChapterOneSubheading>이 사람 안에서 부딪히는 힘들</ChapterOneSubheading>
+          <div className="space-y-4">
+            {data.chapterOne.body1.slice(4).map((p, idx, arr) => (
+              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                {idx === arr.length - 1 ? (
+                  <GoldPhrases text={p} phrases={CHAPTER_ONE_FORCE_NOUNS} />
+                ) : (
+                  p
+                )}
+              </p>
+            ))}
+          </div>
+
+          {/* 소제목③ 이 기준은 어디를 향하는가 — body2(기질+실제 삶) 전체.
+              [1](일간 프로필의 "다만~" 문장) 앞 구절만 gold. */}
+          <ChapterOneSubheading>이 기준은 어디를 향하는가</ChapterOneSubheading>
+          <div className="space-y-4">
             {data.chapterOne.body2.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {idx === 1 ? <GoldLeadClause text={p} /> : p}
               </p>
             ))}
           </div>
 
           {/* RED — 이 챕터 전체에서 유일한 핵심 통찰 문장 */}
-          <p className="mt-6 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+          <p className="mt-8 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
             {data.chapterOne.redInsight}
           </p>
 
-          {/* 본문3 — 장점이 되는 순간과 문제가 되는 순간 */}
-          <div className="mt-6 space-y-4">
+          {/* 소제목④ 칼끝이 자신을 향하는 순간 — body3(그림자) 전체.
+              [1]의 첫 줄(전환 문장)만 gold. */}
+          <ChapterOneSubheading>칼끝이 자신을 향하는 순간</ChapterOneSubheading>
+          <div className="space-y-4">
             {data.chapterOne.body3.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {idx === 1 ? <GoldFirstLine text={p} /> : p}
               </p>
             ))}
           </div>
 
-          {/* 본문4 — 관계/일/선택에서 실제로 드러나는 방식 */}
-          <div className="mt-4 space-y-4">
+          {/* 소제목⑤ 가까워질수록 달라지는 온도 — body4(관계) 전체.
+              [0]의 인용구만 gold. */}
+          <ChapterOneSubheading>가까워질수록 달라지는 온도</ChapterOneSubheading>
+          <div className="space-y-4">
             {data.chapterOne.body4.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {idx === 0 ? <GoldQuoted text={p} /> : p}
               </p>
             ))}
           </div>
