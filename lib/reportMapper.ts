@@ -2,7 +2,14 @@ import { PillarCell, SajuUser } from "@/types";
 import { StoryScene } from "@/types/story";
 import { Element, ELEMENT_LABEL, GAN_ELEMENT } from "./hanjaTables";
 import { AppData } from "./sajuContent";
-import { buildFullStoryScenes, CH1_STRENGTH, CH1_TRUTH_SCENE, CH1_ALONE_SCENE } from "./storyScenes";
+import {
+  buildFullStoryScenes,
+  CH1_STRENGTH,
+  CH1_TRUTH_SCENE,
+  CH1_ALONE_SCENE,
+  CH2_STRENGTH,
+  CH2_EXAMPLE2,
+} from "./storyScenes";
 import { YearFortuneItem, buildElementAnalysis, buildTenYearFortune } from "./aiLifeReport";
 import { GAN_PROFILE } from "./ganZhiProfiles";
 import {
@@ -352,6 +359,11 @@ export function buildReportResult(appData: AppData): ReportResult {
     // [2]gan.temperament[2], [3]zhi.temperamentNote — buildStoryblocks()가
     // 조립한 그대로다(sajuContent.ts). 소제목 2개로 나눠 구조에 무게를
     // 싣는다 — 새 문장 없이 배치만 바꾼 것.
+    // CH2_STRENGTH/CH2_EXAMPLE2(storyScenes.ts, 오행 5종 전량 보유, 예전
+    // ch2-insight.realLife 조립에만 쓰이고 화면엔 한 번도 안 나갔던 문장)를
+    // 더해 "겉으로는 ~하지만" 식 추상 서술 옆에 "예를 들어 ~한 경우가
+    // 있습니다" 식 구체적 생활 장면을 한 단씩 붙인다 — 역시 새 창작 없음.
+    const dayElement = GAN_ELEMENT[dayGan];
     const wealthPara = chapters[2]?.body?.[1] ?? chapters[2]?.body?.[0];
     chapters[1] = {
       ...chapters[1],
@@ -360,10 +372,10 @@ export function buildReportResult(appData: AppData): ReportResult {
       body: paras,
       richBody: {
         subheadingA: "겉과 속이 다른 온도",
-        bodyA: paras.slice(0, 2),
+        bodyA: [...paras.slice(0, 2), CH2_STRENGTH[dayElement]].filter(Boolean),
         redLine: paras[2] ?? "",
         subheadingB: "진짜 모습이 드러나는 순간",
-        bodyB: paras.slice(3),
+        bodyB: [CH2_EXAMPLE2[dayElement], ...paras.slice(3)].filter(Boolean),
         teaser: wealthPara
           ? {
               lead: "이렇게 좁고 깊게 파고드는 성향, 사실 돈이 되는 방식도 따로 있습니다 —",
