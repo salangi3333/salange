@@ -662,6 +662,12 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <ChapterHead {...data.chapters[1]} />
           {data.chapters[1].richBody ? (
             <>
+              {/* 관살혼잡처럼 실제로 해당하는 사람에게만 뜨는 도입 단락 */}
+              {data.chapters[1].richBody.intro && (
+                <p className="mt-6 text-[15px] leading-[1.95] text-sceneBody">
+                  {data.chapters[1].richBody.intro}
+                </p>
+              )}
               <ChapterOneSubheading>{data.chapters[1].richBody.subheadingA}</ChapterOneSubheading>
               <div className="space-y-4">
                 {data.chapters[1].richBody.bodyA.map((p, idx) => (

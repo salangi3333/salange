@@ -335,6 +335,29 @@ export function buildRealLifeConnector(appData: AppData): string {
 }
 
 /**
+ * 관살혼잡(편관+정관이 다른 6글자 중에 둘 다 있는 배치) 실제 여부와 위치를
+ * 확인한다. 둘 다 없으면 null — 없는 사람에게 있다고 지어내지 않는다.
+ * 있으면 두 자리(년/월/시 중 어디인지)를 실제 값 그대로 문장에 넣는다 —
+ * "딱 한 자리에 모여있다" 같은 위치 단정은 하지 않고, 실제 자리 이름만
+ * 말한다(같은 자리면 자연히 같은 말이 두 번 나와 독자가 알아챈다).
+ */
+export function buildGwansalHonjapNote(appData: AppData): string | null {
+  const user = appData.user;
+  const others: { stage: Stage; sipseong: string }[] = [];
+  (["year", "month", "hour"] as const).forEach((stage) => {
+    const g = user.pillars[stage];
+    const z = user.pillars.branches[stage];
+    if (g) others.push({ stage, sipseong: g.sipseong });
+    if (z) others.push({ stage, sipseong: z.sipseong });
+  });
+  const pyeongwan = others.find((o) => o.sipseong === "편관");
+  const jeonggwan = others.find((o) => o.sipseong === "정관");
+  if (!pyeongwan || !jeonggwan) return null;
+
+  return `이 사람의 사주에는 명리학에서 "관살혼잡"이라 부르는 배치가 있습니다. 쉽게 말하면 머릿속에 시키는 사람이 두 명 있는 느낌입니다. 한 명은 "지금 안 하면 큰일 나"라며 몰아치고(편관, ${STAGE_LABEL[pyeongwan.stage]}), 다른 한 명은 "이건 원래 네가 해야 하는 일이야"라며 차분히 눌러앉습니다(정관, ${STAGE_LABEL[jeonggwan.stage]}).`;
+}
+
+/**
  * 04번(기질) 오프닝 보정 — 일지가 그 사람의 일간 기준 천을귀인에 해당할
  * 때만 붙이는 실제 사실 문장. 새 명리 계산이 아니라 이미 있는
  * isCheoneulGwiin(hanjaTables.ts)을 그대로 쓴다. 해당하지 않는 사람에게는

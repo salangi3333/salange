@@ -17,7 +17,9 @@ import {
   buildRealLifeConnector,
   buildRelationshipConnector,
   buildCheoneulGwiinOpening,
+  buildGwansalHonjapNote,
 } from "./chapterOneNarrative";
+import { buildInterpretationKey } from "./chapterOneInterpretation";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -56,6 +58,9 @@ export interface ReportChapter {
    * 값)에서만 가져온다 — 새 문장 창작 없음. teaser.blurred는 chapters[2]
    * (第三章, 이미 개인화된 실제 재물 문단)의 실제 문장을 인용한다. */
   richBody?: {
+    /** 관살혼잡처럼 "이 사람에게 실제로 있을 때만" 붙는 도입 단락.
+     * 없으면 undefined — 화면에서도 아예 렌더링하지 않는다. */
+    intro?: string;
     subheadingA: string;
     bodyA: string[];
     redLine: string;
@@ -286,11 +291,25 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
 
   const cheoneulOpening = buildCheoneulGwiinOpening(appData) ?? undefined;
 
+  // 다른 6글자 중 "비겁"과 "관성"이 동률로 최다일 때만(=실제로 팽팽한
+  // 균형) 이 다리를 쓴다. buildInterpretationKey는 이미 있는 값이고 새
+  // 계산이 아니다 — 없는 사람에게 "균형"이 있다고 지어내지 않기 위한
+  // 조건이다. 해당하지 않으면 기존(다음 장=관계, ch2-insight 인용) 다리로
+  // 대체한다.
+  const key = buildInterpretationKey(appData);
+  const hasBalanceTie =
+    key.isTopTie && key.topCategories.includes("비겁") && key.topCategories.includes("관성");
+
   // 다음 장(관계에서 반복되는 장면 — ch2-insight)이 이미 만들어낸 실제
   // 개인화 문장을 그대로 인용한다. 새 문장 창작 없음, blurred 부분만
   // 화면에서 블러 처리한다(BlurBridge, ResultLandingV2.tsx).
   const relationshipHint = scenes.find((s) => s.id === "ch2-insight")?.realLife;
-  const teaser = relationshipHint
+  const teaser = hasBalanceTie
+    ? {
+        lead: "이 팽팽한 균형이 실제로 무너지는 자리는 따로 있습니다 —",
+        blurred: "사회에서 짊어진 규율이 결국 자기 자신을 가두는 쪽으로 흐르기 쉽습니다.",
+      }
+    : relationshipHint
     ? {
         lead: "이 기질이 관계 안에서 반복되는 방식도 이미 드러나 있습니다 —",
         blurred: firstSentence(relationshipHint),
@@ -365,20 +384,27 @@ export function buildReportResult(appData: AppData): ReportResult {
     // 있습니다" 식 구체적 생활 장면을 한 단씩 붙인다 — 역시 새 창작 없음.
     const dayElement = GAN_ELEMENT[dayGan];
     const wealthPara = chapters[2]?.body?.[1] ?? chapters[2]?.body?.[0];
+    // 편관+정관이 실제로 둘 다 있는 사람에게만 뜨는 도입 단락(없으면
+    // undefined, 화면에 아무것도 안 뜸) — buildGwansalHonjapNote 참고.
+    const gwansalNote = buildGwansalHonjapNote(appData) ?? undefined;
     chapters[1] = {
       ...chapters[1],
       title: `${user.name}님의 타고난 기질`,
       killpoint: temperamentBlock.heading,
       body: paras,
       richBody: {
+        intro: gwansalNote,
         subheadingA: "겉과 속이 다른 온도",
         bodyA: [...paras.slice(0, 2), CH2_STRENGTH[dayElement]].filter(Boolean),
         redLine: paras[2] ?? "",
         subheadingB: "진짜 모습이 드러나는 순간",
         bodyB: [CH2_EXAMPLE2[dayElement], ...paras.slice(3)].filter(Boolean),
+        // lead가 "재물이 새는 지점"이라는 실제 인용 내용과 맞도록 고쳤다
+        // (이전 버전은 "돈이 되는 방식"이라 해놓고 "돈이 새는 지점"을
+        // 인용해 리드와 내용이 어긋났었다).
         teaser: wealthPara
           ? {
-              lead: "이렇게 좁고 깊게 파고드는 성향, 사실 돈이 되는 방식도 따로 있습니다 —",
+              lead: "이 기질, 재물 앞에서는 다르게 나타납니다 —",
               blurred: firstSentence(wealthPara),
             }
           : undefined,
