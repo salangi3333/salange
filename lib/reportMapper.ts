@@ -319,6 +319,16 @@ export function buildReportResult(appData: AppData): ReportResult {
   const tenYear = buildTenYearFortune(dayGan, birthYear, seed);
   const elementAnalysis = buildElementAnalysis(chars);
 
+  const chapters = buildChapters(scenes);
+  // 第二章 제목만 챕터1과 같은 패턴("OOO님의 타고난 X")으로 덮어쓴다.
+  // 주의: 이 챕터의 본문(chapters[1].body)은 여전히 storyScenes.ts의
+  // ch2-cover/ch2-insight(관계 주제) 내용이다 — 제목만 "타고난 기질"로
+  // 바뀌었을 뿐, 아직 실제 "타고난 기질" 에세이 본문으로 교체된 건
+  // 아니다(그 작업은 별도 승인 후 진행).
+  if (chapters[1]) {
+    chapters[1] = { ...chapters[1], title: `${user.name}님의 타고난 기질` };
+  }
+
   return {
     summaryTitle: user.typeLabel,
     dayMasterLabel: user.dayPillar,
@@ -327,7 +337,7 @@ export function buildReportResult(appData: AppData): ReportResult {
     elementBalance: buildElementBalance(elementAnalysis.counts),
     elementStrongest: elementAnalysis.strongest,
     elementWeakest: elementAnalysis.weakest,
-    chapters: buildChapters(scenes),
+    chapters,
     chapterOne: buildChapterOneDetail(appData, scenes),
     tenYearPreview: groupTenYear(tenYear),
   };
