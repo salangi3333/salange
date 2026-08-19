@@ -320,13 +320,24 @@ export function buildReportResult(appData: AppData): ReportResult {
   const elementAnalysis = buildElementAnalysis(chars);
 
   const chapters = buildChapters(scenes);
-  // 第二章 제목만 챕터1과 같은 패턴("OOO님의 타고난 X")으로 덮어쓴다.
-  // 주의: 이 챕터의 본문(chapters[1].body)은 여전히 storyScenes.ts의
-  // ch2-cover/ch2-insight(관계 주제) 내용이다 — 제목만 "타고난 기질"로
-  // 바뀌었을 뿐, 아직 실제 "타고난 기질" 에세이 본문으로 교체된 건
-  // 아니다(그 작업은 별도 승인 후 진행).
-  if (chapters[1]) {
-    chapters[1] = { ...chapters[1], title: `${user.name}님의 타고난 기질` };
+  // 第二章을 "타고난 기질" 에세이로 교체한다. 새 문장 창작이 아니라
+  // GAN_PROFILE[dayGan].temperament(10간 전량 보유, 지금까지는 어디서도
+  // 쓰이지 않던 필드)를 그대로 쓴다 — buildStoryblocks()가 이미
+  // heading/paragraphs(gan 3개+zhi 노트 1개)/lockedPreview로 조립해 둔
+  // appData.storyblocks의 "타고난 기질" 블록을 그대로 가져온다.
+  // 챕터1은 gan.potential(잠재력)을, 여기는 gan.temperament(기질)를
+  // 쓰므로 문장이 겹치지 않는다 — 단 하나, temperamentBlock의 세 번째
+  // 문단("이 뜨거운 심지는...")은 챕터1 끝의 블러 다리(teaser)가 이미
+  // 인용한 문장과 같다. 이건 의도된 것이다 — 그 다리가 "실제로 다음
+  // 장에 있는 문장"을 인용하는 설계이기 때문.
+  const temperamentBlock = appData.storyblocks.find((b) => b.title === "타고난 기질");
+  if (chapters[1] && temperamentBlock) {
+    chapters[1] = {
+      ...chapters[1],
+      title: `${user.name}님의 타고난 기질`,
+      killpoint: temperamentBlock.heading,
+      body: temperamentBlock.paragraphs.map((p) => p.text).filter(Boolean),
+    };
   }
 
   return {
