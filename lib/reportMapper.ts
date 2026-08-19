@@ -5,7 +5,11 @@ import { AppData } from "./sajuContent";
 import { buildFullStoryScenes, CH1_STRENGTH, CH1_TRUTH_SCENE, CH1_ALONE_SCENE } from "./storyScenes";
 import { YearFortuneItem, buildElementAnalysis, buildTenYearFortune } from "./aiLifeReport";
 import { GAN_PROFILE } from "./ganZhiProfiles";
-import { buildChapterOneNarrative } from "./chapterOneNarrative";
+import {
+  buildChapterOneNarrative,
+  buildRealLifeConnector,
+  buildRelationshipConnector,
+} from "./chapterOneNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -230,12 +234,20 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
 
   const narrative = buildChapterOneNarrative(appData);
 
+  // 5번(실제 삶) — insight.realLife 뒤에 같은 문단으로 이어 붙인다(별도
+  // 문단 아님). 8번(관계·현실) — CH1_TRUTH_SCENE 뒤에 별도 문단으로 붙인다.
+  // 둘 다 INTERPRETATION층(chapterOneInterpretation.ts)의 key를 보조
+  // 근거로만 쓴다 — 새 계산 없음, 오행 5종 테이블 자체는 그대로 유지.
+  const realLifeConnector = buildRealLifeConnector(appData);
+  const realLife = [insight?.realLife, realLifeConnector].filter(Boolean).join(" ");
+  const relationshipConnector = buildRelationshipConnector(appData);
+
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
     title: cover?.chapterTitle ?? "",
     goldHook: gan.resultQuoteFragment,
     body1: narrative.identity,
-    body2: [...narrative.temperament, gan.potential.paragraphs[2]?.text, insight?.realLife].filter(
+    body2: [...narrative.temperament, gan.potential.paragraphs[2]?.text, realLife || undefined].filter(
       (v): v is string => Boolean(v)
     ),
     redInsight: insight?.fact ?? "",
@@ -246,7 +258,9 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
         CH1_ALONE_SCENE[dayElement],
       ].join("\n"),
     ].filter((v): v is string => Boolean(v)),
-    body4: [CH1_TRUTH_SCENE[dayElement]].filter((v): v is string => Boolean(v)),
+    body4: [CH1_TRUTH_SCENE[dayElement], relationshipConnector].filter(
+      (v): v is string => Boolean(v)
+    ),
     cardText: insight?.action ?? "",
   };
 }
