@@ -144,18 +144,15 @@ function firstLine(text: string): string {
 }
 
 /**
- * GOLD 훅을 "OOO님의 타고난 운명은..." 형태로 이름을 넣어 연다. 10간의
- * resultQuoteFragment(ganZhiProfiles.ts)가 전부 "타고난 X, 그러나 Y" 고정
- * 형태를 쓰고 있다는 걸 그대로 이용한 것 — 새 문장 창작이나 개인화 로직
- * 추가가 아니라, 이미 있는 문구를 이름과 함께 재배열할 뿐이다. 그래서
- * 10간 전부에서 동일하게 동작하고 사람마다 이름만 실제 값으로 바뀐다.
+ * GOLD 훅을 "OOO님의 타고난 운명은 이렇습니다." 한 줄로 열고, 그 아래에
+ * 기존 resultQuoteFragment(ganZhiProfiles.ts, 10간 전량 보유)를 그대로
+ * 둔다. 이전 버전은 fragment 문장 중간에 이름을 억지로 끼워 넣어 말투가
+ * 어색해졌던 걸(평서형 "-다"와 존댓말이 한 문장에 섞임) 수정한 것 —
+ * fragment 자체는 손대지 않고 그 앞에 이름이 들어간 줄을 하나 더할
+ * 뿐이라, 문장 다듬기 없이도 10간 전부에서 자연스럽다.
  */
 function buildPersonalizedGoldHook(name: string, fragment: string): string {
-  const commaIdx = fragment.indexOf(",");
-  if (commaIdx === -1) return `${name}님의 타고난 운명은 — ${fragment}`;
-  const trait = fragment.slice(0, commaIdx).replace(/^타고난\s*/, "").trim();
-  const caveat = fragment.slice(commaIdx + 1).replace(/^\s*그러나\s*/, "").trim();
-  return `${name}님의 타고난 운명은 '${trait}'입니다. 그러나 ${caveat}`;
+  return `${name}님의 타고난 운명은 이렇습니다.\n${fragment}`;
 }
 
 /** 블러 다리(teaser)용 — 마침표 기준 첫 문장만 잘라 쓴다. 문장 전체가 아니라
