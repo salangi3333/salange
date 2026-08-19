@@ -239,7 +239,7 @@ function HighlightCard({ text }: { text: string }) {
  * 폰트 크기를 줄이지 않고 들어간다(사전 검증 완료). */
 function BadgeRow({ items }: { items: { label: string; score: number }[] }) {
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-wrap justify-center gap-2">
       {items.map((b) => (
         <span
           key={b.label}
@@ -274,7 +274,7 @@ function BlurBridge({ lead, blurred }: { lead: string; blurred: string }) {
  */
 function ChapterOneSubheading({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-10 mb-3 flex items-center gap-2 first:mt-0">
+    <div className="mt-10 mb-3 flex items-center justify-center gap-2 first:mt-0">
       <span aria-hidden className="h-px w-4 bg-sceneGold/70" />
       <h3 className="font-serif-kr text-[15px] font-bold tracking-wide text-sceneGold">{children}</h3>
     </div>
@@ -468,7 +468,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           }}
         />
 
-        <div className="relative mx-auto w-full max-w-content">
+        <div className="relative mx-auto w-full max-w-content text-center">
           <div className="flex items-center justify-center gap-2">
             <SealMark />
             <p className="text-sm tracking-[0.2em] text-sceneGold/80">命式 · 사주팔자</p>
@@ -557,7 +557,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       {/* ── 01~04 챕터: 챕터마다 시각 구조를 다르게 구성 ───────────── */}
       {/* 第一章 — 최종 샘플 구조: GOLD 훅 → 본문 → RED 핵심 통찰(챕터당 1개) → 본문 → 아이보리 카드 */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
             {data.chapterOne.chapterLabel}
           </span>
@@ -657,7 +657,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
       {/* 第二章 — 본문 중심, 추가 카드 없음(담백하게) */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <ChapterHead {...data.chapters[1]} />
           <div className="mt-6 space-y-4">
             {data.chapters[1].body.map((p, idx) => (
@@ -672,7 +672,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
       {/* 第三章 — 기운 비교 카드 추가 */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <ChapterHead {...data.chapters[2]} />
           <div className="mt-6 space-y-4">
             {data.chapters[2].body.map((p, idx) => (
@@ -706,7 +706,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
       {/* 第四章 — 시기 카드 추가 */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <ChapterHead {...data.chapters[3]} />
           <div className="mt-6 space-y-4">
             {data.chapters[3].body.map((p, idx) => (
@@ -717,7 +717,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           </div>
 
           {/* 시기 카드 — 가로형, 기운 비교 카드와 다른 형태 */}
-          <div className="mt-6 flex items-center gap-4 rounded-card border-l-2 border-sceneGold bg-sceneBg px-5 py-4">
+          <div className="mt-6 flex items-center justify-center gap-4 rounded-card border-l-2 border-sceneGold bg-sceneBg px-5 py-4">
             <span className="font-serif-kr text-[20px] font-bold text-sceneGold">2026년</span>
             <span className="h-6 w-px bg-white/10" />
             <span className="text-[15px] font-medium text-sceneText/90">경쟁운</span>
@@ -730,7 +730,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       {/* ── 오행 밸런스 — 독립 섹션, 정적 SVG 다이어그램. 원본 결과지에서도
           첫 사주팔자 표가 아니라 뒤쪽 챕터에 배치되어 있던 걸 그대로 따랐다 ── */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">五行</span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             지금, 기운이 흐르는 방향
@@ -811,7 +811,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
       {/* ── 앞으로 10년 미리보기 ─────────────────────────────────── */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2">
+        <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">第五章</span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             앞으로 10년 미리보기
