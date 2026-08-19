@@ -1,4 +1,4 @@
-import { Element, ELEMENT_LABEL } from "./hanjaTables";
+import { Element, ELEMENT_LABEL, isCheoneulGwiin } from "./hanjaTables";
 import { AppData } from "./sajuContent";
 import { GAN_PROFILE, ZHI_PROFILE } from "./ganZhiProfiles";
 import { buildElementAnalysis } from "./aiLifeReport";
@@ -332,6 +332,25 @@ export function buildRealLifeConnector(appData: AppData): string {
     return ROOTLESS_SEASON_PATTERN[seasonTier(key.seasonStatus)];
   }
   return SIPSEONG_INNER_PATTERN[dayZhiSipseong] ?? "";
+}
+
+/**
+ * 04번(기질) 오프닝 보정 — 일지가 그 사람의 일간 기준 천을귀인에 해당할
+ * 때만 붙이는 실제 사실 문장. 새 명리 계산이 아니라 이미 있는
+ * isCheoneulGwiin(hanjaTables.ts)을 그대로 쓴다. 해당하지 않는 사람에게는
+ * null을 반환하고, 화면에서는 이 경우 아무 문장도 추가하지 않는다 — 기존
+ * temperament 문단이 그대로 오프닝 역할을 하므로, 없는 사실을 지어내
+ * 채우지 않는다.
+ */
+export function buildCheoneulGwiinOpening(appData: AppData): string | null {
+  const { user } = appData;
+  const dayGan = user.pillars.day.hanja;
+  const dayZhi = user.pillars.branches.day.hanja;
+  if (!isCheoneulGwiin(dayGan, dayZhi)) return null;
+
+  const dayGanHangul = user.pillars.day.hangul;
+  const dayZhiHangul = user.pillars.branches.day.hangul;
+  return `${dayGanHangul}${dayZhiHangul}(${dayGan}${dayZhi}) 일주는 사주 명리학에서 흔히 "일지에 천을귀인을 깔고 앉은 귀한 팔자"로 불립니다. 실제로 이 사람의 사주에도 그 귀인의 기운이 또렷이 새겨져 있습니다.`;
 }
 
 /** 8번(관계·현실) 전용 — CH1_TRUTH_SCENE[dayElement]가 말하는 "오해받는

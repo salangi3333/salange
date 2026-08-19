@@ -129,6 +129,15 @@ const DEFAULT_REPORT: ReportResult = {
       "(자리채움) 실제 행동에서 드러나는 대조를 짚는 문단이 이 자리에 들어갑니다.",
     ],
     cardText: "(자리채움) 기억해야 할 행동 조언 한 문장이 이 자리에 들어갑니다.",
+    badges: [
+      { label: "통찰력", score: 88 },
+      { label: "집중력", score: 90 },
+      { label: "섬세함", score: 85 },
+    ],
+    teaser: {
+      lead: "이 기질이 관계 안에서 반복되는 방식도 이미 드러나 있습니다 —",
+      blurred: "(자리채움) 다음 장에서 드러나는 실제 문장이 이 자리에 들어갑니다.",
+    },
   },
   chapters: [
     {
@@ -221,6 +230,38 @@ function HighlightCard({ text }: { text: string }) {
     <div className="relative mt-6 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard py-4 pl-5 pr-4">
       <span className="absolute inset-y-0 left-0 w-[3px] bg-sceneGold" />
       <p className="font-serif-kr text-[15px] font-bold leading-relaxed text-sceneCardText">{text}</p>
+    </div>
+  );
+}
+
+/** 잠재력 배지 — GAN_PROFILE[dayGan].potential.badges 그대로. 일간 10종
+ * 전량 보유한 실제 데이터라, 두 줄 랩(flex-wrap)만 하면 모바일에서도
+ * 폰트 크기를 줄이지 않고 들어간다(사전 검증 완료). */
+function BadgeRow({ items }: { items: { label: string; score: number }[] }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {items.map((b) => (
+        <span
+          key={b.label}
+          className="rounded-pill bg-sceneCard px-3.5 py-2 text-[13.5px] text-sceneCardText"
+        >
+          {b.label} <strong className="font-bold text-accentGoldTo">{b.score}</strong>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** 챕터 전환용 블러 다리 — 다음 장의 실제 문장 일부를 블러 처리해 궁금증만
+ * 남긴다. 무료→무료 전환(챕터1→챕터2)이라 자물쇠 아이콘은 붙이지 않는다 —
+ * 자물쇠는 실제 유료 경계에만 쓴다는 원칙 유지. */
+function BlurBridge({ lead, blurred }: { lead: string; blurred: string }) {
+  return (
+    <div className="mt-8 rounded-card border border-sceneGold/25 bg-sceneBgAlt px-4 py-4">
+      <p className="text-[13.5px] leading-relaxed text-sceneTextSub">{lead}</p>
+      <p className="mt-1.5 select-none text-[13.5px] italic leading-relaxed text-sceneTextSub/90 blur-[5px]">
+        {blurred}
+      </p>
     </div>
   );
 }
@@ -557,6 +598,13 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           {/* 소제목③ 이 기준은 어디를 향하는가 — body2(기질+실제 삶) 전체.
               [1](일간 프로필의 "다만~" 문장) 앞 구절만 gold. */}
           <ChapterOneSubheading>이 기준은 어디를 향하는가</ChapterOneSubheading>
+          {/* 천을귀인 보정 오프닝 — 일지가 실제로 천을귀인에 해당하는 사람에게만
+              뜬다(cheoneulOpening이 undefined면 아무것도 렌더링하지 않는다). */}
+          {data.chapterOne.cheoneulOpening && (
+            <p className="mb-4 text-[15px] leading-[1.95] text-sceneBody">
+              {data.chapterOne.cheoneulOpening}
+            </p>
+          )}
           <div className="space-y-4">
             {data.chapterOne.body2.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
@@ -564,6 +612,12 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               </p>
             ))}
           </div>
+
+          {/* 타고난 잠재력 배지 — GAN_PROFILE 실제 수치, 일간마다 자동으로 달라진다 */}
+          <p className="mt-6 text-[15px] leading-[1.95] text-sceneBody">
+            타고난 잠재력을 수치로 옮기면 이렇습니다.
+          </p>
+          <BadgeRow items={data.chapterOne.badges} />
 
           {/* RED — 이 챕터 전체에서 유일한 핵심 통찰 문장 */}
           <p className="mt-8 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
@@ -593,6 +647,11 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           </div>
 
           <HighlightCard text={data.chapterOne.cardText} />
+
+          {/* 챕터 전환 블러 다리 — 다음 장 실제 문장 일부를 인용, 무료→무료라 자물쇠 없음 */}
+          {data.chapterOne.teaser && (
+            <BlurBridge lead={data.chapterOne.teaser.lead} blurred={data.chapterOne.teaser.blurred} />
+          )}
         </div>
       </section>
 

@@ -9,6 +9,7 @@ import {
   buildChapterOneNarrative,
   buildRealLifeConnector,
   buildRelationshipConnector,
+  buildCheoneulGwiinOpening,
 } from "./chapterOneNarrative";
 
 /**
@@ -75,6 +76,17 @@ export interface ChapterOneDetail {
   body4: string[];
   /** ch1-insight.action 그대로 — 아이보리 카드(행동 조언) */
   cardText: string;
+  /** 일지가 일간 기준 천을귀인에 해당할 때만 붙는 보정 오프닝 한 문장
+   * (buildCheoneulGwiinOpening). 해당 없으면 undefined — 화면에서도
+   * 아예 렌더링하지 않는다(지어내지 않음). */
+  cheoneulOpening?: string;
+  /** GAN_PROFILE[dayGan].potential.badges 그대로 — 일간 10종 전량 보유,
+   * 새 수치 창작 없음. 사람마다 dayGan이 다르므로 자동으로 달라진다. */
+  badges: { label: string; score: number }[];
+  /** 다음 장(관계에서 반복되는 장면)으로 넘어가는 블러 다리. blurred는
+   * ch2-insight.realLife(이미 개인화된 실제 문장)의 첫 문장을 그대로
+   * 인용한 것 — lead만 고정 문구이고 blurred는 사람마다 다르다. */
+  teaser?: { lead: string; blurred: string };
 }
 
 export interface ReportTenYearItem {
@@ -129,6 +141,13 @@ export interface ReportResult {
 
 function firstLine(text: string): string {
   return text.split("\n")[0]?.trim() ?? text;
+}
+
+/** 블러 다리(teaser)용 — 마침표 기준 첫 문장만 잘라 쓴다. 문장 전체가 아니라
+ * 일부만 인용해야 "궁금증"이 남기 때문. 새 문장 창작 없음, 자르기만 한다. */
+function firstSentence(text: string): string {
+  const idx = text.indexOf(".");
+  return (idx >= 0 ? text.slice(0, idx + 1) : text).trim();
 }
 
 function buildElementBalance(
@@ -242,6 +261,19 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
   const realLife = [insight?.realLife, realLifeConnector].filter(Boolean).join(" ");
   const relationshipConnector = buildRelationshipConnector(appData);
 
+  const cheoneulOpening = buildCheoneulGwiinOpening(appData) ?? undefined;
+
+  // 다음 장(관계에서 반복되는 장면 — ch2-insight)이 이미 만들어낸 실제
+  // 개인화 문장을 그대로 인용한다. 새 문장 창작 없음, blurred 부분만
+  // 화면에서 블러 처리한다(BlurBridge, ResultLandingV2.tsx).
+  const relationshipHint = scenes.find((s) => s.id === "ch2-insight")?.realLife;
+  const teaser = relationshipHint
+    ? {
+        lead: "이 기질이 관계 안에서 반복되는 방식도 이미 드러나 있습니다 —",
+        blurred: firstSentence(relationshipHint),
+      }
+    : undefined;
+
   return {
     chapterLabel: cover?.chapterLabel ?? "第一章",
     title: cover?.chapterTitle ?? "",
@@ -262,6 +294,9 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
       (v): v is string => Boolean(v)
     ),
     cardText: insight?.action ?? "",
+    cheoneulOpening,
+    badges: gan.potential.badges,
+    teaser,
   };
 }
 
