@@ -22,6 +22,8 @@ import {
 import { buildInterpretationKey } from "./chapterOneInterpretation";
 import { buildChapterThreeKey } from "./chapterThreeInterpretation";
 import { buildChapterThreeNarrative } from "./chapterThreeNarrative";
+import { buildChapterFourKey } from "./chapterFourInterpretation";
+import { buildChapterFourNarrative } from "./chapterFourNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -70,6 +72,13 @@ export interface ReportChapter {
     bodyB: string[];
     teaser?: { lead: string; blurred: string };
   };
+  /** 第四章("금전운의 흐름") 전용 — 무료 공개(body에 이미 들어간 것)
+   * 이후의 잠금 상세(흔들리는 조건·과거/현재/다음 대운·조언). 전체 원고는
+   * chapterFourNarrative.ts가 항상 만들어내지만, 화면에는 아직 아무도
+   * 이 필드를 읽지 않는다 — ResultLandingV2.tsx는 body만 렌더링하므로
+   * 지금은 이 필드가 있어도 화면엔 body(공개부)만 보인다. 블러 UI를
+   * 실제로 붙이는 건 다음 단계. */
+  lockedDetail?: string[];
 }
 
 /**
@@ -440,6 +449,32 @@ export function buildReportResult(appData: AppData): ReportResult {
       killpoint: chapterThreeContent.killpoint,
       body: chapterThreeContent.body,
       highlight: chapterThreeContent.highlight,
+    };
+  }
+
+  // 第四章을 "금전운의 흐름"으로 교체한다. chapterFourInterpretation.ts
+  // (일지 포함 재물 세력·정재/편재 구분·일간 통근·비겁/식상/관성/인성의
+  // 상대관계·대운 재물 신호) + chapterFourNarrative.ts(그 판단을 실제 명리
+  // 근거→쉬운 뜻→재물 풀이 순서의 문장으로 조립)가 승인된 설계를 코드로
+  // 옮긴 것이다. chapterLabel(第四章)은 그대로 두고 본문만 교체한다.
+  //
+  // 무료/잠금 분리: body에는 publicPreview(①구조 ②만드는 방식 ③커지는
+  // 핵심 조건 한 가지, 약 450~700자)만 넣는다 — ResultLandingV2.tsx는
+  // body를 그대로 map해서 보여주므로, 이것만으로 이미 "앞부분만 무료
+  // 공개"가 데이터 차원에서 성립한다(UI 변경 없음). lockedDetail(④흔들리는
+  // 조건 ⑤과거 ⑥현재 ⑦다음 대운 ⑧조언)은 전체 원고를 항상 만들어 별도
+  // 필드에 담아 두되, 화면 어디서도 아직 읽지 않는다 — 블러 UI를 실제로
+  // 붙이는 건 다음 단계(이번 범위 아님).
+  if (chapters[3]) {
+    const chapterFourKey = buildChapterFourKey(appData);
+    const chapterFourContent = buildChapterFourNarrative(appData, chapterFourKey);
+    chapters[3] = {
+      ...chapters[3],
+      title: chapterFourContent.title,
+      killpoint: chapterFourContent.killpoint,
+      body: chapterFourContent.publicPreview,
+      highlight: chapterFourContent.highlight,
+      lockedDetail: chapterFourContent.lockedDetail,
     };
   }
 
