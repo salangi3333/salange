@@ -20,6 +20,8 @@ import {
   buildGwansalHonjapNote,
 } from "./chapterOneNarrative";
 import { buildInterpretationKey } from "./chapterOneInterpretation";
+import { buildChapterThreeKey } from "./chapterThreeInterpretation";
+import { buildChapterThreeNarrative } from "./chapterThreeNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -383,7 +385,14 @@ export function buildReportResult(appData: AppData): ReportResult {
     // 더해 "겉으로는 ~하지만" 식 추상 서술 옆에 "예를 들어 ~한 경우가
     // 있습니다" 식 구체적 생활 장면을 한 단씩 붙인다 — 역시 새 창작 없음.
     const dayElement = GAN_ELEMENT[dayGan];
-    const wealthPara = chapters[2]?.body?.[1] ?? chapters[2]?.body?.[0];
+    // 주의: chapters[2](第三章)를 이번에 "돈과 일이 움직이는 방식"에서
+    // "살아가는 방식과 관계운"으로 교체했다(아래 참고). 이 블러 다리는
+    // 원래 chapters[2].body를 그대로 인용했는데, 그 내용이 바뀌면 여기
+    // 리드 문구("재물 앞에서는...")와 인용 내용이 어긋나게 된다. 그래서
+    // chapters[2]를 거치지 않고 ch3-insight 씬 값을 직접 인용하도록
+    // 고쳤다 — 결과 문자열은 이전과 완전히 동일하다(둘 다 같은
+    // realLife 값을 가리킴). 2챕터가 화면에 보여주는 내용은 바뀌지 않는다.
+    const wealthPara = scenes.find((s) => s.id === "ch3-insight")?.realLife;
     // 편관+정관이 실제로 둘 다 있는 사람에게만 뜨는 도입 단락(없으면
     // undefined, 화면에 아무것도 안 뜸) — buildGwansalHonjapNote 참고.
     const gwansalNote = buildGwansalHonjapNote(appData) ?? undefined;
@@ -409,6 +418,28 @@ export function buildReportResult(appData: AppData): ReportResult {
             }
           : undefined,
       },
+    };
+  }
+
+  // 第三章을 "살아가는 방식과 관계운"으로 교체한다. 기존에 이 자리에
+  // 있던 "돈과 일이 움직이는 방식"(재물, 5원소 공통 문장 다수 포함)은
+  // 확정된 4챕터 구조상 원래 4챕터("금전운의 흐름") 자리였고, 4챕터는
+  // 아직 별도 승인 전이라 이번 범위가 아니다 — 그래서 여기서는 第三章
+  // "본문(body/killpoint/highlight/title)"만 교체하고, chapterLabel(第三章)
+  // 은 그대로 둔다. chapterThreeInterpretation.ts(세력·통근·합충·관살혼잡
+  // 판단) + chapterThreeNarrative.ts(그 판단을 실제 문장으로 조립)가
+  // 승인된 설계와 홍지영·한소민·윤태호 3편의 구조/문체를 코드로 옮긴
+  // 것이다 — GAN_PROFILE.lifestyle/CH3_FACT 등 기존 오행·일간 공통
+  // 문장뱅크는 쓰지 않는다.
+  if (chapters[2]) {
+    const chapterThreeKey = buildChapterThreeKey(appData);
+    const chapterThreeContent = buildChapterThreeNarrative(appData, chapterThreeKey);
+    chapters[2] = {
+      ...chapters[2],
+      title: chapterThreeContent.title,
+      killpoint: chapterThreeContent.killpoint,
+      body: chapterThreeContent.body,
+      highlight: chapterThreeContent.highlight,
     };
   }
 

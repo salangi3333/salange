@@ -716,7 +716,9 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* 第三章 — 기운 비교 카드 추가 */}
+      {/* 第三章 — 살아가는 방식과 관계운. 데이터 바인딩만 사용(레이아웃은
+          그대로) — data.chapters[2]가 이제 chapterThreeNarrative.ts가
+          만든 개인화 결과다. */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <ChapterHead {...data.chapters[2]} />
