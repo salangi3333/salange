@@ -11,6 +11,7 @@ import {
   isCheoneulGwiin,
 } from "./hanjaTables";
 import { NatalRaw, PillarExtra } from "@/types";
+import { validateBirthDate } from "./validateBirthInput";
 
 export interface IntakeFormData {
   name: string;
@@ -92,6 +93,16 @@ function buildPillarExtra(hideGan: string[], diShiRaw: string): PillarExtra {
 }
 
 export function calculateSaju(input: IntakeFormData): SajuCalculation {
+  // 방어 검증(2중 적용의 두 번째 층) — 폼(IntakeForm.tsx)이 이미 걸러줬어야
+  // 하지만, 쿼리스트링 진입(app/result-v2/page.tsx)처럼 폼을 거치지 않는
+  // 경로도 있어 여기서도 반드시 다시 확인한다. 존재하지 않는 날짜/윤달이면
+  // 계산을 진행하지 않고 한국어 메시지가 담긴 Error를 던진다 — 호출부가
+  // 이걸 잡아서 사용자에게 보여준다.
+  const dateError = validateBirthDate(input);
+  if (dateError) {
+    throw new Error(dateError);
+  }
+
   let y = input.year;
   let m = input.month;
   let d = input.day;

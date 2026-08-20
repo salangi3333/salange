@@ -58,7 +58,20 @@ export default function ResultV2Page({
 }) {
   const intake = parseIntakeFromQuery(searchParams);
   if (intake) {
-    return <ResultLandingV2 report={buildReportResult(buildAppData(intake))} />;
+    // 쿼리스트링은 폼 검증을 거치지 않고 바로 들어오는 경로라, 여기서도
+    // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 수 있다 — 그 경우
+    // 화면이 깨지는 대신 안내 문구만 보여준다(개발/테스트용 진입 경로라
+    // 별도 재입력 폼은 두지 않는다).
+    try {
+      return <ResultLandingV2 report={buildReportResult(buildAppData(intake))} />;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "입력하신 생년월일을 다시 확인해주세요.";
+      return (
+        <section className="mx-auto flex min-h-screen max-w-content flex-col items-center justify-center px-6 text-center">
+          <p className="font-serif-kr text-lg font-bold text-textMain">{message}</p>
+        </section>
+      );
+    }
   }
 
   return <ResultV2Flow />;

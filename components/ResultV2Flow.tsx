@@ -20,12 +20,15 @@ import { buildReportResult, ReportResult } from "@/lib/reportMapper";
  * 그대로 재사용한다 — 이 파일은 그 결과를 buildReportResult()로 한 번 더
  * 매핑해 ResultLandingV2에 넘기는 역할만 한다. 새 명리 계산 없음.
  */
-type Stage = "intro" | "form" | "analyzing" | "confirm" | "result";
+type Stage = "intro" | "form" | "analyzing" | "confirm" | "result" | "error";
 
 export default function ResultV2Flow() {
   const [stage, setStage] = useState<Stage>("intro");
   const [pendingFormData, setPendingFormData] = useState<IntakeFormData | null>(null);
   const [report, setReport] = useState<ReportResult | null>(null);
+  // 존재하지 않는 날짜/윤달처럼 calculateSaju가 방어 검증에 걸려 Error를
+  // throw했을 때의 메시지 — 화면이 깨지는 대신 이 문구로 안내한다.
+  const [calcError, setCalcError] = useState<string>("");
 
   // app/page.tsx와 동일한 안전장치 — 이전 단계에서 스크롤이 내려가 있던 채로
   // 다음 화면이 표시되면 위쪽 콘텐츠가 스킵된 것처럼 보이므로, confirm/결과
@@ -45,9 +48,23 @@ export default function ResultV2Flow() {
   // 입력한 기본 정보를 확인하는 화면(confirm)을 먼저 보여준다.
   const handleAnalyzingDone = () => {
     if (!pendingFormData) return;
-    const appData = buildAppData(pendingFormData);
-    setReport(buildReportResult(appData));
-    setStage("confirm");
+    // calculateSaju가 방어 검증(validateBirthDate)에서 걸리면 한국어 메시지가
+    // 담긴 Error를 던진다 — 여기서 잡아 결과 화면이 깨지지 않게 하고,
+    // 사용자를 다시 입력 화면으로 안내한다.
+    try {
+      const appData = buildAppData(pendingFormData);
+      setReport(buildReportResult(appData));
+      setStage("confirm");
+    } catch (e) {
+      setCalcError(e instanceof Error ? e.message : "입력하신 생년월일을 다시 확인해주세요.");
+      setStage("error");
+    }
+  };
+
+  const handleRetryFromError = () => {
+    setCalcError("");
+    setPendingFormData(null);
+    setStage("form");
   };
 
   const handleConfirmed = () => {
@@ -60,6 +77,21 @@ export default function ResultV2Flow() {
 
   if (stage === "analyzing") {
     return <AnalyzingScreenV2 name={pendingFormData?.name ?? ""} onDone={handleAnalyzingDone} />;
+  }
+
+  if (stage === "error") {
+    return (
+      <section className="mx-auto flex min-h-screen max-w-content flex-col items-center justify-center gap-4 px-6 text-center">
+        <p className="font-serif-kr text-lg font-bold text-textMain">{calcError}</p>
+        <button
+          type="button"
+          onClick={handleRetryFromError}
+          className="mt-2 rounded-pill bg-gradient-to-r from-accentGoldFrom to-accentGoldTo px-6 py-3 text-sm font-bold text-dark"
+        >
+          다시 입력하기
+        </button>
+      </section>
+    );
   }
 
   if (stage === "confirm" && pendingFormData) {

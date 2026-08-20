@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { IntakeFormData } from "@/lib/sajuEngine";
+import { validateBirthDate } from "@/lib/validateBirthInput";
 
 export default function IntakeForm({
   onSubmit,
@@ -34,20 +35,21 @@ export default function IntakeForm({
     const month = Number(birthMonth);
     const day = Number(birthDay);
 
-    if (
-      !birthYear ||
-      !birthMonth ||
-      !birthDay ||
-      year < 1900 ||
-      year > 2100 ||
-      month < 1 ||
-      month > 12 ||
-      day < 1 ||
-      day > 31
-    ) {
+    if (!birthYear || !birthMonth || !birthDay || year < 1900 || year > 2100) {
       setError("생년월일을 정확히 입력해주세요 (예: 1997 / 9 / 12)");
       return;
     }
+
+    // 단순 범위(day<=31) 검사가 아니라, 선택한 연/월 기준으로 실제 존재하는
+    // 날짜인지 확인한다(2월 30일, 4/6/9/11월 31일, 평년 2/29, 존재하지 않는
+    // 윤달 전부 여기서 걸러진다) — lib/validateBirthInput.ts의 검증을
+    // calculateSaju 진입 전(엔진 레벨)과 동일하게 재사용한다.
+    const dateError = validateBirthDate({ calendarType, isLeapMonth, year, month, day });
+    if (dateError) {
+      setError(dateError);
+      return;
+    }
+
     let hour: number | null = null;
     let minute = 0;
 

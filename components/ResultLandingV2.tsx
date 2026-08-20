@@ -728,23 +728,9 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             ))}
           </div>
 
-          {/* 기운 비교 카드 — 정적 2단 레이아웃 */}
-          <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-6">
-            <div className="flex items-center justify-around text-center">
-              <div>
-                <p className="text-[12px] text-sceneTextSub">나를 채우는 기운</p>
-                <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneGold">목(木)</p>
-              </div>
-              <span className="h-8 w-px bg-white/10" />
-              <div>
-                <p className="text-[12px] text-sceneTextSub">긴장하게 되는 기운</p>
-                <p className="mt-1 font-serif-kr text-[19px] font-bold text-sceneSilver">수(水)</p>
-              </div>
-            </div>
-            <p className="mt-5 text-center text-[14px] leading-relaxed text-sceneText/90">
-              (임시 문구) 목 기운의 사람과는 편안함을, 수 기운의 사람과는 긴장을 느끼기 쉽습니다.
-            </p>
-          </div>
+          {/* 기운 비교 카드는 출시 전 감사에서 하드코딩("목(木)/수(水)")으로
+              확인돼 제거했다 — 3챕터(살아가는 방식과 관계운) 최종 원고와
+              개인화 규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
 
           <HighlightCard text={data.chapters[2].highlight} />
         </div>
@@ -762,12 +748,9 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             ))}
           </div>
 
-          {/* 시기 카드 — 가로형, 기운 비교 카드와 다른 형태 */}
-          <div className="mt-6 flex items-center justify-center gap-4 rounded-card border-l-2 border-sceneGold bg-sceneBg px-5 py-4">
-            <span className="font-serif-kr text-[20px] font-bold text-sceneGold">2026년</span>
-            <span className="h-6 w-px bg-white/10" />
-            <span className="text-[15px] font-medium text-sceneText/90">경쟁운</span>
-          </div>
+          {/* 시기 카드는 출시 전 감사에서 하드코딩("2026년/경쟁운")으로
+              확인돼 제거했다 — 4챕터(금전운의 흐름) 최종 원고와 개인화
+              규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
 
           <HighlightCard text={data.chapters[3].highlight} />
         </div>
@@ -849,9 +832,6 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <p className="font-serif-kr text-[18px] font-bold text-sceneCardText">
             여기까지 무료로 확인할 수 있습니다
           </p>
-          <p className="max-w-[36ch] text-[14.5px] leading-relaxed text-sceneCardText/70">
-            (임시 문구) 아래부터는 잠긴 구간입니다. 나머지 챕터와 10년 흐름은 결제 후 확인할 수 있습니다.
-          </p>
         </div>
       </section>
 
@@ -883,23 +863,9 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 결제 영역 (구조만 — 실제 문구/가격은 미확정) ────────────
-          fixed/sticky 아님, 문서 흐름 안의 일반 섹션. 가격/할인/카운트다운
-          없음 — 결제 CTA가 처음 등장하는 지점이라는 구조만 준비한다. */}
-      <section className="bg-sceneBg px-6 py-16 sm:py-20">
-        <div className="mx-auto flex w-full max-w-content flex-col items-center gap-5 rounded-card border border-accentGoldTo/40 bg-gradient-to-b from-sceneBgAlt to-sceneBg px-6 py-10 text-center">
-          <p className="font-serif-kr text-[19px] font-bold text-sceneGold">전체 해석 잠금 해제</p>
-          <p className="max-w-[34ch] text-[14.5px] leading-relaxed text-sceneTextSub">
-            (임시 문구 — 가격/문구 미확정) 나머지 챕터와 10년 흐름 전체를 확인할 수 있습니다.
-          </p>
-          <button
-            type="button"
-            className="mt-1 w-full rounded-pill border border-accentGoldTo/50 bg-gradient-to-r from-accentGoldFrom to-accentGoldTo px-6 py-3.5 text-[15px] font-bold text-dark"
-          >
-            전체 해석 확인하기
-          </button>
-        </div>
-      </section>
+      {/* 결제 영역(전체 해석 잠금 해제 CTA)은 출시 전 감사에서 동작하지
+          않는 버튼 + "(임시 문구 — 가격/문구 미확정)"로 확인돼 숨김
+          처리했다. 실제 결제 기능은 별도 단계에서 구현한다. */}
     </main>
   );
 }
