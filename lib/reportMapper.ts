@@ -24,6 +24,8 @@ import { buildChapterThreeKey } from "./chapterThreeInterpretation";
 import { buildChapterThreeNarrative } from "./chapterThreeNarrative";
 import { buildChapterFourKey } from "./chapterFourInterpretation";
 import { buildChapterFourNarrative } from "./chapterFourNarrative";
+import { buildLifeFlowKey } from "./lifeFlowInterpretation";
+import { buildLifeFlowNarrative, LifeFlowContent } from "./lifeFlowNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -175,6 +177,13 @@ export interface ReportResult {
   chapterOne: ChapterOneDetail;
   /** buildTenYearFortune()의 10개 연도를 3구간으로 묶은 것 */
   tenYearPreview: ReportTenYearItem[];
+  /** 4챕터 이후 "무료→유료 전환 구간"(내 인생의 큰 흐름/나의 대운 흐름/
+   * 아직 펼쳐지지 않은 기록). 새 5챕터가 아니라 chapters[] 배열과는 별도
+   * 필드다 — lifeFlowInterpretation.ts/lifeFlowNarrative.ts가 만든 결과를
+   * 그대로 옮긴 것뿐, 이 파일에서 새 문장을 짓지 않는다. 선택적 필드로
+   * 두어(?) 기존 ResultLandingV2.tsx의 DEFAULT_REPORT 등 정적 fallback을
+   * 건드리지 않는다 — 화면은 아직 이 필드를 읽지 않는다. */
+  lifeFlow?: LifeFlowContent;
 }
 
 function firstLine(text: string): string {
@@ -478,6 +487,12 @@ export function buildReportResult(appData: AppData): ReportResult {
     };
   }
 
+  // 4챕터 이후 전환 구간. chapters[]와 별도 필드 — 새 5챕터가 아니라
+  // "무료→유료 전환 구간"이며, publicPreview/lockedDetail 원칙은
+  // lifeFlowNarrative.ts 내부에서 이미 분리해 반환한다.
+  const lifeFlowKey = buildLifeFlowKey(appData);
+  const lifeFlow = buildLifeFlowNarrative(appData, lifeFlowKey);
+
   return {
     summaryTitle: user.typeLabel,
     dayMasterLabel: user.dayPillar,
@@ -489,5 +504,6 @@ export function buildReportResult(appData: AppData): ReportResult {
     chapters,
     chapterOne: buildChapterOneDetail(appData, scenes),
     tenYearPreview: groupTenYear(tenYear),
+    lifeFlow,
   };
 }
