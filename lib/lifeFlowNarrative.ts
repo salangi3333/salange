@@ -391,9 +391,21 @@ function buildToc(key: LifeFlowKey): TocItem[] {
 
 // ────────────────────────────────────────────────────────────────
 
+/** 화면의 국면 타임라인(LifePhaseTimeline)이 그대로 그릴 수 있는 최소
+ * 표시용 요약 — tier·raw score 등 내부 판정값은 담지 않는다. 카테고리
+ * 라벨은 이미 한글(비겁/식상/재성/관성/인성)이라 그대로 노출해도 된다. */
+export interface PhaseSummary {
+  startAge: number;
+  endAge: number;
+  categoryLabel: string;
+  isCurrent: boolean;
+  isNatalAxis: boolean;
+}
+
 export interface LifeFlowContent {
   title: string;
   killpoint: string;
+  phases: PhaseSummary[];
   bigPicturePublic: string[];
   bigPictureLocked: string[];
   daYunFlowPublic: string[];
@@ -401,10 +413,21 @@ export interface LifeFlowContent {
   toc: TocItem[];
 }
 
+function buildPhaseSummaries(key: LifeFlowKey): PhaseSummary[] {
+  return key.phases.map((ph, i) => ({
+    startAge: ph.startAge,
+    endAge: ph.endAge,
+    categoryLabel: ph.category ?? "혼재",
+    isCurrent: i === key.currentPhaseIndex,
+    isNatalAxis: ph.isNatalAxis,
+  }));
+}
+
 export function buildLifeFlowNarrative(appData: AppData, key: LifeFlowKey): LifeFlowContent {
   const name = appData.user.name;
   const title = `${name}님의 인생, 시간의 흐름으로 읽다`;
   const killpoint = buildOpeningSentence(name, key);
+  const phases = buildPhaseSummaries(key);
 
   const usedTermsPublic = new Set<string>();
   const bigPicturePublic = buildBigPicturePublic(name, key, usedTermsPublic);
@@ -416,5 +439,5 @@ export function buildLifeFlowNarrative(appData: AppData, key: LifeFlowKey): Life
 
   const toc = buildToc(key);
 
-  return { title, killpoint, bigPicturePublic, bigPictureLocked, daYunFlowPublic, daYunFlowLocked, toc };
+  return { title, killpoint, phases, bigPicturePublic, bigPictureLocked, daYunFlowPublic, daYunFlowLocked, toc };
 }

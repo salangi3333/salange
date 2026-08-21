@@ -2,6 +2,7 @@ import { Lock } from "lucide-react";
 import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
 import { ReportResult } from "@/lib/reportMapper";
 import { Element } from "@/lib/hanjaTables";
+import LifePhaseTimeline from "./LifePhaseTimeline";
 
 /**
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
@@ -758,6 +759,98 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
+      {/* ── 4챕터 이후 전환 구간(①~⑤) — data.lifeFlow가 있을 때만 렌더링.
+          report prop 없이 DEFAULT_REPORT로 볼 때는(lifeFlow undefined)
+          이 블록 전체를 건너뛰고 기존처럼 바로 五行으로 이어진다 — 기존
+          자리채움 화면은 그대로 유지된다. 전부 정적 section 나열이고,
+          framer-motion/IntersectionObserver/sticky·fixed는 쓰지 않는다. ── */}
+      {data.lifeFlow && (
+        <>
+          {/* ① 전환 문장 */}
+          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <p
+                className="font-serif-kr text-[19px] font-bold leading-snug text-sceneGold sm:text-[22px]"
+                style={{ wordBreak: "keep-all" }}
+              >
+                이제, 당신의 사주를 하나의 인생으로 읽어볼 차례입니다.
+              </p>
+              <p className="mt-3 text-[14px] leading-relaxed text-sceneTextSub" style={{ wordBreak: "keep-all" }}>
+                지금까지는 기질과 관계, 재물의 방식을 봤습니다. 이제부터는 그 힘들이 시간 속에서 어떻게 움직여왔는지를 봅니다.
+              </p>
+            </div>
+          </section>
+
+          {/* ② 내 인생의 큰 흐름 — 국면 4~5개, 사람마다 나이 경계가 다르다 */}
+          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                내 인생의 큰 흐름
+              </h2>
+              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                {data.lifeFlow.bigPicturePublic[0]}
+              </p>
+              <LifePhaseTimeline phases={data.lifeFlow.phases} />
+            </div>
+          </section>
+
+          {/* ③ 그래서 지금의 내가 만들어졌습니다 — bigPicturePublic의 현재 국면
+              문단만(잠금 상세는 절대 쓰지 않는다) */}
+          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                그래서, 지금의 내가 만들어졌습니다
+              </h2>
+              {data.lifeFlow.bigPicturePublic[1] && (
+                <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
+                  {data.lifeFlow.bigPicturePublic[1]}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* ④ 당신의 기록에서 발견된 변화 — 과거→현재 정적 비교 카드,
+              점수/등급 없음, daYunFlowPublic[0]/[1] 그대로만 사용 */}
+          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                당신의 기록에서 발견된 변화
+              </h2>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                {data.lifeFlow.daYunFlowPublic[0] && (
+                  <div className="flex-1 rounded-card border border-sceneGold/20 bg-sceneBg px-5 py-5 text-left">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
+                      지나온 시간
+                    </p>
+                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneBody">
+                      {data.lifeFlow.daYunFlowPublic[0]}
+                    </p>
+                  </div>
+                )}
+                <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
+                  <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
+                    {data.lifeFlow.daYunFlowPublic[1]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ⑤ 그런데 다음 변화는 조금 다릅니다 — next-tease만, 결론은 없음 */}
+          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                그런데, 다음 변화는 조금 다릅니다
+              </h2>
+              <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
+                {data.lifeFlow.daYunFlowPublic[2]}
+              </p>
+            </div>
+          </section>
+        </>
+      )}
+
       {/* ── 오행 밸런스 — 독립 섹션, 정적 SVG 다이어그램. 원본 결과지에서도
           첫 사주팔자 표가 아니라 뒤쪽 챕터에 배치되어 있던 걸 그대로 따랐다 ── */}
       <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
@@ -820,10 +913,12 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           }}
         />
         <p
-          className="px-6 py-10 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
+          className="whitespace-pre-line px-6 py-10 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
           style={{ wordBreak: "keep-all" }}
         >
-          지나온 삶은 바꿀 수 없지만, 이제부터는 달라질 수 있습니다.
+          {data.lifeFlow
+            ? "여기까지는, 당신이 지나온 기록입니다.\n하지만 아직, 펼쳐지지 않은 기록이 남아 있습니다."
+            : "지나온 삶은 바꿀 수 없지만, 이제부터는 달라질 수 있습니다."}
         </p>
       </section>
 
@@ -837,33 +932,66 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 앞으로 10년 미리보기 ─────────────────────────────────── */}
-      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2 text-center">
-          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">第五章</span>
-          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-            앞으로 10년 미리보기
-          </h2>
-          <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
-            10년을 세 구간으로 나눠 먼저 보여드립니다
-          </p>
+      {/* ── ⑦ 아직 펼쳐지지 않은 기록 — lifeFlow.toc(4개) 잠금 목차.
+          data.lifeFlow가 없을 때(DEFAULT_REPORT)는 기존 "앞으로 10년
+          미리보기"(tenYearPreview) 섹션을 그대로 보여준다 — 기존 필드를
+          지우지 않고 자리만 교체한다. ── */}
+      {data.lifeFlow ? (
+        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              아직 펼쳐지지 않은 기록
+            </h2>
+            <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
+              전체 인생 리포트에서 이어지는 이야기입니다
+            </p>
 
-          <ul className="mt-6 flex flex-col gap-3">
-            {data.tenYearPreview.map((item) => (
-              <li
-                key={item.period}
-                className="flex items-center justify-between rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4"
-              >
-                <div>
-                  <p className="font-serif-kr text-[15px] font-bold text-sceneGold">{item.period}</p>
-                  <p className="mt-0.5 text-[13px] text-sceneTextSub">{item.title}</p>
-                </div>
-                <Lock size={16} className="shrink-0 text-sceneGold/70" />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+            <ul className="mt-6 flex flex-col gap-3">
+              {data.lifeFlow.toc.map((item, idx) => (
+                <li
+                  key={item.title}
+                  className="flex items-start justify-between gap-3 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4 text-left"
+                >
+                  <div className="min-w-0">
+                    <p className="font-serif-kr text-[15px] font-bold text-sceneGold">
+                      {`0${idx + 1} ${item.title}`}
+                    </p>
+                    <p className="mt-1 text-[13px] leading-relaxed text-sceneTextSub">{item.subtitle}</p>
+                  </div>
+                  <Lock size={16} className="mt-1 shrink-0 text-sceneGold/70" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : (
+        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">第五章</span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              앞으로 10년 미리보기
+            </h2>
+            <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
+              10년을 세 구간으로 나눠 먼저 보여드립니다
+            </p>
+
+            <ul className="mt-6 flex flex-col gap-3">
+              {data.tenYearPreview.map((item) => (
+                <li
+                  key={item.period}
+                  className="flex items-center justify-between rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4"
+                >
+                  <div>
+                    <p className="font-serif-kr text-[15px] font-bold text-sceneGold">{item.period}</p>
+                    <p className="mt-0.5 text-[13px] text-sceneTextSub">{item.title}</p>
+                  </div>
+                  <Lock size={16} className="shrink-0 text-sceneGold/70" />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* 결제 영역(전체 해석 잠금 해제 CTA)은 출시 전 감사에서 동작하지
           않는 버튼 + "(임시 문구 — 가격/문구 미확정)"로 확인돼 숨김
