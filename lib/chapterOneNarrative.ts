@@ -526,7 +526,11 @@ export function buildChapterTwoOpening(appData: AppData): { title: string; body:
       realLife += " 동시에 맡은 일은 끝까지 해내야 한다는 압박도 함께 작동하는 편입니다.";
     }
     bodyParts.push(realLife);
-    if (topCat === "관성") {
+    // 편관·정관이 실제로 둘 다 있을 때만 "두 기준" 이원구도 제목을 쓴다 —
+    // 하나만 있으면(관살혼잡 아님) 위에서 이미 정한 일반 관성 제목(title)을
+    // 그대로 둔다.
+    const hasBothForTitle = pyeongwanStages.length > 0 && jeonggwanStages.length > 0;
+    if (topCat === "관성" && hasBothForTitle) {
       const sameStage =
         pyeongwanStages.length === 1 && jeonggwanStages.length === 1 && pyeongwanStages[0] === jeonggwanStages[0];
       title = sameStage
