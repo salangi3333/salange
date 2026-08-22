@@ -17,7 +17,7 @@ import {
   buildRealLifeConnector,
   buildRelationshipConnector,
   buildCheoneulGwiinOpening,
-  buildGwansalHonjapNote,
+  buildChapterTwoOpening,
 } from "./chapterOneNarrative";
 import { buildInterpretationKey } from "./chapterOneInterpretation";
 import { buildChapterThreeKey } from "./chapterThreeInterpretation";
@@ -411,16 +411,22 @@ export function buildReportResult(appData: AppData): ReportResult {
     // 고쳤다 — 결과 문자열은 이전과 완전히 동일하다(둘 다 같은
     // realLife 값을 가리킴). 2챕터가 화면에 보여주는 내용은 바뀌지 않는다.
     const wealthPara = scenes.find((s) => s.id === "ch3-insight")?.realLife;
-    // 편관+정관이 실제로 둘 다 있는 사람에게만 뜨는 도입 단락(없으면
-    // undefined, 화면에 아무것도 안 뜸) — buildGwansalHonjapNote 참고.
-    const gwansalNote = buildGwansalHonjapNote(appData) ?? undefined;
+    // 2장 "주제 선정" — 실제 최상위 축(analyzeCategoryStrength)을 먼저
+    // 고르고, 관성(관살혼잡)은 center/supporting/none 3단계로만 반영한다
+    // (buildChapterTwoOpening, axisRelevance.ts). 예전에는 편관+정관이
+    // 둘 다 있기만 하면(존재 여부만으로) 무조건 도입 단락에 넣었는데
+    // (buildGwansalHonjapNote), 이제는 그게 이 사람의 실제 중심축인지까지
+    // 판정한 뒤에만 넣는다. 소제목(killpoint)과 도입 단락(intro)만
+    // 바뀌고, 그 아래 bodyA/bodyB/redLine/teaser(GAN_PROFILE.temperament
+    // 기반)는 그대로 둔다 — 문체를 다시 쓰지 않는다.
+    const chapterTwoOpening = buildChapterTwoOpening(appData);
     chapters[1] = {
       ...chapters[1],
       title: `${user.name}님의 타고난 기질`,
-      killpoint: temperamentBlock.heading,
+      killpoint: chapterTwoOpening?.title ?? temperamentBlock.heading,
       body: paras,
       richBody: {
-        intro: gwansalNote,
+        intro: chapterTwoOpening?.body,
         subheadingA: "겉과 속이 다른 온도",
         bodyA: [...paras.slice(0, 2), CH2_STRENGTH[dayElement]].filter(Boolean),
         redLine: paras[2] ?? "",

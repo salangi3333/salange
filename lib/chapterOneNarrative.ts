@@ -4,6 +4,7 @@ import { GAN_PROFILE, ZHI_PROFILE } from "./ganZhiProfiles";
 import { buildElementAnalysis } from "./aiLifeReport";
 import { buildInterpretationKey } from "./chapterOneInterpretation";
 import { analyzeCategoryStrength, SipseongCategory as StrengthCategory } from "./strengthAnalysis";
+import { classifyAxisRelevance, AxisRelevance } from "./axisRelevance";
 
 /**
  * 01장(타고난 본질) 전용 — "일간·일지" 및 "사주 안의 다른 글자와 기운"을
@@ -419,27 +420,29 @@ function buildGwansalPositionDetail(pyeongwanStages: Stage[], jeonggwanStages: S
   return `명리학에서는 이를 관살혼잡이라 부르는데, 정관은 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.정관} 힘으로, 편관은 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.편관} 힘으로 따로 작동합니다.`;
 }
 
-/** 카테고리별 소제목 / 쉬운 뜻 / 현실 모습 — 개수를 단정하지 않는 문구로만 구성. */
+/** 카테고리별 소제목 / 쉬운 뜻 / 현실 모습 — 개수를 단정하지 않는 문구로만 구성.
+ * 식상·인성은 "표현/행동으로 만들어내는 힘", "관찰·흡수해서 판단하는 힘" 방향으로
+ * 더 또렷하게 다듬었다(승인된 설계 반영). 비겁·재성·관성은 이전 검증 통과 문구 유지. */
 const AXIS_TITLE: Record<StrengthCategory, string> = {
   비겁: "누구보다 자기 기준이 뚜렷한 사람입니다.",
-  식상: "생각을 안에만 담아두지 못하는 사람입니다.",
+  식상: "생각을 결국 행동이나 결과물로 만들어내는 사람입니다.",
   재성: "눈에 보이는 결과를 가장 중요하게 여기는 사람입니다.",
   관성: "맡은 일은 끝까지 해내야 마음이 놓이는 사람입니다.",
-  인성: "확신이 서기 전엔 쉽게 움직이지 않는 사람입니다.",
+  인성: "서두르지 않고, 관찰하고 흡수한 뒤에 판단하는 사람입니다.",
 };
 const AXIS_MEANING: Record<StrengthCategory, string> = {
   비겁: "자기 자신과 같은 색의 기운이 강하다는 뜻입니다",
-  식상: "생각이나 감정을 풀어내려는 기운이 강하다는 뜻입니다",
+  식상: "생각한 것을 행동이나 결과물로 풀어내려는 기운이 강하다는 뜻입니다",
   재성: "손에 잡히는 결실을 쌓으려는 기운이 강하다는 뜻입니다",
   관성: "스스로 책임과 규칙을 지우는 기운이 강하다는 뜻입니다",
-  인성: "기대거나 배우려는 기운이 강하다는 뜻입니다",
+  인성: "관찰하고 흡수해서 스스로 판단을 세우려는 기운이 강하다는 뜻입니다",
 };
 const AXIS_REAL_LIFE: Record<StrengthCategory, string> = {
   비겁: "그래서 남의 말이나 분위기에 잘 흔들리지 않고, 한번 정한 방향은 끝까지 밀고 나가는 편입니다.",
-  식상: "그래서 마음에 있는 걸 말이나 행동으로 꺼내고 나서야 비로소 편안해지는 편입니다.",
+  식상: "그래서 생각에 머물지 않고, 말이나 행동·결과물로 직접 만들어내야 직성이 풀리는 편입니다.",
   재성: "그래서 막연한 계획보다, 실제로 손에 쥘 수 있는 것부터 챙기는 편입니다.",
   관성: "그래서 맡은 몫을 끝까지 해내지 않으면 마음 한구석이 불편한 편입니다.",
-  인성: "그래서 스스로 납득이 될 때까지는 좀처럼 먼저 움직이지 않는 편입니다.",
+  인성: "그래서 판단을 서두르기보다, 충분히 관찰하고 흡수한 뒤에야 움직이는 편입니다.",
 };
 
 /** tier를 그대로 어조로 옮긴다 — A=단독 우세, B=근소 우세, 그 외(C·정보없음)=공동 우세.
@@ -473,12 +476,15 @@ function gwansalRelevance(
   tier: "A" | "B" | "C" | null,
   pyeongwanStages: Stage[],
   jeonggwanStages: Stage[]
-): "center" | "supporting" | "none" {
+): AxisRelevance {
   const hasBoth = pyeongwanStages.length > 0 && jeonggwanStages.length > 0;
-  if (topCat === "관성") return "center";
-  if (secondCat === "관성" && tier === "C") return "center";
-  if (hasBoth) return "supporting";
-  return "none";
+  return classifyAxisRelevance({
+    topCategory: topCat,
+    secondCategory: secondCat,
+    tier,
+    candidateCategory: "관성",
+    candidateHasNotableStructure: hasBoth,
+  });
 }
 
 /** "supporting" 전용 — 중심축을 밀어내지 않는 보조 문장 한 줄. 실제 두
