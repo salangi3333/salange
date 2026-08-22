@@ -3,6 +3,7 @@ import { AppData } from "./sajuContent";
 import { GAN_PROFILE, ZHI_PROFILE } from "./ganZhiProfiles";
 import { buildElementAnalysis } from "./aiLifeReport";
 import { buildInterpretationKey } from "./chapterOneInterpretation";
+import { analyzeCategoryStrength, SipseongCategory as StrengthCategory } from "./strengthAnalysis";
 
 /**
  * 01장(타고난 본질) 전용 — "일간·일지" 및 "사주 안의 다른 글자와 기운"을
@@ -355,6 +356,185 @@ export function buildGwansalHonjapNote(appData: AppData): string | null {
   if (!pyeongwan || !jeonggwan) return null;
 
   return `이 사람의 사주에는 명리학에서 "관살혼잡"이라 부르는 배치가 있습니다. 쉽게 말하면 머릿속에 시키는 사람이 두 명 있는 느낌입니다. 한 명은 "지금 안 하면 큰일 나"라며 몰아치고(편관, ${STAGE_LABEL[pyeongwan.stage]}), 다른 한 명은 "이건 원래 네가 해야 하는 일이야"라며 차분히 눌러앉습니다(정관, ${STAGE_LABEL[jeonggwan.stage]}).`;
+}
+
+// ────────────────────────────────────────────────────────────────
+// 2장(타고난 기질) 오프닝 — buildGwansalHonjapNote(기존, 손대지 않음)는
+// 그대로 둔 채, 검증 전용 buildChapterTwoOpening()을 아래 원칙으로
+// 다시 짰다(1차 구현 이후 지적받은 2개 오류 수정):
+//
+//  ① "가장 많습니다"처럼 개수를 단정하는 표현 금지 — analyzeCategoryStrength의
+//     top은 개수가 아니라 개수+월령+통근+투간을 합친 총점으로 정해지므로,
+//     실제 개수가 top보다 많은 다른 카테고리가 있을 수 있다(식상 count=1인데
+//     top인 경우 등). tier로만 어조를 정한다: A=단독 우세, B=근소 우세,
+//     C(또는 tier 정보 부족)=공동 우세 — tier C에서는 두 카테고리를 함께
+//     명시하고 "가장"류 단정 표현을 쓰지 않는다.
+//  ② 관성(편관·정관)은 "관살혼잡 여부"가 아니라 "실제 세력(top 또는 second)"
+//     기준으로 반영 여부를 정한다 — 존재만으로 무조건 넣지 않고, 존재하지
+//     않으면 당연히 넣지 않는다. 반영할 때는 편관·정관 각각의 실제 자리를
+//     전부(첫 매치만이 아니라) 모아 정확히 서술한다.
+//
+// 새 명리 계산은 없다 — analyzeCategoryStrength(3장이 이미 쓰는 값)와
+// 8글자의 실제 sipseong/stage만 읽는다. reportMapper.ts에는 아직 연결하지
+// 않았다 — 검증 전용 함수다.
+// ────────────────────────────────────────────────────────────────
+
+const GWANSAL_CLAUSE: Record<"편관" | "정관", string> = {
+  편관: '"지금 안 하면 큰일 나"며 몰아붙이는',
+  정관: '"원래 네가 해야 할 일"이라며 차분히 다잡는',
+};
+
+/** 편관·정관 각각의 실제 위치를 전부(첫 매치만이 아니라) 모은다. */
+function findAllGwansalPositions(appData: AppData): { pyeongwanStages: Stage[]; jeonggwanStages: Stage[] } {
+  const user = appData.user;
+  const pyeongwanStages: Stage[] = [];
+  const jeonggwanStages: Stage[] = [];
+  (["year", "month", "hour"] as const).forEach((stage) => {
+    const g = user.pillars[stage];
+    const z = user.pillars.branches[stage];
+    [g, z].forEach((cell) => {
+      if (cell?.sipseong === "편관") pyeongwanStages.push(stage);
+      if (cell?.sipseong === "정관") jeonggwanStages.push(stage);
+    });
+  });
+  return { pyeongwanStages, jeonggwanStages };
+}
+
+/** 편관·정관의 실제 위치를 전부 반영한 서술. 하나도 없으면 null. */
+function buildGwansalPositionDetail(pyeongwanStages: Stage[], jeonggwanStages: Stage[]): string | null {
+  const hasPyeon = pyeongwanStages.length > 0;
+  const hasJeong = jeonggwanStages.length > 0;
+  if (!hasPyeon && !hasJeong) return null;
+
+  if (hasPyeon && !hasJeong) {
+    return `편관이 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}에 자리해, ${GWANSAL_CLAUSE.편관} 힘으로 계속 작동합니다.`;
+  }
+  if (!hasPyeon && hasJeong) {
+    return `정관이 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}에 자리해, ${GWANSAL_CLAUSE.정관} 힘으로 계속 작동합니다.`;
+  }
+  // 둘 다 있음 = 관살혼잡
+  if (pyeongwanStages.length === 1 && jeonggwanStages.length === 1 && pyeongwanStages[0] === jeonggwanStages[0]) {
+    return `명리학에서는 이를 관살혼잡이라 부르는데, ${STAGE_LABEL[pyeongwanStages[0]]} 하나에 ${GWANSAL_CLAUSE.편관} 편관과 ${GWANSAL_CLAUSE.정관} 정관이 함께 있습니다.`;
+  }
+  return `명리학에서는 이를 관살혼잡이라 부르는데, 정관은 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.정관} 힘으로, 편관은 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.편관} 힘으로 따로 작동합니다.`;
+}
+
+/** 카테고리별 소제목 / 쉬운 뜻 / 현실 모습 — 개수를 단정하지 않는 문구로만 구성. */
+const AXIS_TITLE: Record<StrengthCategory, string> = {
+  비겁: "누구보다 자기 기준이 뚜렷한 사람입니다.",
+  식상: "생각을 안에만 담아두지 못하는 사람입니다.",
+  재성: "눈에 보이는 결과를 가장 중요하게 여기는 사람입니다.",
+  관성: "맡은 일은 끝까지 해내야 마음이 놓이는 사람입니다.",
+  인성: "확신이 서기 전엔 쉽게 움직이지 않는 사람입니다.",
+};
+const AXIS_MEANING: Record<StrengthCategory, string> = {
+  비겁: "자기 자신과 같은 색의 기운이 강하다는 뜻입니다",
+  식상: "생각이나 감정을 풀어내려는 기운이 강하다는 뜻입니다",
+  재성: "손에 잡히는 결실을 쌓으려는 기운이 강하다는 뜻입니다",
+  관성: "스스로 책임과 규칙을 지우는 기운이 강하다는 뜻입니다",
+  인성: "기대거나 배우려는 기운이 강하다는 뜻입니다",
+};
+const AXIS_REAL_LIFE: Record<StrengthCategory, string> = {
+  비겁: "그래서 남의 말이나 분위기에 잘 흔들리지 않고, 한번 정한 방향은 끝까지 밀고 나가는 편입니다.",
+  식상: "그래서 마음에 있는 걸 말이나 행동으로 꺼내고 나서야 비로소 편안해지는 편입니다.",
+  재성: "그래서 막연한 계획보다, 실제로 손에 쥘 수 있는 것부터 챙기는 편입니다.",
+  관성: "그래서 맡은 몫을 끝까지 해내지 않으면 마음 한구석이 불편한 편입니다.",
+  인성: "그래서 스스로 납득이 될 때까지는 좀처럼 먼저 움직이지 않는 편입니다.",
+};
+
+/** tier를 그대로 어조로 옮긴다 — A=단독 우세, B=근소 우세, 그 외(C·정보없음)=공동 우세.
+ * "가장 많다"류 개수 단정은 어디에도 쓰지 않는다. */
+function buildAxisStrengthClause(topCat: StrengthCategory, tier: "A" | "B" | "C" | null, secondCat: StrengthCategory | null): string {
+  if (tier === "A" || !secondCat) {
+    return `다른 글자를 종합해보면, ${topCat}의 기운이 가장 강하게 자리잡고 있습니다.`;
+  }
+  if (tier === "B") {
+    return `다른 글자를 종합해보면, ${topCat}의 기운이 ${secondCat}보다 한 걸음 앞서 있습니다.`;
+  }
+  return `다른 글자를 종합해보면, ${topCat}과 ${secondCat}이 함께 강하게 자리합니다.`;
+}
+
+const STAGE_ORDER_LIST: Stage[] = ["year", "month", "hour"];
+
+/**
+ * 관성(편관·정관)이 2장에서 차지할 위상을 3단계로 정한다 — 존재 여부와
+ * 중요도를 분리한다:
+ *  - "center": 관성 자체가 top이거나, second이면서 tier가 C(근소한 공동
+ *    우세)일 때. 이때는 관살혼잡을 2장의 핵심 구조로 쓴다.
+ *  - "supporting": 편관·정관이 실제로 둘 다 있지만(관살혼잡 실존) center
+ *    조건에는 못 미칠 때 — 중심축 이야기를 밀어내지 않되, 존재 자체를
+ *    지우지도 않고 보조 근거 한 문장으로만 반영한다.
+ *  - "none": 편관·정관이 하나도 없거나(관살혼잡 자체가 없음), 하나만
+ *    있는데(관살혼잡 아님) top/second 근처도 아닐 때 — 아무것도 넣지 않는다.
+ */
+function gwansalRelevance(
+  topCat: StrengthCategory,
+  secondCat: StrengthCategory | null,
+  tier: "A" | "B" | "C" | null,
+  pyeongwanStages: Stage[],
+  jeonggwanStages: Stage[]
+): "center" | "supporting" | "none" {
+  const hasBoth = pyeongwanStages.length > 0 && jeonggwanStages.length > 0;
+  if (topCat === "관성") return "center";
+  if (secondCat === "관성" && tier === "C") return "center";
+  if (hasBoth) return "supporting";
+  return "none";
+}
+
+/** "supporting" 전용 — 중심축을 밀어내지 않는 보조 문장 한 줄. 실제 두
+ * 위치(첫 매치만이 아니라 전부)를 그대로 반영한다. */
+function buildGwansalSupportingNote(pyeongwanStages: Stage[], jeonggwanStages: Stage[]): string {
+  const stages = STAGE_ORDER_LIST.filter((s) => pyeongwanStages.includes(s) || jeonggwanStages.includes(s));
+  return `여기에 편관과 정관(관살혼잡)도 ${joinStages(stages.map((s) => STAGE_LABEL[s]))}에 걸쳐 있어, 그 중심 위에 책임감이 한 겹 더 얹히는 편입니다.`;
+}
+
+/**
+ * 2장 오프닝 전체 진입점(테스트/검증용). 순서: 실제 최상위 축 확인(①) →
+ * tier에 맞는 어조로 세력 서술(②) → 관성의 위상을 center/supporting/none
+ * 3단으로 판정해 그만큼만 반영(③) → 현실 모습으로 번역(④).
+ * "특수 구조 하나로 사람 전체를 설명"하지 않도록, 관살혼잡이 실존해도
+ * 중심축보다 명확히 약하면 2장 전체를 관성 이야기로 바꾸지 않는다 —
+ * 그렇다고 존재 자체를 지우지도 않는다(supporting 단계).
+ * 아직 reportMapper.ts에는 연결하지 않았다 — 검증 전용 함수다.
+ */
+export function buildChapterTwoOpening(appData: AppData): { title: string; body: string } | null {
+  const strength = analyzeCategoryStrength(appData.user);
+  if (!strength.top) return null;
+
+  const topCat = strength.top.category;
+  const secondCat = strength.second?.category ?? null;
+  const tier = strength.tier;
+  const { pyeongwanStages, jeonggwanStages } = findAllGwansalPositions(appData);
+  const relevance = gwansalRelevance(topCat, secondCat, tier, pyeongwanStages, jeonggwanStages);
+
+  const axisClause = buildAxisStrengthClause(topCat, tier, secondCat);
+  const meaningClause = `쉽게 말해 ${AXIS_MEANING[topCat]}.`;
+  const bodyParts = [axisClause, meaningClause];
+  let title = AXIS_TITLE[topCat];
+
+  if (relevance === "center") {
+    const gwansalDetail = buildGwansalPositionDetail(pyeongwanStages, jeonggwanStages);
+    if (gwansalDetail) bodyParts.push(gwansalDetail);
+    let realLife = AXIS_REAL_LIFE[topCat];
+    if (gwansalDetail && topCat !== "관성") {
+      realLife += " 동시에 맡은 일은 끝까지 해내야 한다는 압박도 함께 작동하는 편입니다.";
+    }
+    bodyParts.push(realLife);
+    if (topCat === "관성") {
+      const sameStage =
+        pyeongwanStages.length === 1 && jeonggwanStages.length === 1 && pyeongwanStages[0] === jeonggwanStages[0];
+      title = sameStage
+        ? "누구보다 자신에게 엄격한 사람입니다."
+        : "시기마다 다른 기준으로 자신을 다잡는 사람입니다.";
+    }
+  } else if (relevance === "supporting") {
+    bodyParts.push(buildGwansalSupportingNote(pyeongwanStages, jeonggwanStages));
+    bodyParts.push(AXIS_REAL_LIFE[topCat]);
+  } else {
+    bodyParts.push(AXIS_REAL_LIFE[topCat]);
+  }
+
+  return { title, body: bodyParts.join(" ") };
 }
 
 /**
