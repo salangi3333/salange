@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Lock } from "lucide-react";
 import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
 import { ReportResult } from "@/lib/reportMapper";
@@ -219,7 +220,7 @@ function ChapterHead({
       </h2>
       {/* 킬포인트 — 챕터당 가장 중요한 한 문장. 붉은색은 이 자리에만 쓴다 */}
       <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
-        {killpoint}
+        {wrapHanjaTokens(killpoint)}
       </p>
     </>
   );
@@ -230,7 +231,9 @@ function HighlightCard({ text }: { text: string }) {
   return (
     <div className="relative mt-6 overflow-hidden rounded-card border border-sceneGold/40 bg-sceneCard py-4 pl-5 pr-4">
       <span className="absolute inset-y-0 left-0 w-[3px] bg-sceneGold" />
-      <p className="font-serif-kr text-[15px] font-bold leading-relaxed text-sceneCardText">{text}</p>
+      <p className="font-serif-kr text-[15px] font-bold leading-relaxed text-sceneCardText">
+        {wrapHanjaTokens(text)}
+      </p>
     </div>
   );
 }
@@ -291,10 +294,17 @@ function escapeForRegExp(value: string): string {
  * 유틸이다. 문장 전체를 gold로 바꾸지 않는다(문단 대부분은 일반 본문색
  * 그대로). 어떤 유저가 오든 항상 같은 규칙(고정된 어휘/위치)으로 골라내는
  * 것이지, 특정 사용자 문장을 손으로 골라 하드코딩한 게 아니다.
+ *
+ * 아래 4개 컴포넌트는 원래 gold 강조만 하고 wrapHanjaTokens는 거치지
+ * 않았다 — 그 결과 이 4개가 맡는 문단(body1 마지막 문단/body2[1]/body3[1]/
+ * body4[0])에 "명리용어(한자)조사" 패턴이 오면 모바일에서 중간에 갈라지는
+ * 문제가 있었다. gold로 감싸는 조각/감싸지 않는 조각 모두 wrapHanjaTokens를
+ * 한 번 더 통과시켜, 어느 축에 어떤 명식이 오든 같은 규칙이 적용되게
+ * 했다 — 텍스트 자체는 그대로, 렌더링 시 nowrap 구간만 추가된다.
  */
 function GoldPhrases({ text, phrases }: { text: string; phrases: string[] }) {
   const found = phrases.filter((p) => text.includes(p));
-  if (found.length === 0) return <>{text}</>;
+  if (found.length === 0) return <>{wrapHanjaTokens(text)}</>;
   const pattern = new RegExp(`(${found.map(escapeForRegExp).join("|")})`, "g");
   const parts = text.split(pattern);
   return (
@@ -305,7 +315,7 @@ function GoldPhrases({ text, phrases }: { text: string; phrases: string[] }) {
             {part}
           </strong>
         ) : (
-          part
+          <Fragment key={i}>{wrapHanjaTokens(part)}</Fragment>
         )
       )}
     </>
@@ -317,13 +327,13 @@ function GoldLeadClause({ text }: { text: string }) {
   const idx = text.indexOf(",");
   if (idx === -1) {
     return (
-      <strong className="font-bold text-sceneGold">{text}</strong>
+      <strong className="font-bold text-sceneGold">{wrapHanjaTokens(text)}</strong>
     );
   }
   return (
     <>
-      <strong className="font-bold text-sceneGold">{text.slice(0, idx)}</strong>
-      {text.slice(idx)}
+      <strong className="font-bold text-sceneGold">{wrapHanjaTokens(text.slice(0, idx))}</strong>
+      {wrapHanjaTokens(text.slice(idx))}
     </>
   );
 }
@@ -332,12 +342,12 @@ function GoldLeadClause({ text }: { text: string }) {
 function GoldFirstLine({ text }: { text: string }) {
   const idx = text.indexOf("\n");
   if (idx === -1) {
-    return <strong className="font-bold text-sceneGold">{text}</strong>;
+    return <strong className="font-bold text-sceneGold">{wrapHanjaTokens(text)}</strong>;
   }
   return (
     <>
-      <strong className="font-bold text-sceneGold">{text.slice(0, idx)}</strong>
-      {text.slice(idx)}
+      <strong className="font-bold text-sceneGold">{wrapHanjaTokens(text.slice(0, idx))}</strong>
+      {wrapHanjaTokens(text.slice(idx))}
     </>
   );
 }
@@ -346,14 +356,14 @@ function GoldFirstLine({ text }: { text: string }) {
  * 같은 패턴(짧은 인용구 한 개)을 쓰기 때문에 사용자와 무관하게 적용된다. */
 function GoldQuoted({ text }: { text: string }) {
   const match = text.match(/[“"]([^”"]+)[”"]/);
-  if (!match) return <>{text}</>;
+  if (!match) return <>{wrapHanjaTokens(text)}</>;
   const full = match[0];
   const idx = text.indexOf(full);
   return (
     <>
-      {text.slice(0, idx)}
+      {wrapHanjaTokens(text.slice(0, idx))}
       <strong className="font-bold text-sceneGold">{full}</strong>
-      {text.slice(idx + full.length)}
+      {wrapHanjaTokens(text.slice(idx + full.length))}
     </>
   );
 }
@@ -361,6 +371,30 @@ function GoldQuoted({ text }: { text: string }) {
 /** buildSynthesis()가 조합에 쓰는 고정 어휘 그대로 — chapterOneNarrative.ts
  * 원문을 바꾸지 않고, 렌더링 단계에서 이 단어들이 나오면 gold로만 감싼다. */
 const CHAPTER_ONE_FORCE_NOUNS = ["거드는 힘", "짓누르는 힘", "풀어내는 힘", "쌓는 힘", "받쳐주는 힘"];
+
+// "단어(한자)조사" 형태(예: 유금(酉金)은, 편재(偏財)가, 정화(丁火)에게는)만
+// 골라 그 구간에만 nowrap을 건다 — 문단 전체 nowrap이 아니다. 괄호 안은
+// 한자 병기뿐 아니라 "지장간(중기)", "지금(35–44세)"처럼 짧은 한글/숫자
+// 부기도 같은 파열 위험을 가져 함께 잡는다. 괄호 앞뒤 길이를 짧게 제한해,
+// 이 패턴과 무관한 일반 괄호 설명(긴 부연 등)까지 넓게 물지 않게 했다.
+const HANJA_TOKEN_RE = /([가-힣A-Za-z0-9]{1,10}\([^()]{1,12}\)[가-힣]{0,4})/g;
+
+/** 1~4장 본문 문구는 그대로 두고, 화면에 그릴 때만 위 패턴 구간을
+ * <span style="white-space:nowrap">으로 감싼다 — 텍스트 내용/개수는
+ * 바뀌지 않는다(매치가 없으면 원래 문자열을 그대로 반환). */
+function wrapHanjaTokens(text: string): React.ReactNode {
+  const parts = text.split(HANJA_TOKEN_RE);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    i % 2 === 1 ? (
+      <span key={i} style={{ whiteSpace: "nowrap" }}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
 
 /** 작은 인장(印章) 디테일 — 정적 SVG, 애니메이션 없음 */
 function SealMark() {
@@ -568,7 +602,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
           {/* GOLD 훅 — 챕터 진입 직후 첫 핵심 문장(1개) */}
           <p className="mt-4 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneGold sm:text-[19px]">
-            {data.chapterOne.goldHook}
+            {wrapHanjaTokens(data.chapterOne.goldHook)}
           </p>
 
           {/* 소제목① 예리함은 어디서 오는가 — body1[0:4](본질+일간·일지). gold 없음. */}
@@ -576,7 +610,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <div className="space-y-4">
             {data.chapterOne.body1.slice(0, 4).map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
@@ -590,7 +624,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
                 {idx === arr.length - 1 ? (
                   <GoldPhrases text={p} phrases={CHAPTER_ONE_FORCE_NOUNS} />
                 ) : (
-                  p
+                  wrapHanjaTokens(p)
                 )}
               </p>
             ))}
@@ -603,13 +637,13 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               뜬다(cheoneulOpening이 undefined면 아무것도 렌더링하지 않는다). */}
           {data.chapterOne.cheoneulOpening && (
             <p className="mb-4 text-[15px] leading-[1.95] text-sceneBody">
-              {data.chapterOne.cheoneulOpening}
+              {wrapHanjaTokens(data.chapterOne.cheoneulOpening)}
             </p>
           )}
           <div className="space-y-4">
             {data.chapterOne.body2.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {idx === 1 ? <GoldLeadClause text={p} /> : p}
+                {idx === 1 ? <GoldLeadClause text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
@@ -622,7 +656,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
           {/* RED — 이 챕터 전체에서 유일한 핵심 통찰 문장 */}
           <p className="mt-8 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
-            {data.chapterOne.redInsight}
+            {wrapHanjaTokens(data.chapterOne.redInsight)}
           </p>
 
           {/* 소제목④ 칼끝이 자신을 향하는 순간 — body3(그림자) 전체.
@@ -631,7 +665,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <div className="space-y-4">
             {data.chapterOne.body3.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {idx === 1 ? <GoldFirstLine text={p} /> : p}
+                {idx === 1 ? <GoldFirstLine text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
@@ -642,7 +676,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <div className="space-y-4">
             {data.chapterOne.body4.map((p, idx) => (
               <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {idx === 0 ? <GoldQuoted text={p} /> : p}
+                {idx === 0 ? <GoldQuoted text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
@@ -666,21 +700,21 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               {/* 관살혼잡처럼 실제로 해당하는 사람에게만 뜨는 도입 단락 */}
               {data.chapters[1].richBody.intro && (
                 <p className="mt-6 text-[15px] leading-[1.95] text-sceneBody">
-                  {data.chapters[1].richBody.intro}
+                  {wrapHanjaTokens(data.chapters[1].richBody.intro)}
                 </p>
               )}
               <ChapterOneSubheading>{data.chapters[1].richBody.subheadingA}</ChapterOneSubheading>
               <div className="space-y-4">
                 {data.chapters[1].richBody.bodyA.map((p, idx) => (
                   <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {p}
+                    {wrapHanjaTokens(p)}
                   </p>
                 ))}
               </div>
 
               {data.chapters[1].richBody.redLine && (
                 <p className="mt-8 whitespace-pre-line font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
-                  {data.chapters[1].richBody.redLine}
+                  {wrapHanjaTokens(data.chapters[1].richBody.redLine)}
                 </p>
               )}
 
@@ -688,7 +722,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               <div className="space-y-4">
                 {data.chapters[1].richBody.bodyB.map((p, idx) => (
                   <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {p}
+                    {wrapHanjaTokens(p)}
                   </p>
                 ))}
               </div>
@@ -707,7 +741,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               <div className="mt-6 space-y-4">
                 {data.chapters[1].body.map((p, idx) => (
                   <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {p}
+                    {wrapHanjaTokens(p)}
                   </p>
                 ))}
               </div>
@@ -726,7 +760,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <div className="mt-6 space-y-4">
             {data.chapters[2].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
@@ -746,7 +780,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           <div className="mt-6 space-y-4">
             {data.chapters[3].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                {p}
+                {wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
