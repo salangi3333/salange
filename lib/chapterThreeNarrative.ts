@@ -101,8 +101,9 @@ function joinKorean(items: string[]): string {
 
 /** 관살혼잡 문장 — 2챕터(buildGwansalHonjapNote)와는 다른, 3챕터 전용
  * 목소리("두 관성이 함께 자리한다" 서술체)로 새로 쓴 것. 승인된 홍지영
- * 원고의 표현을 그대로 옮겼다. */
-function buildGwansalSentence(key: ChapterThreeKey): string | null {
+ * 원고의 표현을 그대로 옮겼다. gwansal.present일 때 이 문장이 body[0](3장
+ * 첫 문장)이 되므로, 여기에만 이름을 한 번 넣는다. */
+function buildGwansalSentence(name: string, key: ChapterThreeKey): string | null {
   const { gwansal } = key;
   if (!gwansal.present || !gwansal.pyeongwan || !gwansal.jeonggwan) return null;
   const sameStage = gwansal.pyeongwan.stage === gwansal.jeonggwan.stage;
@@ -110,7 +111,7 @@ function buildGwansalSentence(key: ChapterThreeKey): string | null {
   const posClause = sameStage
     ? `${names}, 둘 다 ${STAGE_LABEL[gwansal.pyeongwan.stage]}`
     : `편관 ${STAGE_LABEL[gwansal.pyeongwan.stage]}, 정관 ${STAGE_LABEL[gwansal.jeonggwan.stage]}`;
-  return `이 명식에는 성격이 다른 두 관성, 편관과 정관이 함께 자리합니다(${posClause}). 하나는 상황 앞에서 즉각 움직이게 하고, 다른 하나는 맡은 것을 끝까지 책임지게 합니다. 겉으로는 차분하게 움직여도 안에서는 늘 "지금 해야 한다"와 "끝까지 제대로 해야 한다" 두 기준이 동시에 작동합니다.`;
+  return `${name}님의 명식에는 성격이 다른 두 관성, 편관과 정관이 함께 자리합니다(${posClause}). 하나는 상황 앞에서 즉각 움직이게 하고, 다른 하나는 맡은 것을 끝까지 책임지게 합니다. 겉으로는 차분하게 움직여도 안에서는 늘 "지금 해야 한다"와 "끝까지 제대로 해야 한다" 두 기준이 동시에 작동합니다.`;
 }
 
 function buildAxisIntro(name: string, key: ChapterThreeKey): string {
@@ -212,7 +213,7 @@ export function buildChapterThreeNarrative(appData: AppData, key: ChapterThreeKe
   else killpoint = `${name}님의 중심은 ${AXIS_PROFILE[axis].coreLabel}입니다.`;
 
   const body: string[] = [];
-  const gwansalSentence = buildGwansalSentence(key);
+  const gwansalSentence = buildGwansalSentence(name, key);
   if (gwansalSentence) body.push(gwansalSentence);
   body.push(buildAxisIntro(name, key));
   if (axis) {

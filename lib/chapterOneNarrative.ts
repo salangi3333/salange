@@ -446,15 +446,16 @@ const AXIS_REAL_LIFE: Record<StrengthCategory, string> = {
 };
 
 /** tier를 그대로 어조로 옮긴다 — A=단독 우세, B=근소 우세, 그 외(C·정보없음)=공동 우세.
- * "가장 많다"류 개수 단정은 어디에도 쓰지 않는다. */
-function buildAxisStrengthClause(topCat: StrengthCategory, tier: "A" | "B" | "C" | null, secondCat: StrengthCategory | null): string {
+ * "가장 많다"류 개수 단정은 어디에도 쓰지 않는다. 2장 첫 문장이라 이름을
+ * 한 번만 자연스럽게 넣는다(그 외 문장에는 이름을 추가하지 않는다). */
+function buildAxisStrengthClause(name: string, topCat: StrengthCategory, tier: "A" | "B" | "C" | null, secondCat: StrengthCategory | null): string {
   if (tier === "A" || !secondCat) {
-    return `다른 글자를 종합해보면, ${topCat}의 기운이 가장 강하게 자리잡고 있습니다.`;
+    return `${name}님의 다른 글자를 종합해보면, ${topCat}의 기운이 가장 강하게 자리잡고 있습니다.`;
   }
   if (tier === "B") {
-    return `다른 글자를 종합해보면, ${topCat}의 기운이 ${secondCat}보다 한 걸음 앞서 있습니다.`;
+    return `${name}님의 다른 글자를 종합해보면, ${topCat}의 기운이 ${secondCat}보다 한 걸음 앞서 있습니다.`;
   }
-  return `다른 글자를 종합해보면, ${topCat}과 ${secondCat}이 함께 강하게 자리합니다.`;
+  return `${name}님의 다른 글자를 종합해보면, ${topCat}과 ${secondCat}이 함께 강하게 자리합니다.`;
 }
 
 const STAGE_ORDER_LIST: Stage[] = ["year", "month", "hour"];
@@ -513,7 +514,7 @@ export function buildChapterTwoOpening(appData: AppData): { title: string; body:
   const { pyeongwanStages, jeonggwanStages } = findAllGwansalPositions(appData);
   const relevance = gwansalRelevance(topCat, secondCat, tier, pyeongwanStages, jeonggwanStages);
 
-  const axisClause = buildAxisStrengthClause(topCat, tier, secondCat);
+  const axisClause = buildAxisStrengthClause(appData.user.name, topCat, tier, secondCat);
   const meaningClause = `쉽게 말해 ${AXIS_MEANING[topCat]}.`;
   const bodyParts = [axisClause, meaningClause];
   let title = AXIS_TITLE[topCat];
