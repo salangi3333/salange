@@ -809,30 +809,36 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             </div>
           </section>
 
-          {/* ④ 당신의 기록에서 발견된 변화 — 과거→현재 정적 비교 카드,
-              점수/등급 없음, daYunFlowPublic[0]/[1] 그대로만 사용 */}
+          {/* ④ 당신의 기록에서 발견된 변화 — 과거→현재 정적 비교 카드.
+              daYunFlowPublic이 past/current/next 이름표가 붙은 객체라(배열
+              인덱스 아님), 과거 대운이 없는 사용자(첫 대운 진행 중)나 현재
+              대운이 없는 사용자(마지막 대운을 이미 지남)여도 각 카드가
+              정확히 자기 자리의 문장만 받는다 — 해당 문장이 없으면(빈
+              문자열) 그 카드 자체를 렌더링하지 않는다. */}
           <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
             <div className="mx-auto w-full max-w-content2 text-center">
               <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
                 당신의 기록에서 발견된 변화
               </h2>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                {data.lifeFlow.daYunFlowPublic[0] && (
+                {data.lifeFlow.daYunFlowPublic.past && (
                   <div className="flex-1 rounded-card border border-sceneGold/20 bg-sceneBg px-5 py-5 text-left">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
                       지나온 시간
                     </p>
                     <p className="mt-2 text-[14px] leading-[1.85] text-sceneBody">
-                      {data.lifeFlow.daYunFlowPublic[0]}
+                      {data.lifeFlow.daYunFlowPublic.past}
                     </p>
                   </div>
                 )}
-                <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
-                  <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
-                  <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
-                    {data.lifeFlow.daYunFlowPublic[1]}
-                  </p>
-                </div>
+                {data.lifeFlow.daYunFlowPublic.current && (
+                  <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
+                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
+                      {data.lifeFlow.daYunFlowPublic.current}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -844,7 +850,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
                 그런데, 다음 변화는 조금 다릅니다
               </h2>
               <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
-                {data.lifeFlow.daYunFlowPublic[2]}
+                {data.lifeFlow.daYunFlowPublic.next}
               </p>
             </div>
           </section>

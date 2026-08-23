@@ -305,24 +305,37 @@ function buildNextTease(next: DaYunWealthPeriod | null, current: DaYunWealthPeri
   return `${lead}${rel} 지금까지의 방식 위에서 ${SELECTION_DIRECTION_BY_NEXT_AXIS[next.ganCategory]}를 판단하는 일이 중요해질 수 있습니다.`;
 }
 
-function buildDaYunFlowPublic(key: LifeFlowKey, usedTerms: Set<string>): string[] {
-  const { past, current, next } = key.daYun;
-  const paras = [
-    buildPastSentence(past, true),
-    buildCurrentSentence(current, past, key, usedTerms, true),
-    buildNextTease(next, current, key, false),
-  ].filter(Boolean);
-  return paras;
+/** 과거/현재/다음 대운 문장을 배열이 아니라 이름표가 붙은 자리로 반환한다.
+ * 예전에는 [pastSentence, currentSentence, nextTease].filter(Boolean)로
+ * 배열을 만들었는데, past나 current가 없는 사용자(첫 대운을 지나는 중이라
+ * 과거가 없는 경우 / 마지막 대운을 이미 지나 현재가 없는 경우)는 그 자리가
+ * 통째로 빠지면서 뒤 항목들이 앞으로 밀렸다 — 화면이 배열 인덱스([0]="지나온
+ * 시간", [1]="지금")로 값을 꺼내 쓰다 보니 "지금" 카드에 다음 대운 얘기가
+ * 뜨는 등 라벨과 내용이 어긋났다. past/current/next 각각 없으면 빈 문자열을
+ * 그대로 반환해 자리를 지키고, 화면 쪽에서 각 필드를 이름으로 꺼내 쓰게
+ * 한다(빈 문자열이면 그 카드 자체를 렌더링하지 않는다). */
+export interface DaYunFlowText {
+  past: string;
+  current: string;
+  next: string;
 }
 
-function buildDaYunFlowLocked(key: LifeFlowKey, usedTerms: Set<string>): string[] {
+function buildDaYunFlowPublic(key: LifeFlowKey, usedTerms: Set<string>): DaYunFlowText {
   const { past, current, next } = key.daYun;
-  const paras = [
-    buildPastSentence(past, false),
-    buildCurrentSentence(current, past, key, usedTerms, false),
-    buildNextTease(next, current, key, true),
-  ].filter(Boolean);
-  return paras;
+  return {
+    past: buildPastSentence(past, true),
+    current: buildCurrentSentence(current, past, key, usedTerms, true),
+    next: buildNextTease(next, current, key, false),
+  };
+}
+
+function buildDaYunFlowLocked(key: LifeFlowKey, usedTerms: Set<string>): DaYunFlowText {
+  const { past, current, next } = key.daYun;
+  return {
+    past: buildPastSentence(past, false),
+    current: buildCurrentSentence(current, past, key, usedTerms, false),
+    next: buildNextTease(next, current, key, true),
+  };
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -408,8 +421,8 @@ export interface LifeFlowContent {
   phases: PhaseSummary[];
   bigPicturePublic: string[];
   bigPictureLocked: string[];
-  daYunFlowPublic: string[];
-  daYunFlowLocked: string[];
+  daYunFlowPublic: DaYunFlowText;
+  daYunFlowLocked: DaYunFlowText;
   toc: TocItem[];
 }
 
