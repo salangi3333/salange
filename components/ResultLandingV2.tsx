@@ -44,16 +44,27 @@ import LifePhaseTimeline from "./LifePhaseTimeline";
  * 없어 자리채움 그대로 남아 있다.
  */
 
-// 오행 5색 — 전통 오방색(五方色) 기준: 목=청(파랑), 화=적(빨강), 토=황(노랑),
+// 오행 5색 — 전통 오방색(五方色) 기준: 목=청, 화=적(빨강), 토=황(노랑),
 // 금=백(카드가 밝은 아이보리라 흰색 대신 시인성 있는 회색으로 대체), 수=흑(검정).
-// tailwind.config.js의 wood/fire/earth/metal/water 토큰도 이 값과 맞춰뒀다.
-// SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다.
+// SVG fill에는 CSS 변수를 쓸 수 없어 동일 hex를 직접 사용한다(tailwind.config.js의
+// wood/fire/earth/metal/water는 이 화면(ResultLandingV2)이 아니라 PillarTable.tsx
+// 전용 값이라 이 상수와 별개다 — 원래부터 서로 다른 값이었다).
+// [가독성 수정 ①] 수(水)의 원래 값(#141210)이 이 섹션 배경(sceneBg #171412 /
+// sceneBgAlt #1C1815)과 거의 같은 검정이라 그래프·범례 모두에서 사실상
+// 안 보였다 — 그래프 원과 하단 범례는 원래부터 이 상수 하나를 그대로
+// 같이 쓰고 있었으므로(색 불일치가 아니라 배경과 겹치는 문제), 수만
+// 배경과 뚜렷이 구분되는 블루로 바꿨다(1차 수정).
+// [가독성 수정 ②] 그런데 목의 기존 값(#173F70)도 짙은 남색이라, 수를
+// 블루로 바꾸고 나니 범례에서 목·수 둘 다 "파란 계열"로 보여 서로
+// 구분이 잘 안 됐다(실제 모바일 화면에서 확인됨) — "청"을 초록 계열로
+// 표현해 목만 그린으로 바꿨다(전통 오방색에서도 청=파랑/초록 둘 다
+// 통용되는 범위). 화·토·금은 그대로다.
 const ELEMENT_COLORS = {
-  wood: "#173F70",
+  wood: "#1F6B47",
   fire: "#9C1F13",
   earth: "#8A5D00",
   metal: "#4C4A45",
-  water: "#141210",
+  water: "#2B6CB0",
 };
 
 // 오행 각 기운의 뜻 — 사람마다 달라지는 데이터가 아니라 고정된 사전적 의미라
@@ -65,6 +76,23 @@ function elementTextColor(key?: Element): string | undefined {
   if (!key) return undefined;
   return ELEMENT_COLORS[key];
 }
+
+// "지금" 대운 카드 다음, 未開封(잠금 목차) 진입 직전에 넣는 고정 전환
+// 문단 — 승인된 고정 텍스트(사람마다 바뀌지 않음). 예전엔 이 자리에
+// daYunFlowPublic.next(다음 대운 상세: 몇 세부터/간지가 무엇으로 바뀌는지)를
+// 그대로 노출했는데, 무료 결과에서 다음 대운을 미리 설명해버리면 궁금증이
+// 해소돼버린다는 판단으로 상세 설명 대신 이 문단으로 교체했다(승인됨).
+const NEXT_FLOW_TRANSITION =
+  "앞으로의 흐름에서 중요한 것은 단순히 운이 좋으냐 나쁘냐가 아닙니다.\n돈이 언제 움직이는지, 어떤 일을 잡았을 때 결과가 커지는지, 누구와의 인연이 삶에 들어오는지, 그리고 어느 해에 삶의 방향이 크게 달라지는지.\n같은 10년 안에서도 그 시기는 모두 다르게 찾아옵니다.";
+
+// 잠금 목차 4개의 제목·질문 문구 — 승인된 고정 텍스트(사람마다 바뀌지 않음).
+// 각 카드의 흐림 미리보기(lockedPreview)만 lifeFlow.toc의 실제 계산값을 쓴다.
+const LOCKED_TOC_ITEMS: { title: string; question: string }[] = [
+  { title: "일과 재물", question: "내 돈과 일은 언제 크게 움직일까?" },
+  { title: "사랑과 인연", question: "내 편이 되어줄 인연은 언제 들어올까?" },
+  { title: "인생의 전환점", question: "내 삶이 크게 방향을 바꾸는 때는 언제일까?" },
+  { title: "앞으로의 10년", question: "2027년부터, 내 운은 어떻게 달라질까?" },
+];
 
 const ELEMENT_MEANING: Record<ReportResult["elementStrongest"], string> = {
   wood: "성장 · 배움 · 새로운 시작",
@@ -78,6 +106,7 @@ const ELEMENT_MEANING: Record<ReportResult["elementStrongest"], string> = {
 // 완전히 같은 문구/구조다. 이 값 자체를 실제 원고로 바꾸는 작업은
 // 이번 단계 범위가 아니다(추후 별도 원고 연결 예정).
 const DEFAULT_REPORT: ReportResult = {
+  userName: "회원",
   summaryTitle: "",
   dayMasterLabel: "",
   pillars: {
@@ -793,107 +822,28 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 4챕터 이후 전환 구간(①~⑤) — data.lifeFlow가 있을 때만 렌더링.
-          report prop 없이 DEFAULT_REPORT로 볼 때는(lifeFlow undefined)
-          이 블록 전체를 건너뛰고 기존처럼 바로 五行으로 이어진다 — 기존
-          자리채움 화면은 그대로 유지된다. 전부 정적 section 나열이고,
-          framer-motion/IntersectionObserver/sticky·fixed는 쓰지 않는다. ── */}
-      {data.lifeFlow && (
-        <>
-          {/* ① 전환 문장 */}
-          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-            <div className="mx-auto w-full max-w-content2 text-center">
-              <p
-                className="font-serif-kr text-[19px] font-bold leading-snug text-sceneGold sm:text-[22px]"
-                style={{ wordBreak: "keep-all" }}
-              >
-                이제, 당신의 사주를 하나의 인생으로 읽어볼 차례입니다.
-              </p>
-              <p className="mt-3 text-[14px] leading-relaxed text-sceneTextSub" style={{ wordBreak: "keep-all" }}>
-                지금까지는 기질과 관계, 재물의 방식을 봤습니다. 이제부터는 그 힘들이 시간 속에서 어떻게 움직여왔는지를 봅니다.
-              </p>
-            </div>
-          </section>
+      {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
+          변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
+          지점(구 위치)으로 분리해 뒤로 옮겼다 — 이미지와 텍스트를 각각
+          다른 자리에 쓰기 위한 구조 변경일 뿐, 이미지 자체는 손대지 않았다. ── */}
+      <section className="relative overflow-hidden border-b border-white/5 bg-sceneBg">
+        <div
+          // 모바일(96:100, 거의 정사각형)은 원본(4:3 가로)보다 훨씬 좁아
+          // cover 시 좌우가 크게 잘린다. 기존 56%는 왼쪽(문/창) 쪽으로
+          // 치우쳐 있어 오른쪽 화병이 통째로 잘려나갔다 — 데스크톱은
+          // 손대지 않고(sm:56% 20% 그대로) 모바일만 오른쪽으로 옮겨
+          // 얼굴·붓·책상은 그대로 두고 화병·가지·촛불이 자연스럽게
+          // 보이게 했다(82%는 화병이 거의 안 보여 95%로 조정).
+          className="relative aspect-[96/100] w-full bg-cover bg-[95%_20%] sm:aspect-auto sm:h-[70vh] sm:bg-[56%_20%]"
+          style={{
+            backgroundImage: `url(${RESULT_GUIDE_IMAGE})`,
+          }}
+        />
+      </section>
 
-          {/* ② 내 인생의 큰 흐름 — 국면 4~5개, 사람마다 나이 경계가 다르다 */}
-          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-            <div className="mx-auto w-full max-w-content2 text-center">
-              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-                내 인생의 큰 흐름
-              </h2>
-              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
-                {data.lifeFlow.bigPicturePublic[0]}
-              </p>
-              <LifePhaseTimeline phases={data.lifeFlow.phases} />
-            </div>
-          </section>
-
-          {/* ③ 그래서 지금의 내가 만들어졌습니다 — bigPicturePublic의 현재 국면
-              문단만(잠금 상세는 절대 쓰지 않는다) */}
-          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-            <div className="mx-auto w-full max-w-content2 text-center">
-              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-                그래서, 지금의 내가 만들어졌습니다
-              </h2>
-              {data.lifeFlow.bigPicturePublic[1] && (
-                <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
-                  {data.lifeFlow.bigPicturePublic[1]}
-                </p>
-              )}
-            </div>
-          </section>
-
-          {/* ④ 당신의 기록에서 발견된 변화 — 과거→현재 정적 비교 카드.
-              daYunFlowPublic이 past/current/next 이름표가 붙은 객체라(배열
-              인덱스 아님), 과거 대운이 없는 사용자(첫 대운 진행 중)나 현재
-              대운이 없는 사용자(마지막 대운을 이미 지남)여도 각 카드가
-              정확히 자기 자리의 문장만 받는다 — 해당 문장이 없으면(빈
-              문자열) 그 카드 자체를 렌더링하지 않는다. */}
-          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-            <div className="mx-auto w-full max-w-content2 text-center">
-              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-                당신의 기록에서 발견된 변화
-              </h2>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                {data.lifeFlow.daYunFlowPublic.past && (
-                  <div className="flex-1 rounded-card border border-sceneGold/20 bg-sceneBg px-5 py-5 text-left">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
-                      지나온 시간
-                    </p>
-                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneBody">
-                      {data.lifeFlow.daYunFlowPublic.past}
-                    </p>
-                  </div>
-                )}
-                {data.lifeFlow.daYunFlowPublic.current && (
-                  <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
-                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
-                      {data.lifeFlow.daYunFlowPublic.current}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* ⑤ 그런데 다음 변화는 조금 다릅니다 — next-tease만, 결론은 없음 */}
-          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-            <div className="mx-auto w-full max-w-content2 text-center">
-              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-                그런데, 다음 변화는 조금 다릅니다
-              </h2>
-              <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
-                {data.lifeFlow.daYunFlowPublic.next}
-              </p>
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* ── 오행 밸런스 — 독립 섹션, 정적 SVG 다이어그램. 원본 결과지에서도
-          첫 사주팔자 표가 아니라 뒤쪽 챕터에 배치되어 있던 걸 그대로 따랐다 ── */}
-      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+      {/* ── 오행 밸런스 — 선녀 이미지 바로 다음으로 이동. 오각형 다이어그램/
+          범례/강약 요약/계산 로직 전부 기존 그대로, 축소하지 않았다. ── */}
+      <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">五行</span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
@@ -942,18 +892,117 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* ── 선녀 이미지 패널 — 정적 이미지, 반복 사용하지 않고 잠금 직전 1회만.
-          이미지 위에 문구를 겹치지 않고, 이미지 아래에 별도 문단으로 배치한다 ── */}
-      <section className="relative overflow-hidden border-b border-white/5 bg-sceneBg">
-        <div
-          className="relative aspect-[96/100] w-full bg-cover sm:aspect-auto sm:h-[70vh]"
-          style={{
-            backgroundImage: `url(${RESULT_GUIDE_IMAGE})`,
-            backgroundPosition: "56% 20%",
-          }}
-        />
+      {/* ── 4챕터 이후 전환 구간 — data.lifeFlow가 있을 때만 렌더링.
+          report prop 없이 DEFAULT_REPORT로 볼 때는(lifeFlow undefined)
+          이 블록 전체를 건너뛴다. 전부 정적 section 나열이고,
+          framer-motion/IntersectionObserver/sticky·fixed는 쓰지 않는다. ── */}
+      {data.lifeFlow && (
+        <>
+          {/* 命 대운 전환 — 원형 命 표식 + 새 전환 문구(승인된 고정 문구) */}
+          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-sceneGold/40 bg-sceneBgAlt font-serif-kr text-lg text-sceneGold">
+                命
+              </div>
+              <p
+                className="mt-4 font-serif-kr text-[19px] font-bold leading-snug text-sceneGold sm:text-[22px]"
+                style={{ wordBreak: "keep-all" }}
+              >
+                10년마다,
+                <br />
+                운은 달라졌습니다.
+              </p>
+              <p className="mt-3 text-[14px] leading-relaxed text-sceneTextSub" style={{ wordBreak: "keep-all" }}>
+                이제, 그 흐름이 언제 바뀌었는지 봅니다.
+              </p>
+            </div>
+          </section>
+
+          {/* 人生大運 · 내 인생의 큰 흐름 — 국면 4~5개, LifePhaseTimeline
+              실제 계산 데이터 그대로. 과거/현재는 그대로 노출, 미래 구간은
+              LifePhaseTimeline 자체의 기존 잠금/흐림 표시를 그대로 쓴다.
+              설명 문구는 승인된 고정 문구(사람마다 바뀌지 않음) — 예전엔
+              이 자리에 bigPicturePublic[0](동적 생성 문장)을 썼는데, 최종
+              화면 순서 확정 과정에서 이 고정 문구로 교체하기로 승인됨. */}
+          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <span className="block text-center font-serif-kr text-sm tracking-[0.2em] text-sceneGold/80">
+                人生大運
+              </span>
+              <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                내 인생의 큰 흐름
+              </h2>
+              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                앞에 서는 힘이 달라질 때마다,
+                {"\n"}삶의 기준도 함께 바뀌었습니다.
+              </p>
+              <LifePhaseTimeline phases={data.lifeFlow.phases} />
+            </div>
+          </section>
+
+          {/* 지나온 시간 → 지금 — 카드 2개. daYunFlowPublic이 past/current
+              이름표가 붙은 객체라(배열 인덱스 아님), 과거 대운이 없는
+              사용자(첫 대운 진행 중)나 현재 대운이 없는 사용자(마지막 대운을
+              이미 지남)여도 각 카드가 정확히 자기 자리의 문장만 받는다 —
+              해당 문장이 없으면(빈 문자열) 그 카드 자체를 렌더링하지 않는다.
+              bigPicturePublic[1] 장문 문단은 이번 배치에서 빼기로 승인됨. */}
+          <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                그 시간들이,
+                <br />
+                지금의 나를 만들었습니다.
+              </h2>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                {data.lifeFlow.daYunFlowPublic.past && (
+                  <div className="flex-1 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-5 text-left">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
+                      지나온 시간
+                    </p>
+                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneBody">
+                      {data.lifeFlow.daYunFlowPublic.past}
+                    </p>
+                  </div>
+                )}
+                {data.lifeFlow.daYunFlowPublic.current && (
+                  <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
+                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
+                      {data.lifeFlow.daYunFlowPublic.current}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* 다음 변화 티저 — 제목(고정 문구, 최종 화면 순서에서 다시 추가됨)
+              + NEXT_FLOW_TRANSITION 문단. 다음 대운 구체 설명(앞으로 몇
+              세부터, 대운 간지가 무엇으로 바뀌는지 등)은 잠금 목차(未開封)로
+              넘기기로 승인됨 — 여기서는 daYunFlowPublic.next를 렌더링하지
+              않는다(값 자체는 그대로 계산됨, 화면에만 안 씀). "다음 변화가
+              있다"는 힌트까지만 노출하고, 곧바로 기존 未開封(이제부터, 시기가
+              중요합니다) 섹션으로 이어간다. */}
+          <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+            <div className="mx-auto w-full max-w-content2 text-center">
+              <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+                그런데,
+                <br />
+                다음 변화는 조금 다릅니다.
+              </h2>
+              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+                {NEXT_FLOW_TRANSITION}
+              </p>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* ── 무료 종료 문구 — 구 선녀 패널의 텍스트 부분만 이미지 없이 여기로
+          이동. 문구 자체는 변경하지 않았다(lifeFlow 유무 분기도 그대로). ── */}
+      <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
         <p
-          className="whitespace-pre-line px-6 py-10 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
+          className="whitespace-pre-line px-6 text-center font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-2xl"
           style={{ wordBreak: "keep-all" }}
         >
           {data.lifeFlow
@@ -962,43 +1011,50 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </p>
       </section>
 
-      {/* ── 잠금 경계 ────────────────────────────────────────────── */}
-      <section className="border-b border-white/5 bg-sceneBg px-6 py-14">
-        <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 rounded-card border border-sceneGold/30 bg-sceneCard px-6 py-10 text-center">
-          <Lock size={22} className="text-sceneGold" />
-          <p className="font-serif-kr text-[18px] font-bold text-sceneCardText">
-            여기까지 무료로 확인할 수 있습니다
-          </p>
-        </div>
-      </section>
-
-      {/* ── ⑦ 아직 펼쳐지지 않은 기록 — lifeFlow.toc(4개) 잠금 목차.
+      {/* ── 아직 열리지 않은 기록 — lifeFlow.toc(4개) 잠금 목차. 제목/질문
+          문구 4개는 승인된 고정 텍스트(LOCKED_TOC_ITEMS), blurred 미리보기만
+          실제 계산된 toc[].lockedPreview를 그대로 쓴다(지어낸 예고문 없음).
           data.lifeFlow가 없을 때(DEFAULT_REPORT)는 기존 "앞으로 10년
-          미리보기"(tenYearPreview) 섹션을 그대로 보여준다 — 기존 필드를
-          지우지 않고 자리만 교체한다. ── */}
+          미리보기"(tenYearPreview) 섹션을 그대로 보여준다. ── */}
       {data.lifeFlow ? (
         <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
           <div className="mx-auto w-full max-w-content2 text-center">
-            <h2 className="font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              아직 펼쳐지지 않은 기록
+            <span className="block text-center font-serif-kr text-sm tracking-[0.2em] text-sceneGold/80">
+              未開封 · 아직 열리지 않은 기록
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              이제부터,
+              <br />
+              시기가 중요합니다.
             </h2>
-            <p className="mt-4 font-serif-kr text-[17px] font-bold leading-snug text-sceneGoldLight sm:text-[19px]">
-              전체 인생 리포트에서 이어지는 이야기입니다
+            <p className="mt-4 text-[14px] leading-relaxed text-sceneTextSub" style={{ wordBreak: "keep-all" }}>
+              지나온 흐름은 여기까지입니다.
+              <br />
+              이제 돈·일·인연이 언제 움직이고, 삶의 방향이 언제 달라지는지를 봅니다.
             </p>
 
             <ul className="mt-6 flex flex-col gap-3">
               {data.lifeFlow.toc.map((item, idx) => (
                 <li
                   key={item.title}
-                  className="flex items-start justify-between gap-3 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4 text-left"
+                  className="flex flex-col gap-2 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-4 text-left"
                 >
-                  <div className="min-w-0">
-                    <p className="font-serif-kr text-[15px] font-bold text-sceneGold">
-                      {`0${idx + 1} ${item.title}`}
-                    </p>
-                    <p className="mt-1 text-[13px] leading-relaxed text-sceneTextSub">{item.subtitle}</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-serif-kr text-[15px] font-bold text-sceneGold">
+                        {`0${idx + 1} ${LOCKED_TOC_ITEMS[idx]?.title ?? item.title}`}
+                      </p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-sceneTextSub">
+                        {LOCKED_TOC_ITEMS[idx]?.question ?? item.subtitle}
+                      </p>
+                    </div>
+                    <Lock size={16} className="mt-1 shrink-0 text-sceneGold/70" />
                   </div>
-                  <Lock size={16} className="mt-1 shrink-0 text-sceneGold/70" />
+                  {item.lockedPreview && (
+                    <p className="select-none text-[12.5px] italic leading-relaxed text-sceneTextSub/80 blur-[4px]">
+                      {item.lockedPreview}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1033,9 +1089,39 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </section>
       )}
 
-      {/* 결제 영역(전체 해석 잠금 해제 CTA)은 출시 전 감사에서 동작하지
-          않는 버튼 + "(임시 문구 — 가격/문구 미확정)"로 확인돼 숨김
-          처리했다. 실제 결제 기능은 별도 단계에서 구현한다. */}
+      {/* ── 결제 CTA — 신규 정적 섹션. UI/문구만 구현, 실제 결제 연결 및
+          "30명 이후 가격 전환" 로직은 다음 단계. 이름은 data.userName(실제
+          계산 경로에서 넘어온 값)을 그대로 쓰고 하드코딩하지 않는다. ── */}
+      <section className="bg-sceneBg px-6 py-16">
+        {/* [카드 배경 수정] 밝은 아이보리(sceneCard) 카드를 페이지 톤과
+            이어지는 짙은 갈색(sceneBgAlt) 카드로 교체 — 라운드/여백/얇은
+            금색 테두리는 그대로, 안의 문구 2줄만 밝은 배경 전용 어두운
+            글자색(sceneCardText/sceneCardMuted)에서 어두운 배경용 밝은
+            글자색(sceneText)으로 맞춰 바꿨다. 배지·가격·버튼 색은 그대로. */}
+        <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 rounded-card border border-sceneGold/40 bg-sceneBgAlt px-6 py-10 text-center">
+          <span className="text-[12px] font-bold tracking-wide text-[#B83A32]">
+            OPEN SPECIAL · 오픈 특가
+          </span>
+          <p className="font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-[22px]">
+            {data.userName}님, 지나온 이야기는 다 읽으셨습니다.
+          </p>
+          <p className="text-[16px] font-semibold leading-relaxed text-sceneText/90">
+            진짜 궁금한 건, 지금부터입니다.
+          </p>
+
+          <div className="mt-2 flex flex-col items-center gap-0.5">
+            <span className="text-[13px] text-sceneTextSub line-through">정상가 59,800원</span>
+            <span className="font-serif-kr text-[30px] font-bold text-sceneGold">29,800원</span>
+          </div>
+
+          <button
+            type="button"
+            className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10"
+          >
+            나의 전체 인생 리포트 열기 →
+          </button>
+        </div>
+      </section>
     </main>
   );
 }

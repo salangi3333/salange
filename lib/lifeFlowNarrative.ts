@@ -405,14 +405,19 @@ function buildToc(key: LifeFlowKey): TocItem[] {
 // ────────────────────────────────────────────────────────────────
 
 /** 화면의 국면 타임라인(LifePhaseTimeline)이 그대로 그릴 수 있는 최소
- * 표시용 요약 — tier·raw score 등 내부 판정값은 담지 않는다. 카테고리
- * 라벨은 이미 한글(비겁/식상/재성/관성/인성)이라 그대로 노출해도 된다. */
+ * 표시용 요약 — tier·raw score 등 내부 판정값은 담지 않는다. categoryLabel은
+ * 상위 그룹(비겁/식상/재성/관성/인성)이 아니라 각 대운의 정확한 십성
+ * 10종(비견/겁재/식신/상관/편재/정재/편관/정관/편인/정인) 그대로다 — 같은
+ * 상위 그룹이 연속돼도(예: 식신→상관) 절대 하나로 합치지 않는다.
+ * locked=true인 칸(다음 대운)은 categoryLabel을 화면에서 아예 안 쓴다 —
+ * 무료에서는 나이 구간 존재만 보여주고 십성/해석은 잠긴다. */
 export interface PhaseSummary {
   startAge: number;
   endAge: number;
   categoryLabel: string;
   isCurrent: boolean;
   isNatalAxis: boolean;
+  locked: boolean;
 }
 
 export interface LifeFlowContent {
@@ -426,14 +431,41 @@ export interface LifeFlowContent {
   toc: TocItem[];
 }
 
+/** 타임라인은 key.phases(상위 그룹 병합)가 아니라 key.periods(병합 전
+ * 원본 10년 단위 대운)를 그대로 쓴다 — 같은 상위 그룹(예: 식상=식신+상관)이
+ * 연속돼도 실제로는 서로 다른 대운이라 절대 합치지 않는다(승인된 방향).
+ *
+ * 5칸 고정: 현재 대운 바로 앞 3개(과거) + 현재 대운 1개 + 바로 다음 대운
+ * 1개(잠금)만 보여준다 — 8개 대운 전부를 늘어놓으면 375px에서 나이 표시가
+ * 잘려서(승인된 이전 시도의 문제) 이렇게 바꿨다. 과거가 3개보다 적은
+ * 사용자(초반 대운)는 있는 만큼만, 다음 대운이 없는 사용자(마지막 대운)는
+ * 잠금 칸 없이 그만큼만 보여준다 — 없는 값을 지어내지 않는다.
+ * currentPhaseIndex(국면 기준)가 아니라 각 period 자체의 state로 "지금"을
+ * 판정하고, isNatalAxis는 이 period의 상위 그룹이 타고난 중심축과 같은지로
+ * 판단한다(그룹 개념 자체는 3~4챕터와 동일하게 유지, 표시만 개별 대운 단위). */
 function buildPhaseSummaries(key: LifeFlowKey): PhaseSummary[] {
-  return key.phases.map((ph, i) => ({
-    startAge: ph.startAge,
-    endAge: ph.endAge,
-    categoryLabel: ph.category ?? "혼재",
-    isCurrent: i === key.currentPhaseIndex,
-    isNatalAxis: ph.isNatalAxis,
-  }));
+  const periods = key.periods;
+  const currentIdx = periods.findIndex((p) => p.state === "current");
+
+  // 방어적 fallback — 대운이 아직 시작 전이거나(신생아) 이미 다 지난
+  // 극단 케이스라 "현재"가 없으면, 있는 대운 중 앞에서부터 최대 5개만
+  // 보여준다(지어낸 "지금"/잠금 없이).
+  const window =
+    currentIdx === -1
+      ? periods.slice(0, 5)
+      : periods.slice(Math.max(0, currentIdx - 3), Math.min(periods.length, currentIdx + 2));
+
+  return window.map((p) => {
+    const locked = currentIdx !== -1 && p.state === "future";
+    return {
+      startAge: p.startAge,
+      endAge: p.endAge,
+      categoryLabel: locked ? "" : p.ganSipseong,
+      isCurrent: p.state === "current",
+      isNatalAxis: !locked && p.ganCategory === key.natalAxis && p.ganCategory !== null,
+      locked,
+    };
+  });
 }
 
 export function buildLifeFlowNarrative(appData: AppData, key: LifeFlowKey): LifeFlowContent {

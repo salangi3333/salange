@@ -522,11 +522,11 @@ export function buildChapterTwoOpening(appData: AppData): { title: string; body:
   if (relevance === "center") {
     const gwansalDetail = buildGwansalPositionDetail(pyeongwanStages, jeonggwanStages);
     if (gwansalDetail) bodyParts.push(gwansalDetail);
-    let realLife = AXIS_REAL_LIFE[topCat];
-    if (gwansalDetail && topCat !== "관성") {
-      realLife += " 동시에 맡은 일은 끝까지 해내야 한다는 압박도 함께 작동하는 편입니다.";
-    }
-    bodyParts.push(realLife);
+    // 이 축이 "실제 삶에서 어떻게 나타나는지"(예전 AXIS_REAL_LIFE 문장)는
+    // 3장(chapterThreeNarrative.ts의 AXIS_PROFILE.pressureVerb/relationalConsequence)
+    // 이 같은 축을 훨씬 구체적으로 다룬다 — 2장은 "이 축이 무엇인지"까지만
+    // 소개하고, "그래서 실제로 어떻게 행동하는지"는 3장에 맡긴다(중복 정리,
+    // 문구 삭제 없이 이 자리에서만 뺐다 — 3장 문장은 그대로).
     // 편관·정관이 실제로 둘 다 있을 때만 "두 기준" 이원구도 제목을 쓴다 —
     // 하나만 있으면(관살혼잡 아님) 위에서 이미 정한 일반 관성 제목(title)을
     // 그대로 둔다.
@@ -540,9 +540,6 @@ export function buildChapterTwoOpening(appData: AppData): { title: string; body:
     }
   } else if (relevance === "supporting") {
     bodyParts.push(buildGwansalSupportingNote(pyeongwanStages, jeonggwanStages));
-    bodyParts.push(AXIS_REAL_LIFE[topCat]);
-  } else {
-    bodyParts.push(AXIS_REAL_LIFE[topCat]);
   }
 
   return { title, body: bodyParts.join(" ") };

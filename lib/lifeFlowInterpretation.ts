@@ -85,6 +85,13 @@ export interface LifeFlowKey {
   /** 국면이 하나 더 있으면 다음 국면 시작 나이(=인생의 전환점 제목에 쓸
    * 실제 나이). 마지막 국면이 현재 국면이면 null. */
   nextPhaseTransitionAge: number | null;
+  /** 병합 전 원본 대운 목록(10년 단위, 각 대운의 정확한 십성 그대로) —
+   * 人生大運 타임라인 전용. phases(그룹 병합)와 별개로 유지한다 — 같은
+   * 상위 그룹(예: 식상=식신+상관)이 연속돼도 실제로는 서로 다른 대운이라
+   * 타임라인에서는 절대 하나로 합치지 않는다(승인된 방향). phases/
+   * currentPhaseIndex/nextPhaseTransitionAge는 잠금 목차 등 다른 문구가
+   * 그대로 의존하고 있어 손대지 않았다 — periods만 새로 노출한다. */
+  periods: DaYunWealthPeriod[];
   daYun: {
     past: DaYunWealthPeriod | null;
     current: DaYunWealthPeriod | null;
@@ -138,6 +145,7 @@ export function buildLifeFlowKey(appData: AppData): LifeFlowKey {
     phases,
     currentPhaseIndex,
     nextPhaseTransitionAge,
+    periods,
     daYun,
     relations: {
       past: daYun.past ? findDaYunNatalRelations(natalBranches, daYun.past.ganZhi[1]) : [],

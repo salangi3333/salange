@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import { PhaseSummary } from "@/lib/lifeFlowNarrative";
 
 /**
@@ -29,14 +30,21 @@ export default function LifePhaseTimeline({ phases }: { phases: PhaseSummary[] }
                 ph.isCurrent ? "bg-sceneGold/15" : "bg-sceneBgAlt"
               }`}
             >
-              <p
-                className={`truncate font-serif-kr text-[11px] font-bold sm:text-[12px] ${
-                  ph.isCurrent ? "text-sceneGold" : "text-sceneCardText/70"
-                }`}
-              >
-                {ph.categoryLabel}
-                {ph.isNatalAxis ? " ★" : ""}
-              </p>
+              {ph.locked ? (
+                <p className="flex items-center justify-center gap-1 truncate text-[10px] font-bold text-sceneTextSub/80 sm:text-[11px]">
+                  <Lock size={11} className="shrink-0" />
+                  다음 흐름
+                </p>
+              ) : (
+                <p
+                  className={`truncate font-serif-kr text-[11px] font-bold sm:text-[12px] ${
+                    ph.isCurrent ? "text-sceneGold" : "text-sceneCardText/70"
+                  }`}
+                >
+                  {ph.categoryLabel}
+                  {ph.isNatalAxis ? " ★" : ""}
+                </p>
+              )}
               <p className="mt-0.5 truncate text-[9px] text-sceneTextSub sm:text-[10px]">
                 {ph.startAge}–{ph.endAge}세
               </p>
@@ -47,8 +55,15 @@ export default function LifePhaseTimeline({ phases }: { phases: PhaseSummary[] }
           );
         })}
       </div>
+      {/* 대운 나이가 화면에 처음 등장하는 자리라, 여기 한 번만 작게
+          안내한다(다른 자리 — 지나온 시간/지금, 다음 변화 티저 등 —
+          에는 반복하지 않는다). 계산값·표기 방식(세는나이) 자체는
+          바꾸지 않았고, 오해를 막는 안내 문구만 추가했다. */}
+      <p className="mt-2 text-center text-[10.5px] text-sceneTextSub/80">
+        ※ 대운의 나이는 명리에서 쓰는 세는나이 기준입니다.
+      </p>
       {phases.some((p) => p.isNatalAxis) && (
-        <p className="mt-2 text-center text-[11px] text-sceneTextSub">
+        <p className="mt-1 text-center text-[11px] text-sceneTextSub">
           ★ 표시 — 타고난 중심축과 같은 성질의 국면
         </p>
       )}

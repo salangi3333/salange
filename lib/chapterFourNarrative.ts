@@ -436,6 +436,14 @@ export interface ChapterFourContent {
   highlight: string;
 }
 
+/** 4장 첫 훅 — 1~3장(성격·기질·삶의 방식)에서 벗어나 처음으로 "돈" 이야기로
+ * 넘어가는 전환 문장. 명리 근거로 시작하지 않고, 독자가 가장 궁금해할
+ * 결론부터 보여준 뒤 아래 buildOpeningParagraphs(실제 명리 근거)로 이어진다.
+ * 승인된 고정 문구 — 사람마다 달라지는 계산값이 아니다(순서상 항상 맨
+ * 앞에만 오고, 그 뒤 문단들은 기존 그대로 사람마다 다르게 이어진다). */
+const WEALTH_HOOK =
+  "돈을 못 버는 사주는 아닙니다. 오히려 돈을 만들어내는 힘은 분명합니다. 문제는 그 돈이 어떤 방식으로 들어오고, 언제 크게 움직이느냐입니다.";
+
 export function buildChapterFourNarrative(appData: AppData, key: ChapterFourKey): ChapterFourContent {
   const name = appData.user.name;
   const title = `${name}님의 재물이 움직이는 방식`;
@@ -455,6 +463,11 @@ export function buildChapterFourNarrative(appData: AppData, key: ChapterFourKey)
     const boost = buildLengthBoostClause(key, usedTerms);
     if (boost) publicPreview[0] = `${publicPreview[0]}${boost}`;
   }
+
+  // 고정 훅은 길이 보강 로직(위) 이후에 맨 앞으로 붙인다 — 400자 기준
+  // 판단은 항상 "실제 계산된 근거 문단들"만으로 하고(훅은 사람마다 안
+  // 바뀌므로 여기 포함시키지 않는다), 화면에는 훅 → 근거 순서로 보인다.
+  publicPreview.unshift(WEALTH_HOOK);
 
   const lockedDetail: string[] = [
     buildShakingParagraph(key),

@@ -157,6 +157,9 @@ export interface ReportPillars {
 }
 
 export interface ReportResult {
+  /** user.name 그대로 — 결제 CTA 등 챕터 본문 밖에서 이름이 필요한 자리에
+   * 쓴다(하드코딩 방지용 단순 통과 필드, 새 계산 없음). */
+  userName: string;
   /** user.typeLabel 그대로 (예: "OO 속 OO형") */
   summaryTitle: string;
   /** user.dayPillar 그대로 (예: "무술(戊戌) 일주") */
@@ -526,6 +529,7 @@ export function buildReportResult(appData: AppData): ReportResult {
   const lifeFlow = buildLifeFlowNarrative(appData, lifeFlowKey);
 
   return {
+    userName: user.name,
     summaryTitle: user.typeLabel,
     dayMasterLabel: user.dayPillar,
     pillars: buildPillars(user),
