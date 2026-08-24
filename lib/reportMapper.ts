@@ -198,14 +198,40 @@ function firstSentence(text: string): string {
   return (idx >= 0 ? text.slice(0, idx + 1) : text).trim();
 }
 
+/** 원본 오행 개수(counts)는 절대 안 바꾼다 — 정수 %로 화면에 표시할 때
+ * "어떻게 반올림하느냐"만 largest-remainder(최대 나머지법)로 바꾼다.
+ * 기존에는 5개 비율을 각각 Math.round로 독립 반올림해서, 화면에 뜬 다섯
+ * 숫자를 더하면 100이 아닌 경우가 있었다(예: 38+13+13+13+25=102, 8글자
+ * 중 3/8·1/8·1/8·1/8·2/8이 전부 .5 언저리라 반올림이 한쪽으로 몰림).
+ * 정수부(floor)를 먼저 깐 뒤, 소수부(나머지)가 큰 순서대로 남은 %를
+ * 하나씩 배분해 합계가 항상 정확히 100이 되게 한다. */
 function buildElementBalance(
   counts: Record<Element, number>
 ): ReportResult["elementBalance"] {
-  const total = Object.values(counts).reduce((sum, n) => sum + n, 0) || 1;
-  return (Object.keys(counts) as Element[]).map((key) => ({
+  const rawTotal = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  const total = rawTotal || 1;
+  const keys = Object.keys(counts) as Element[];
+
+  const exact = keys.map((key) => (counts[key] / total) * 100);
+  const floors = exact.map((v) => Math.floor(v));
+  const flooredSum = floors.reduce((s, v) => s + v, 0);
+  // 실제 글자가 하나도 없는(rawTotal=0) 방어적 케이스에서는 100%를
+  // 억지로 채우지 않는다 — 없는 데이터로 비율을 지어내지 않기 위함.
+  const deficit = rawTotal > 0 ? 100 - flooredSum : 0;
+
+  const byRemainderDesc = keys
+    .map((_, i) => i)
+    .sort((a, b) => exact[b] - floors[b] - (exact[a] - floors[a]) || a - b);
+
+  const values = [...floors];
+  for (let n = 0; n < deficit; n++) {
+    values[byRemainderDesc[n]] += 1;
+  }
+
+  return keys.map((key, i) => ({
     key,
     label: ELEMENT_LABEL[key],
-    value: Math.round((counts[key] / total) * 100),
+    value: values[i],
   }));
 }
 
