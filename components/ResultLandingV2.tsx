@@ -802,10 +802,30 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* 第四章 — 시기 카드 추가 */}
+      {/* 第四章 — 재물운. 예전에는 4·5·6장을 각각 독립된 "第X章"으로
+          표시해, 재물이라는 한 주제가 3개의 별도 챕터처럼 연속 나열되는
+          것처럼 보였다(계산 모듈 경계를 그대로 章 번호로 썼기 때문).
+          이번 변경은 순수 UI/정보계층 변경이다 — chapters[3] /
+          chapterFive / chapterSix가 담은 계산·서술 결과(killpoint/body/
+          highlight/bridgeIntro)는 내용·순서 전부 그대로 보여준다. 章
+          번호는 "고객이 읽는 큰 주제"가 바뀔 때만 올라가야 한다는 원칙에
+          따라 第五章/第六章 한자 라벨과 그 title(둘 다 이름만 바뀌는
+          정적 템플릿이라 내용 손실 없음)을 화면에서 빼고, 대신
+          ChapterOneSubheading(1장에서 이미 쓰던 소제목 스타일 그대로
+          재사용, 새 컴포넌트 아님)으로 3개 하위 섹션의 경계만 표시한다. */}
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
-          <ChapterHead {...data.chapters[3]} />
+          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+            第四章
+          </span>
+          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+            {data.userName}님의 재물운
+          </h2>
+
+          <ChapterOneSubheading>돈이 움직이는 방식</ChapterOneSubheading>
+          <p className="mt-1 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+            {wrapHanjaTokens(data.chapters[3].killpoint)}
+          </p>
           <div className="mt-6 space-y-4">
             {data.chapters[3].body.map((p, idx) => (
               <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
@@ -819,73 +839,52 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
 
           <HighlightCard text={data.chapters[3].highlight} />
+
+          {/* 하위 섹션 2 — 이전 第五章(돈이 들어와도 남지 않는 이유).
+              bridgeIntro(4→5 연결문)는 있을 때만 본문과 같은 스타일로
+              첫 문단 자리에 얹는다. */}
+          {data.chapterFive && (
+            <>
+              <ChapterOneSubheading>돈이 머무는 힘과 흔들리는 조건</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapterFive.bridgeIntro && (
+                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
+                  </p>
+                )}
+                {data.chapterFive.body.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(p)}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 하위 섹션 3 — 이전 第六章(돈이 움직이는 시기). applicable=false라
+              generateWealthTimingNarrative가 안내 문단 1개만 돌려준
+              사람도 chapterSix 자체는 undefined가 아니므로(reportMapper.ts
+              참고) 이 블록이 그대로 렌더링되고, 문단 내용만 안내문
+              1개가 된다 — 별도 분기 없이 자연스럽게 처리된다. */}
+          {data.chapterSix && (
+            <>
+              <ChapterOneSubheading>앞으로 돈의 흐름이 달라지는 때</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapterSix.bridgeIntro && (
+                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
+                  </p>
+                )}
+                {data.chapterSix.body.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(p)}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
-
-      {/* 第五章 — 돈이 들어와도 남지 않는 이유. data.chapterFive가 있을
-          때만 렌더링(report prop 없이 DEFAULT_REPORT로 볼 때는 undefined
-          라 자리 자체가 생기지 않는다). ChapterHead를 그대로 쓰지 않은
-          이유: 이 챕터의 계산 결과에는 killpoint/highlight 개념이 없어서,
-          억지로 만들지 않고 챕터 라벨·제목만 같은 스타일로 표기한다.
-          bridgeIntro(4→5 연결문)는 있을 때만, 본문과 같은 스타일로
-          자연스럽게 첫 문단 자리에 얹는다 — 시각적으로 튀지 않게. */}
-      {data.chapterFive && (
-        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-content2 text-center">
-            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-              {data.chapterFive.chapterLabel}
-            </span>
-            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {data.chapterFive.title}
-            </h2>
-            <div className="mt-6 space-y-4">
-              {data.chapterFive.bridgeIntro && (
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
-                </p>
-              )}
-              {data.chapterFive.body.map((p, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(p)}
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 第六章 — 돈이 움직이는 시기. data.chapterSix가 있을 때만
-          렌더링(analyzeWealthTiming이 applicable=false를 반환하는
-          경우, 예: 용신 판정이 hold라 대운 매핑이 의미 없는 사람은
-          reportMapper에서 이미 undefined로 걸러져 있다 — 여기서 억지
-          문단을 만들지 않는다). 5장과 같은 스타일 그대로, 배경만
-          sceneBgAlt로 바꿔 4→5(sceneBg)→6(sceneBgAlt) 교대를 잇는다.
-          bridgeIntro(5→6 연결문)도 5장과 동일하게 필요한 사람에게만
-          첫 문단 자리에 자연스럽게 얹는다. */}
-      {data.chapterSix && (
-        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-content2 text-center">
-            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-              {data.chapterSix.chapterLabel}
-            </span>
-            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {data.chapterSix.title}
-            </h2>
-            <div className="mt-6 space-y-4">
-              {data.chapterSix.bridgeIntro && (
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
-                </p>
-              )}
-              {data.chapterSix.body.map((p, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(p)}
-                </p>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
           변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
