@@ -26,6 +26,11 @@ import { buildChapterFourKey } from "./chapterFourInterpretation";
 import { buildChapterFourNarrative } from "./chapterFourNarrative";
 import { buildLifeFlowKey } from "./lifeFlowInterpretation";
 import { buildLifeFlowNarrative, LifeFlowContent } from "./lifeFlowNarrative";
+import { analyzeWealthObstruction } from "./wealthObstructionAnalysis";
+import { generateWealthObstructionNarrative } from "./wealthObstructionNarrative";
+import { analyzeWealthTiming } from "./wealthTimingAnalysis";
+import { generateWealthTimingNarrative } from "./wealthTimingNarrative";
+import { buildWealthChapterBridge } from "./wealthChapterBridge";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -81,6 +86,42 @@ export interface ReportChapter {
    * 지금은 이 필드가 있어도 화면엔 body(공개부)만 보인다. 블러 UI를
    * 실제로 붙이는 건 다음 단계. */
   lockedDetail?: string[];
+}
+
+/**
+ * 第五章("돈이 들어와도 남지 않는 이유") 전용. `analyzeWealthObstruction` +
+ * `generateWealthObstructionNarrative`가 만든 문단을 누락 없이 그대로
+ * 옮긴 것뿐, 이 파일에서 새 문장을 짓지 않는다. `bridgeIntro`는
+ * `buildWealthChapterBridge`의 `chapter4To5`가 있을 때만 채워지고,
+ * 없으면 undefined로 둔다(화면에서도 자리 자체를 만들지 않는다).
+ *
+ * killpoint/highlight 개념은 이 챕터의 계산 결과에 없다 — 억지로
+ * 만들지 않고 생략했다(ChapterHead를 그대로 재사용하지 않는 이유).
+ */
+export interface ChapterFiveContent {
+  chapterLabel: string;
+  title: string;
+  bridgeIntro?: string;
+  body: string[];
+}
+
+/**
+ * 第六章("돈이 움직이는 시기") 전용. `analyzeWealthTiming` +
+ * `generateWealthTimingNarrative`가 만든 문단을 누락 없이 그대로 옮긴
+ * 것뿐, 이 파일에서 새 문장을 짓지 않는다. `bridgeIntro`는
+ * `buildWealthChapterBridge`의 `chapter5To6`이 있을 때만 채워진다.
+ *
+ * yongsin이 hold/unresolved/notApplicable이라 timing.applicable===false인
+ * 사람(60명 중 3명)은 시기 판정 자체가 성립하지 않는다 — 이 경우
+ * buildReportResult가 새 시기 판단을 만들지 않고, 고정된 고객용 안내
+ * 문단 1개만 body에 담아 반환한다(챕터 자체를 undefined로 비우지
+ * 않는다 — 유료 화면에서 결과 누락처럼 보이지 않게 하기 위함).
+ */
+export interface ChapterSixContent {
+  chapterLabel: string;
+  title: string;
+  bridgeIntro?: string;
+  body: string[];
 }
 
 /**
@@ -187,6 +228,12 @@ export interface ReportResult {
    * 두어(?) 기존 ResultLandingV2.tsx의 DEFAULT_REPORT 등 정적 fallback을
    * 건드리지 않는다 — 화면은 아직 이 필드를 읽지 않는다. */
   lifeFlow?: LifeFlowContent;
+  /** 第五章("돈이 들어와도 남지 않는 이유"). 선택적 필드로 두어
+   * DEFAULT_REPORT 등 기존 정적 fallback을 건드리지 않는다. */
+  chapterFive?: ChapterFiveContent;
+  /** 第六章("돈이 움직이는 시기"). 6장이 applicable=false인 사람은
+   * undefined — 화면에 빈 챕터를 만들지 않는다. */
+  chapterSix?: ChapterSixContent;
 }
 
 function firstLine(text: string): string {
@@ -528,6 +575,61 @@ export function buildReportResult(appData: AppData): ReportResult {
   const lifeFlowKey = buildLifeFlowKey(appData);
   const lifeFlow = buildLifeFlowNarrative(appData, lifeFlowKey);
 
+  // 第五章("돈이 들어와도 남지 않는 이유") — analyzeWealthObstruction +
+  // generateWealthObstructionNarrative의 결과를 그대로 옮긴다. 4장 판단
+  // (chapterFourKey)은 이미 위에서 계산해 뒀지만 그 지역 스코프를 벗어난
+  // 시점이라, 새 계산이 아니라 같은 순수함수를 다시 읽기만 한다(다른
+  // 파일들도 이미 이렇게 재호출한다 — huisinCandidateAnalysis.ts가
+  // analyzeDayMasterBalance를 다시 읽는 것과 같은 패턴).
+  // 6장(analyzeWealthTiming)은 buildWealthChapterBridge가 chapter4To5를
+  // 판단하는 데만 내부적으로 필요해서 호출한다 — 그 결과 자체는 이번
+  // 범위에서 화면에 노출하지 않는다(5→6 연결·6장 UI는 다음 단계).
+  const chapterFourKeyForBridge = buildChapterFourKey(appData);
+  const wealthObstructionResult = analyzeWealthObstruction(appData);
+  const wealthObstructionNarrative = generateWealthObstructionNarrative(wealthObstructionResult);
+  const wealthTimingResultForBridge = analyzeWealthTiming(appData);
+  const bridge = buildWealthChapterBridge(chapterFourKeyForBridge, wealthObstructionResult, wealthTimingResultForBridge);
+
+  const chapterFive: ChapterFiveContent = {
+    chapterLabel: "第五章",
+    title: `${user.name}님의 재물이 남지 않는 이유`,
+    bridgeIntro: bridge.chapter4To5,
+    body: wealthObstructionNarrative.paragraphs.map((p) => p.text),
+  };
+
+  // 第六章("돈이 움직이는 시기") — analyzeWealthTiming은 위에서 이미
+  // wealthTimingResultForBridge로 계산해 뒀다(bridge 계산용으로 먼저
+  // 호출됐던 것을 그대로 재사용, 새 계산 아님). 서술 함수만 이번에
+  // 새로 호출한다.
+  //
+  // wealthTimingResultForBridge.applicable === false(용신 판정이
+  // hold/unresolved/notApplicable이라 시기 판정 자체가 성립하지
+  // 않는 경우 — analyzeWealthTiming.ts의 3갈래, 60명 중 3명)일 때는
+  // generateWealthTimingNarrative가 애초에 빈 paragraphs를 반환한다.
+  // 이 경우 6장 섹션 자체를 비워 "결과 누락"처럼 보이게 두지 않고,
+  // 이미 계산된 applicable 값 하나만 보고 고객용 안내 문단 1개를
+  // 대신 넣는다 — 새 시기 판단이나 사유별 문구 분기는 만들지 않는다
+  // (3갈래 전부 같은 문구 하나로 통일: 사유별로 나누면 그 자체가
+  // 새로운 해석이 된다).
+  const WEALTH_TIMING_CONSERVATIVE_NOTICE =
+    "이 사주는 재물의 흐름을 한 가지 기준만으로 나누기보다 여러 흐름을 함께 살펴야 더 정확합니다. 그래서 특정 시기를 좋고 나쁜 때로 단정하기보다, 확인되는 흐름만을 중심으로 신중하게 안내합니다.";
+
+  const wealthTimingNarrative = generateWealthTimingNarrative(appData, wealthTimingResultForBridge);
+  const chapterSix: ChapterSixContent | undefined = !wealthTimingResultForBridge.applicable
+    ? {
+        chapterLabel: "第六章",
+        title: `${user.name}님의 재물이 움직이는 시기`,
+        body: [WEALTH_TIMING_CONSERVATIVE_NOTICE],
+      }
+    : wealthTimingNarrative.paragraphs.length > 0
+      ? {
+          chapterLabel: "第六章",
+          title: `${user.name}님의 재물이 움직이는 시기`,
+          bridgeIntro: bridge.chapter5To6,
+          body: wealthTimingNarrative.paragraphs.map((p) => p.text),
+        }
+      : undefined;
+
   return {
     userName: user.name,
     summaryTitle: user.typeLabel,
@@ -541,5 +643,7 @@ export function buildReportResult(appData: AppData): ReportResult {
     chapterOne: buildChapterOneDetail(appData, scenes),
     tenYearPreview: groupTenYear(tenYear),
     lifeFlow,
+    chapterFive,
+    chapterSix,
   };
 }

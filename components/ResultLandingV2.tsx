@@ -822,6 +822,71 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
+      {/* 第五章 — 돈이 들어와도 남지 않는 이유. data.chapterFive가 있을
+          때만 렌더링(report prop 없이 DEFAULT_REPORT로 볼 때는 undefined
+          라 자리 자체가 생기지 않는다). ChapterHead를 그대로 쓰지 않은
+          이유: 이 챕터의 계산 결과에는 killpoint/highlight 개념이 없어서,
+          억지로 만들지 않고 챕터 라벨·제목만 같은 스타일로 표기한다.
+          bridgeIntro(4→5 연결문)는 있을 때만, 본문과 같은 스타일로
+          자연스럽게 첫 문단 자리에 얹는다 — 시각적으로 튀지 않게. */}
+      {data.chapterFive && (
+        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterFive.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterFive.title}
+            </h2>
+            <div className="mt-6 space-y-4">
+              {data.chapterFive.bridgeIntro && (
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
+                </p>
+              )}
+              {data.chapterFive.body.map((p, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(p)}
+                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 第六章 — 돈이 움직이는 시기. data.chapterSix가 있을 때만
+          렌더링(analyzeWealthTiming이 applicable=false를 반환하는
+          경우, 예: 용신 판정이 hold라 대운 매핑이 의미 없는 사람은
+          reportMapper에서 이미 undefined로 걸러져 있다 — 여기서 억지
+          문단을 만들지 않는다). 5장과 같은 스타일 그대로, 배경만
+          sceneBgAlt로 바꿔 4→5(sceneBg)→6(sceneBgAlt) 교대를 잇는다.
+          bridgeIntro(5→6 연결문)도 5장과 동일하게 필요한 사람에게만
+          첫 문단 자리에 자연스럽게 얹는다. */}
+      {data.chapterSix && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterSix.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterSix.title}
+            </h2>
+            <div className="mt-6 space-y-4">
+              {data.chapterSix.bridgeIntro && (
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
+                </p>
+              )}
+              {data.chapterSix.body.map((p, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(p)}
+                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
           변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
           지점(구 위치)으로 분리해 뒤로 옮겼다 — 이미지와 텍스트를 각각
