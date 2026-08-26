@@ -260,13 +260,24 @@ function buildShakingParagraph(key: ChapterFourKey): string {
   const { bigyeopVsJaeseong: bj, gwanseongVsBigyeop: gb, inseongVsSiksang: is_, siksangJaeseongLinked } = key;
   const clauses: string[] = [];
 
+  // "벌어들인 만큼 빠져나간다"/"버느냐만큼 남기느냐" 같은 실제 금전 유출·
+  // 회수 서술은 5장("왜 남지 않는가")의 역할이라 4장은 작동 방식(재물이
+  // 한곳에 머물지 않고 여러 방향으로 움직인다는 사실)까지만 말한다 —
+  // 4·5장 교차검증에서 확인된 근거 반복을 줄이기 위한 최소 수정.
   if (bigyeopIsActive(key) && siksangJaeseongLinked && bj.leadCategory === "비겁" && bj.gapTier === "뚜렷") {
-    clauses.push("다만 이 움직이려는 힘이 재물 자체보다 지나치게 앞서 있어, 벌어들인 만큼 다시 밖으로 빠져나가는 속도도 함께 빨라질 수 있습니다. 그래서 이 구조에서는 무엇을 버느냐만큼, 벌어들인 것을 얼마나 자기 몫으로 남기느냐에서 차이가 벌어집니다.");
+    clauses.push("다만 이 움직이려는 힘이 재물 자체보다 지나치게 앞서 있어, 재물이 한곳에 머무르기보다 여러 방향으로 움직이기 쉬운 구조입니다.");
   } else if (bj.leadCategory === "비겁" && bj.gapTier !== "비슷") {
+    // gwanseongVsBigyeop(관성이 비겁을 누름)이 이미 앞에서 "지켜준다"고
+    // 말한 경우, 바로 뒤에 "근소하게 새어나간다"고 하면 같은 4장 안에서
+    // 반대로 읽힌다(C24 교차검증에서 발견) — 그 지키는 힘 "안에서도"라는
+    // 연결어로 앞 문장과 이어지게만 최소 수정한다.
+    const alreadyProtected = gb.leadCategory === "관성" && gb.gapTier !== "비슷";
     clauses.push(
       bj.gapTier === "뚜렷"
         ? "가장 크게 흔드는 힘은 나누고, 함께 쓰고, 다시 다른 시도로 옮기려는 마음입니다. 재물 자체보다 이 힘이 훨씬 강해서, 벌어들인 것을 손에 오래 쥐고 있기보다 곧 다시 움직이게 만드는 쪽으로 흐릅니다."
-        : "재물보다 나누거나 다시 움직이려는 힘이 근소하게 앞서 있어, 벌어들인 것이 완전히 쌓이기 전에 다시 풀리는 경우가 종종 있습니다."
+        : alreadyProtected
+          ? "다만 그 지키는 힘 안에서도, 나누거나 다시 움직이려는 힘이 근소하게 살아 있어 완전히 쌓이기 전에 한 번씩 풀리는 경우가 있습니다."
+          : "재물보다 나누거나 다시 움직이려는 힘이 근소하게 앞서 있어, 벌어들인 것이 완전히 쌓이기 전에 다시 풀리는 경우가 종종 있습니다."
     );
   }
   if (gb.leadCategory === "비겁" && gb.gapTier !== "비슷") {
@@ -389,11 +400,15 @@ function buildAdviceParagraph(key: ChapterFourKey): string {
   if (bj.leadCategory === "비겁" && bj.gapTier !== "비슷") {
     return "쌓이기 전에 다시 움직이려는 마음을 한 번은 붙잡아 두는 것이, 이 구조에서는 돈을 지키는 가장 실질적인 방법입니다.";
   }
+  // "적극적으로 키워보는 쪽이 유리하다"는 계산이 보장하지 않는 행동
+  // 권고라 4·5·6장 교차검증에서 지적됨 — 구조 설명으로 낮춘다.
   if (gb.leadCategory === "관성" && gb.gapTier !== "비슷" && jaeseong.exposure === "뚜렷") {
-    return "지키는 힘이 이미 있으니, 그 위에서 조금 더 적극적으로 키워보는 쪽이 이 구조에는 유리합니다.";
+    return "지키는 힘이 이미 자리하고 있어, 재물이 움직일 때 이를 받쳐주는 기반으로 작동할 수 있습니다.";
   }
+  // "계기를 스스로 만들어보라"는 계산이 보장하지 않는 행동 처방이라
+  // 마찬가지로 구조·흐름 설명까지만 남긴다.
   if (jaeseong.exposure === "숨음") {
-    return "지금은 안쪽에서 움직이는 힘인 만큼, 그 힘을 겉으로 끌어낼 계기를 스스로 만들어보는 것이 재물을 키우는 실질적인 방법이 됩니다.";
+    return "지금은 안쪽에서 움직이는 힘이 상대적으로 더 두드러지는 구조입니다. 재물이 밖으로 드러나는 방식보다 그 흐름이 어디에서 멈추고 어떻게 이어지는지를 함께 보는 편이 더 정확합니다.";
   }
   if (jaeseong.exposure === "미미") {
     const topAxis = wealth.all[0].category;
