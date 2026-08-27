@@ -53,7 +53,7 @@ export default function ResultV2Flow() {
     // 사용자를 다시 입력 화면으로 안내한다.
     try {
       const appData = buildAppData(pendingFormData);
-      setReport(buildReportResult(appData));
+      setReport(buildReportResult(appData, pendingFormData.gender));
       setStage("confirm");
     } catch (e) {
       setCalcError(e instanceof Error ? e.message : "입력하신 생년월일을 다시 확인해주세요.");

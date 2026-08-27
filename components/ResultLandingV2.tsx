@@ -802,6 +802,41 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
+      {/* 제2장 — 사랑과 인연. 재물운(第四章)이 4·5·6장을 하나의 대제목
+          아래 하위 섹션 3개로 묶은 것과 같은 패턴이다. ①~⑤ 각각에
+          第二章/第三章 같은 새 한자 대제목을 붙이지 않고, 대제목은
+          "제2장"(한글, 기존 第一~四章 한자 번호 체계와 겹치지 않도록
+          구분) 한 번만 표시한 뒤 ChapterOneSubheading(1장에서 이미 쓰는
+          소제목 스타일 재사용, 새 컴포넌트 아님)으로 ①~⑤ 경계만
+          나눈다. data.chapterLove는 reportMapper.ts가 이미 승인·동결된
+          ①~⑤ narrative 함수 5개의 문단을 그대로 옮겨 담은 것뿐이라 이
+          컴포넌트에서 새 문장을 만들지 않는다. */}
+      {data.chapterLove && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterLove.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterLove.title}
+            </h2>
+
+            {data.chapterLove.sections.map((sec, idx) => (
+              <Fragment key={idx}>
+                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                <div className="space-y-4">
+                  {sec.body.map((p, pIdx) => (
+                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                      {wrapHanjaTokens(p)}
+                    </p>
+                  ))}
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 第四章 — 재물운. 예전에는 4·5·6장을 각각 독립된 "第X章"으로
           표시해, 재물이라는 한 주제가 3개의 별도 챕터처럼 연속 나열되는
           것처럼 보였다(계산 모듈 경계를 그대로 章 번호로 썼기 때문).

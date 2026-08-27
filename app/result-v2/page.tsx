@@ -63,7 +63,7 @@ export default function ResultV2Page({
     // 화면이 깨지는 대신 안내 문구만 보여준다(개발/테스트용 진입 경로라
     // 별도 재입력 폼은 두지 않는다).
     try {
-      return <ResultLandingV2 report={buildReportResult(buildAppData(intake))} />;
+      return <ResultLandingV2 report={buildReportResult(buildAppData(intake), intake.gender)} />;
     } catch (e) {
       const message = e instanceof Error ? e.message : "입력하신 생년월일을 다시 확인해주세요.";
       return (

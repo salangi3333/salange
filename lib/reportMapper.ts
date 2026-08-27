@@ -31,6 +31,12 @@ import { generateWealthObstructionNarrative } from "./wealthObstructionNarrative
 import { analyzeWealthTiming } from "./wealthTimingAnalysis";
 import { generateWealthTimingNarrative } from "./wealthTimingNarrative";
 import { buildWealthChapterBridge } from "./wealthChapterBridge";
+import { generateLoveApproachStyleNarrative } from "./loveApproachStyleNarrative";
+import { generateLoveAttractionReasonNarrative } from "./loveAttractionReasonNarrative";
+import { generateLoveRepeatingSceneNarrative } from "./loveRepeatingSceneNarrative";
+import { generateLoveStabilityConditionNarrative } from "./loveStabilityConditionNarrative";
+import { analyzeLoveTimingSignals } from "./loveTimingSignals";
+import { generateLoveTimingNarrative } from "./loveTimingNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -122,6 +128,25 @@ export interface ChapterSixContent {
   title: string;
   bridgeIntro?: string;
   body: string[];
+}
+
+/**
+ * "사랑과 인연" 챕터 — 승인·동결된 ①~⑤ narrative 함수 5개(loveApproachStyle/
+ * loveAttractionReason/loveRepeatingScene/loveStabilityCondition/
+ * loveTiming)가 만든 문단을 순서대로 옮긴 것뿐, 이 파일에서 새 문장을
+ * 짓지 않는다. 재물 5·6장이 chapterFive/chapterSix로 4장 아래 하위
+ * 섹션이 된 것과 같은 패턴 — 여기서는 ①~⑤ 전부가 sections 배열의
+ * 하위 섹션이고, 한자 대제목(第X章)을 새로 만들지 않는다.
+ */
+export interface ChapterLoveSubsection {
+  heading: string;
+  body: string[];
+}
+
+export interface ChapterLoveContent {
+  chapterLabel: string;
+  title: string;
+  sections: ChapterLoveSubsection[];
 }
 
 /**
@@ -228,6 +253,9 @@ export interface ReportResult {
    * 두어(?) 기존 ResultLandingV2.tsx의 DEFAULT_REPORT 등 정적 fallback을
    * 건드리지 않는다 — 화면은 아직 이 필드를 읽지 않는다. */
   lifeFlow?: LifeFlowContent;
+  /** "사랑과 인연"(①~⑤ 통합). 선택적 필드로 두어 DEFAULT_REPORT 등
+   * 기존 정적 fallback을 건드리지 않는다. */
+  chapterLove?: ChapterLoveContent;
   /** 第五章("돈이 들어와도 남지 않는 이유"). 선택적 필드로 두어
    * DEFAULT_REPORT 등 기존 정적 fallback을 건드리지 않는다. */
   chapterFive?: ChapterFiveContent;
@@ -444,10 +472,44 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
 }
 
 /**
+ * "사랑과 인연" ①~⑤ — 이미 승인·동결된 5개 narrative 함수를 그대로
+ * 호출해 문단(text)만 옮겨 담는다. gender는 AppData/SajuUser에 없는
+ * 값이라 이 함수의 인자로 그대로 받아 각 함수에 전달한다(추정·기본값
+ * 없음 — buildReportResult 호출부가 사용자가 입력한 gender를 그대로
+ * 넘긴다).
+ */
+function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterLoveContent {
+  const approach = generateLoveApproachStyleNarrative(appData, gender);
+  const attraction = generateLoveAttractionReasonNarrative(appData, gender);
+  const repeating = generateLoveRepeatingSceneNarrative(appData, gender);
+  const stability = generateLoveStabilityConditionNarrative(appData, gender);
+  const timing = analyzeLoveTimingSignals(appData, gender);
+  const timingNarrative = generateLoveTimingNarrative(appData, timing);
+
+  return {
+    chapterLabel: "제2장",
+    title: `${appData.user.name}님의 사랑과 인연`,
+    sections: [
+      { heading: "① 나는 사랑할 때 어떤 사람인가", body: approach.paragraphs.map((p) => p.text) },
+      { heading: "② 이상하게 마음이 가는 사람에는 이유가 있다", body: attraction.paragraphs.map((p) => p.text) },
+      { heading: "③ 사랑에서 자꾸 반복되는 장면", body: repeating.paragraphs.map((p) => p.text) },
+      { heading: "④ 내 인연이 머무는 자리", body: stability.paragraphs.map((p) => p.text) },
+      { heading: "⑤ 인연의 흐름이 움직이는 때", body: timingNarrative.paragraphs.map((p) => p.text) },
+    ],
+  };
+}
+
+/**
  * AppData(=이미 계산+개인화된 결과) → ResultLandingV2가 바로 쓸 수 있는
  * ReportResult로 변환한다. 새 계산 없음 — 기존 함수 호출과 필드 선택만.
+ *
+ * gender: 사랑·인연 ①~⑤ narrative가 요구하는 값인데 AppData/SajuUser
+ * 어디에도 없어서(대운 순행/역행 계산에만 쓰이고 버려짐) 별도 인자로
+ * 받는다 — AppData/SajuUser 타입에 필드를 추가하지 않기 위한 선택이다.
+ * 호출부(app/result-v2/page.tsx, ResultV2Flow.tsx)가 사용자가 입력한
+ * intake.gender/pendingFormData.gender를 그대로 전달한다.
  */
-export function buildReportResult(appData: AppData): ReportResult {
+export function buildReportResult(appData: AppData, gender: "male" | "female"): ReportResult {
   const { user, chars, birthYear } = appData;
   const dayGan = user.pillars.day.hanja;
   const seed = chars.join("");
@@ -643,6 +705,7 @@ export function buildReportResult(appData: AppData): ReportResult {
     chapterOne: buildChapterOneDetail(appData, scenes),
     tenYearPreview: groupTenYear(tenYear),
     lifeFlow,
+    chapterLove: buildChapterLove(appData, gender),
     chapterFive,
     chapterSix,
   };
