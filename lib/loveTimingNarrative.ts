@@ -435,12 +435,28 @@ function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativePa
             sourceNote: "quiet, exposure=미미(잠잠한흐름형)",
           };
 
+  // exposure=뚜렷 케이스만 최소 보강 — "왜 지금 이렇게 읽히는지"를
+  // classify()가 이미 quiet로 가르는 데 쓴 사실(연도·대운 신호가 전혀
+  // 없음, timing.spouseStarTiming.daYunActive===false)로만 한 문장 잇는다.
+  // periodOpeningClause는 기존에 다른 분기들이 이미 쓰는 동결 함수를
+  // 그대로 재사용한 것— 새 계산 아님. 숨음/미미 쪽은 이번 범위 밖이라
+  // 손대지 않는다.
+  const basis =
+    exposure === "뚜렷"
+      ? [
+          {
+            text: `${periodOpeningClause(appData, timing)} 인연 쪽으로 뚜렷하게 붙는 신호가 따로 없다 보니, 마음이 자연스럽게 관계보다 자기 자신 쪽으로 먼저 향하는 시기입니다.`,
+            sourceNote: "quiet 근거절(exposure=뚜렷, daYunActive=false, 연도 신호 없음)",
+          },
+        ]
+      : [];
+
   const conclusion = {
     text: "닫혀 있는 건 아니라는 것, 지금은 그것만으로도 충분합니다.",
     sourceNote: "quiet 결론(여운)",
   };
 
-  return [opening, conclusion];
+  return [opening, ...basis, conclusion];
 }
 
 export function generateLoveTimingNarrative(appData: AppData, timing: LoveTimingRawSignals): LoveTimingNarrativeResult {
