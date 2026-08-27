@@ -56,11 +56,18 @@ function isStrong(balance: BalanceVerdict): boolean {
   return balance === "clearlyStrong" || balance === "slightlyStrong";
 }
 
-/** exposure=숨음일 때만 앞에 살짝 얹는 텍스처 — "겉으로는 안 드러나지만
- * 실제로 작동한다"는 뉘앙스. 새 분기를 늘리지 않고 기존 문장 앞에
- * 붙이는 수식절 정도로만 쓴다. */
-function hiddenPrefix(exposure: SpouseStarExposure): string {
-  return exposure === "숨음" ? "겉으로 크게 티가 나진 않지만, " : "";
+/**
+ * exposure=숨음일 때 붙는 부연절 — ①(마음이 생겼을 때 표현까지 시간이
+ * 걸린다는, 사랑이 "시작되는 순간"의 표현 방식)과 겹치지 않도록, 여기서는
+ * "성향 설명"이 아니라 관계가 진행되는 동안 반복되는 작동 방식만 다룬다:
+ * 말로 확인시키지 않고 넘어감 → 상대는 문제없다고 여김 → 확인받지 못한
+ * 마음이 쌓임. 새 분기를 늘리지 않고 기존 문장 뒤에 붙이는 부연절로만
+ * 쓴다(원래는 문장 앞에 붙는 수식절이었으나, ①과의 의미 중복을 없애기
+ * 위해 관계 작동 과정을 담은 뒷절로 바꿨다).
+ */
+function hiddenClauseFor(exposure: SpouseStarExposure): string {
+  if (exposure !== "숨음") return "";
+  return " 이런 감정을 굳이 말로 확인시키지 않고 넘어가는 편이라, 상대는 별다른 문제가 없다고 여기기 쉽습니다. 그렇게 넘어간 순간들이 쌓이면, 정작 이 사람 안에는 확인받지 못한 마음이 조금씩 남게 됩니다.";
 }
 
 /**
@@ -112,7 +119,7 @@ function exposureShapeOf(star: SpouseStarProfile, focus: SubtypeFocus): Exposure
  */
 const SHAPE_SCENE_CLAUSE: Record<Exclude<ExposureShape, "none">, string> = {
   visible: "이런 모습은 상대방 눈에도 비교적 쉽게 보이는 편이라, 관계가 진행될수록 상대도 자연스럽게 알아차리게 됩니다.",
-  hidden: "다만 이런 모습이 겉으로 바로 티가 나기보다, 본인만 알고 넘어가는 순간이 많아 상대는 눈치채지 못한 채 지나가는 경우가 잦습니다.",
+  hidden: "이런 모습을 그때그때 말로 짚어주기보다 혼자 삭이고 넘어가는 경우가 많아, 상대는 별일 없었다는 듯 그냥 지나가기 쉽습니다. 그 사이 이 사람 안에는 정리되지 않은 감정이 조금씩 쌓입니다.",
   rooted: "이런 모습은 어쩌다 한 번 나오기보다, 관계가 이어지는 동안에도 계속 비슷하게 되풀이되는 쪽에 가깝습니다.",
 };
 
@@ -232,13 +239,13 @@ function buildBranchParagraphs(
   focus: SubtypeFocus,
   shape: ExposureShape,
   exposure: SpouseStarExposure,
-  prefix: string,
   noteHead: string
 ): NarrativeParagraph[] {
   const t = BRANCH_TEXT[branch][focus];
-  const clause = shapeClauseFor(exposure, shape);
+  const hiddenClause = hiddenClauseFor(exposure);
+  const shapeClause = shapeClauseFor(exposure, shape);
   return [
-    { text: `${prefix}${t.scene}${clause}`, sourceNote: `${noteHead}, focus=${focus}, shape=${shape}` },
+    { text: `${t.scene}${hiddenClause}${shapeClause}`, sourceNote: `${noteHead}, focus=${focus}, shape=${shape}` },
     { text: t.conclusion, sourceNote: `${branch} 결론(focus=${focus})` },
   ];
 }
@@ -249,7 +256,6 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
   const { exposure, strength } = star;
   const { balance } = balanceResult;
   const tier = totalTierOf(strength.total);
-  const prefix = hiddenPrefix(exposure);
   const focus = subtypeFocusOf(star);
   const shape = exposureShapeOf(star, focus);
   const [subA, subB] = star.subtypes;
@@ -274,7 +280,7 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
     return {
       paragraphs: [
         {
-          text: `${prefix}이 사람은 관계 안에서 감당하는 힘을 하나로 딱 잘라 말하기 어려운 상태입니다. 여러 힘이 팽팽하게 맞서 있어, 어떤 관계에서는 여유 있게 이끌다가도 다른 관계에서는 유독 버거워하는 식으로 다르게 나타날 수 있습니다.`,
+          text: `이 사람은 관계 안에서 감당하는 힘을 하나로 딱 잘라 말하기 어려운 상태입니다. 여러 힘이 팽팽하게 맞서 있어, 어떤 관계에서는 여유 있게 이끌다가도 다른 관계에서는 유독 버거워하는 식으로 다르게 나타날 수 있습니다.${hiddenClauseFor(exposure)}`,
           sourceNote: `balance=hold(판정보류형), exposure=${exposure}, total=${strength.total}`,
         },
         {
@@ -289,17 +295,17 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
   if (isWeak(balance)) {
     const branch: BranchKey = tier === "high" ? "과부하형" : tier === "mid" ? "점증형" : "방향부재형";
     const noteHead = `신약+total${tier === "high" ? "高" : tier === "mid" ? "中" : "低"}(${branch}), balance=${balance}, total=${strength.total}, ${focusDetail}`;
-    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, prefix, noteHead) };
+    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, noteHead) };
   }
 
   // ── 4순위: 신강 계열(clearlyStrong/slightlyStrong) × total tier ──
   if (isStrong(balance)) {
     const branch: BranchKey = tier === "high" ? "여유-이끄는형" : "여유-무난형";
     const noteHead = `신강+total${tier === "high" ? "高" : "中低"}(${branch}), balance=${balance}, total=${strength.total}, ${focusDetail}`;
-    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, prefix, noteHead) };
+    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, noteHead) };
   }
 
   // ── 5순위: neutral(균형) ───────────────────────────────────────
   const noteHead = `balance=neutral(균형형), exposure=${exposure}, total=${strength.total}, ${focusDetail}`;
-  return { paragraphs: buildBranchParagraphs("균형형", focus, shape, exposure, prefix, noteHead) };
+  return { paragraphs: buildBranchParagraphs("균형형", focus, shape, exposure, noteHead) };
 }
