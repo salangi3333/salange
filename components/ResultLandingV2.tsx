@@ -519,6 +519,18 @@ function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance
 export default function ResultLandingV2({ report }: { report?: ReportResult } = {}) {
   const data = report ?? DEFAULT_REPORT;
 
+  // 무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — React 상태가
+  // 아니라 이 컴포넌트 파일 안에서만 쓰는 렌더링 스위치다. isPaid/isUnlocked
+  // 같은 결제 상태 개념이 아니라, "무료 화면에서 유료 5블록을 잠깐 숨긴다"는
+  // 뜻만 갖는 값이다. `boolean` 타입으로 선언한 이유: 리터럴 `false`를 바로
+  // 쓰면 TypeScript가 그 분기를 "도달 불가능한 코드"로 판단해 하위 JSX의
+  // 타입 좁히기(narrowing)를 건너뛰어 data.chapterFive 등이 실제로는 문제
+  // 없는 자리에서 "possibly undefined" 오류를 낸다 — 그 타입체크 우회
+  // 목적일 뿐, 계산/데이터/디자인은 전혀 건드리지 않는다. 유료 화면에 다시
+  // 연결할 때는 이 값을 true로 바꾸거나, 아래 각 자리의
+  // `HIDE_PAID_BLOCKS_ON_FREE_SCREEN &&`를 지우면 된다.
+  const HIDE_PAID_BLOCKS_ON_FREE_SCREEN: boolean = true;
+
   return (
     <main className="bg-sceneBg text-sceneText">
       {/* ── 사주팔자 / 일간 ───────────────────────────────────────── */}
@@ -810,8 +822,18 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           소제목 스타일 재사용, 새 컴포넌트 아님)으로 ①~⑤ 경계만
           나눈다. data.chapterLove는 reportMapper.ts가 이미 승인·동결된
           ①~⑤ narrative 함수 5개의 문단을 그대로 옮겨 담은 것뿐이라 이
-          컴포넌트에서 새 문장을 만들지 않는다. */}
-      {data.chapterLove && (
+          컴포넌트에서 새 문장을 만들지 않는다.
+
+          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — data.chapterLove
+          자체와 이 JSX는 전혀 건드리지 않고, 렌더링 여부만
+          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단, isPaid/isUnlocked
+          같은 결제 상태가 아니라 이 파일 안에서만 쓰는 렌더링 스위치)로 끈다.
+          유료 화면에 다시 연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다
+          (데이터/계산/이 블록의 나머지 JSX는 그대로, 안쪽
+          `data.chapterLove && (...)` 가드도 원래 그대로 둬 타입 좁히기가
+          그대로 유지되게 했다). */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
+        data.chapterLove && (
         <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
           <div className="mx-auto w-full max-w-content2 text-center">
             <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
@@ -835,6 +857,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             ))}
           </div>
         </section>
+        )
       )}
 
       {/* 第四章 — 재물운. 예전에는 4·5·6장을 각각 독립된 "第X章"으로
@@ -847,7 +870,15 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           따라 第五章/第六章 한자 라벨과 그 title(둘 다 이름만 바뀌는
           정적 템플릿이라 내용 손실 없음)을 화면에서 빼고, 대신
           ChapterOneSubheading(1장에서 이미 쓰던 소제목 스타일 그대로
-          재사용, 새 컴포넌트 아님)으로 3개 하위 섹션의 경계만 표시한다. */}
+          재사용, 새 컴포넌트 아님)으로 3개 하위 섹션의 경계만 표시한다.
+
+          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — 第四章
+          섹션 전체(본문/lockedDetail/chapterFive/chapterSix 하위 섹션 전부)를
+          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단 참고)으로 감싸
+          무료 화면 렌더링에서만 제외한다. data.chapters[3]/chapterFive/
+          chapterSix와 이 JSX 자체는 전혀 건드리지 않았다 — 유료 화면에 다시
+          연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다. */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
@@ -971,6 +1002,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           )}
         </div>
       </section>
+      )}
 
       {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
           변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
@@ -1253,10 +1285,7 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             OPEN SPECIAL · 오픈 특가
           </span>
           <p className="font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-[22px]">
-            {data.userName}님, 지나온 이야기는 다 읽으셨습니다.
-          </p>
-          <p className="text-[16px] font-semibold leading-relaxed text-sceneText/90">
-            진짜 궁금한 건, 지금부터입니다.
+            이제부터, 더 깊은 이야기가 시작됩니다.
           </p>
 
           <div className="mt-2 flex flex-col items-center gap-0.5">
