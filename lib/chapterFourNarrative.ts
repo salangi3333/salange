@@ -395,27 +395,68 @@ function buildDaYunFlow(key: ChapterFourKey, usedTerms: Set<string>): string[] {
 // 8. 돈을 지키고 키우는 조언 (LOCKED, 마지막 문단)
 // ────────────────────────────────────────────────────────────────
 
+/**
+ * 개인화 보강(GPT 검수 승인 범위) — 새 계산을 추가하지 않고, 이미
+ * ChapterFourKey에 있지만 이 함수에서는 그동안 쓰이지 않던 값
+ * (gwanseongVsBigyeop의 gapTier, jaeseongVsInseong, siksangJaeseongLinked,
+ * daYun.current)만 더 참조한다. 기존 4갈래 진단 문장(base)은 그대로 두고,
+ * 그 뒤에 "그래서 어떤 습관을 의식하면 좋은지"를 계산값 기반으로 한 문장
+ * 더 붙이는 구조로만 확장한다 — 서로 다른 명식이 같은 base로 묶여도 follow
+ * 절이 갈라지도록 하는 것이 목적이다. 재산/소득/사건 단정은 하지 않는다.
+ */
 function buildAdviceParagraph(key: ChapterFourKey): string {
-  const { bigyeopVsJaeseong: bj, gwanseongVsBigyeop: gb, jaeseong, wealth } = key;
+  const { bigyeopVsJaeseong: bj, gwanseongVsBigyeop: gb, jaeseongVsInseong: ji, jaeseong, wealth, siksangJaeseongLinked, daYun } = key;
+
   if (bj.leadCategory === "비겁" && bj.gapTier !== "비슷") {
-    return "쌓이기 전에 다시 움직이려는 마음을 한 번은 붙잡아 두는 것이, 이 구조에서는 돈을 지키는 가장 실질적인 방법입니다.";
+    const base = "쌓이기 전에 다시 움직이려는 마음을 한 번은 붙잡아 두는 것이, 이 구조에서는 돈을 지키는 가장 실질적인 방법입니다.";
+    // gb(관성 vs 비겁)로 "그 나누려는 힘을 눌러줄 장치가 이미 있는지"까지
+    // 갈라, 사람/관계를 통해 오가는 돈을 다루는 기준까지 이어붙인다.
+    const follow =
+      gb.leadCategory === "관성" && gb.gapTier !== "비슷"
+        ? " 다만 책임과 절제의 힘이 이미 어느 정도 받쳐주고 있어, 스스로 정한 원칙만 지키면 지나치게 흩어지는 데까지는 가지 않는 구조입니다."
+        : " 이 흐름을 대신 눌러줄 장치가 마땅치 않은 구조이니, 사람이나 관계를 통해 오가는 돈은 미리 정해둔 기준으로 다루는 편이 안전합니다.";
+    return base + follow;
   }
   // "적극적으로 키워보는 쪽이 유리하다"는 계산이 보장하지 않는 행동
   // 권고라 4·5·6장 교차검증에서 지적됨 — 구조 설명으로 낮춘다.
   if (gb.leadCategory === "관성" && gb.gapTier !== "비슷" && jaeseong.exposure === "뚜렷") {
-    return "지키는 힘이 이미 자리하고 있어, 재물이 움직일 때 이를 받쳐주는 기반으로 작동할 수 있습니다.";
+    const base = "지키는 힘이 이미 자리하고 있어, 재물이 움직일 때 이를 받쳐주는 기반으로 작동할 수 있습니다.";
+    // jaeseongVsInseong(재성이 안정 추구를 누르는 정도)으로 "지켜지는 재물
+    // 때문에 오히려 움직여야 할 때를 놓치는지"까지 갈라 붙인다.
+    const follow =
+      ji.leadCategory === "재성" && ji.gapTier !== "비슷"
+        ? " 다만 재물의 힘이 안정을 살피는 힘보다 앞서 있어, 이미 괜찮은 기회조차 더 지켜보다 놓치는 경우가 있을 수 있습니다. 움직여야 할 때를 스스로 미리 정해두는 편이 도움이 됩니다."
+        : " 지금의 방식을 그대로 유지하는 것만으로도, 기반이 흔들리지 않는 지금이 다음 단계를 준비하기 좋은 시점이 될 수 있습니다.";
+    return base + follow;
   }
   // "계기를 스스로 만들어보라"는 계산이 보장하지 않는 행동 처방이라
   // 마찬가지로 구조·흐름 설명까지만 남긴다.
   if (jaeseong.exposure === "숨음") {
-    return "지금은 안쪽에서 움직이는 힘이 상대적으로 더 두드러지는 구조입니다. 재물이 밖으로 드러나는 방식보다 그 흐름이 어디에서 멈추고 어떻게 이어지는지를 함께 보는 편이 더 정확합니다.";
+    const base = "지금은 안쪽에서 움직이는 힘이 상대적으로 더 두드러지는 구조입니다. 재물이 밖으로 드러나는 방식보다 그 흐름이 어디에서 멈추고 어떻게 이어지는지를 함께 보는 편이 더 정확합니다.";
+    const follow = siksangJaeseongLinked
+      ? " 다만 만들어내는 힘과는 이어져 있어, 겉으로 드러내기보다 실제 결과물로 먼저 증명해나가는 쪽이 이 구조에는 더 잘 맞습니다."
+      : " 겉으로 성과를 서두르기보다, 안에서 흐름이 정리되는 시점을 기다리는 쪽이 이 구조에는 더 잘 맞습니다.";
+    return base + follow;
   }
   if (jaeseong.exposure === "미미") {
     const topAxis = wealth.all[0].category;
     const route = CATEGORY_MONEY_ROUTE[topAxis];
-    return `${route}${josaEulReul(route)} 통해 재물이 현실화되는 구조인 만큼, 그 힘을 키우는 쪽에 집중하는 것이 유리합니다.`;
+    const base = `${route}${josaEulReul(route)} 통해 재물이 현실화되는 구조인 만큼, 그 힘을 키우는 쪽에 집중하는 것이 유리합니다.`;
+    // 현재 대운 카테고리가 topAxis와 같은지로 "지금이 그 힘을 키우기에
+    // 실제로 맞는 시기인지"까지 이어붙인다(daYun.current, 새 계산 아님).
+    const follow =
+      daYun.current?.ganCategory === topAxis
+        ? " 마침 지금 대운에서 이 힘이 한 번 더 강조되는 시기이기도 해, 지금이 그 힘을 키우기에 특히 맞는 때일 수 있습니다."
+        : " 지금 대운은 이 힘과는 결이 다른 흐름이 지나는 중이니, 조급하게 키우기보다 꾸준히 쌓아가는 쪽을 우선하는 편이 좋습니다.";
+    return base + follow;
   }
-  return "지금의 흐름을 그대로 이어가되, 지키는 힘과 키우는 힘의 균형을 계속 살펴보는 것이 관건입니다.";
+  const base = "지금의 흐름을 그대로 이어가되, 지키는 힘과 키우는 힘의 균형을 계속 살펴보는 것이 관건입니다.";
+  const fallbackTopAxis = wealth.all[0].category;
+  const follow =
+    daYun.current?.ganCategory === fallbackTopAxis
+      ? " 지금 대운에서도 그 축이 이어지고 있어, 지금 방식을 크게 바꾸기보다 다듬어가는 쪽이 더 유리합니다."
+      : " 다만 지금 대운은 결이 다른 힘이 지나는 중이라, 그 변화를 한 번쯤 점검해보는 것도 좋습니다.";
+  return base + follow;
 }
 
 // ────────────────────────────────────────────────────────────────

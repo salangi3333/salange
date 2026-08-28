@@ -875,6 +875,57 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
 
           <HighlightCard text={data.chapters[3].highlight} />
 
+          {/* 재물 잠금 상세(chapterFourNarrative.ts의 lockedDetail) 연결 —
+              ①흔들리는조건 ②과거대운 ③현재대운 ④다음대운 ⑤조언 5개 문단을
+              그대로 옮긴다. 원문/계산 변경 없음, 새 컴포넌트 없음(기존
+              ChapterOneSubheading + space-y-4 문단 패턴 재사용). "lockedDetail"
+              이라는 내부 명칭은 화면에 노출하지 않는다.
+              buildDaYunFlow()는 사용자에 따라 과거/현재/다음 대운 중 일부가
+              없으면(예: 첫 대운을 지나는 중이거나 마지막 대운을 이미 지난
+              경우) 배열 길이가 5가 아닐 수 있다 — 그 경우 이 5단계 라벨과
+              내용이 어긋나므로, 길이가 정확히 5일 때만 렌더링한다(길이가
+              다르면 이 블록 전체를 건너뛴다 — 새 fallback 문장을 만들지
+              않는다). 아직 결제 게이트/블러/잠금 UI는 붙이지 않는다 —
+              화면에는 계속 무료 재물운과 동일하게 완전히 보이는 상태다. */}
+          {Array.isArray(data.chapters[3].lockedDetail) && data.chapters[3].lockedDetail!.length === 5 && (
+            <>
+              <ChapterOneSubheading>① 재물이 흔들리는 조건</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![0])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>② 지나온 흐름에서 돈이 움직인 방식</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![1])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>③ 지금의 재물 흐름</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![2])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>④ 다음 흐름에서 달라지는 것</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![3])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>⑤ 지금 기억해야 할 재물 원칙</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![4])}
+                </p>
+              </div>
+            </>
+          )}
+
           {/* 하위 섹션 2 — 이전 第五章(돈이 들어와도 남지 않는 이유).
               bridgeIntro(4→5 연결문)는 있을 때만 본문과 같은 스타일로
               첫 문단 자리에 얹는다. */}
