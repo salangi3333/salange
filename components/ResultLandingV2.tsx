@@ -1004,6 +1004,37 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
       </section>
       )}
 
+      {/* 제3장 — 인생의 전환점. 유료 핵심 4개 챕터(사랑과 인연/재물운/
+          인생의 전환점/앞으로의 10년) 중 세 번째. data.chapterLifeTransition은
+          reportMapper.ts가 이미 승인·동결된 lifeTransitionNarrative.ts의
+          ①~④ 문단을 그대로 옮겨 담은 것뿐이라 이 컴포넌트에서 새 문장을
+          만들지 않는다. 사랑과 인연/재물운과 같은 패턴으로
+          HIDE_PAID_BLOCKS_ON_FREE_SCREEN으로 무료 화면에서 가린다(타입
+          좁히기 관련 주의사항은 위 두 블록과 동일 — 이 스위치는 boolean
+          타입 상수라 `false &&`의 도달불가 판정 문제가 없어 별도 중첩
+          없이 그대로 && 체인으로 연결한다). */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterLifeTransition && (
+        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterLifeTransition.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterLifeTransition.title}
+            </h2>
+
+            {data.chapterLifeTransition.sections.map((sec, idx) => (
+              <Fragment key={idx}>
+                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(sec.body)}
+                </p>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
           변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
           지점(구 위치)으로 분리해 뒤로 옮겼다 — 이미지와 텍스트를 각각

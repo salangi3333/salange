@@ -37,6 +37,7 @@ import { generateLoveRepeatingSceneNarrative } from "./loveRepeatingSceneNarrati
 import { generateLoveStabilityConditionNarrative } from "./loveStabilityConditionNarrative";
 import { analyzeLoveTimingSignals } from "./loveTimingSignals";
 import { generateLoveTimingNarrative } from "./loveTimingNarrative";
+import { buildLifeTransitionNarrative } from "./lifeTransitionNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -150,6 +151,23 @@ export interface ChapterLoveContent {
 }
 
 /**
+ * "인생의 전환점" 챕터 — 승인·동결된 lifeTransitionNarrative.ts의
+ * buildLifeTransitionNarrative()가 만든 ①~④ 문단을 그대로 옮긴 것뿐,
+ * 이 파일에서 새 문장을 짓지 않는다. 사랑·인연과 같은 패턴(한자 대제목
+ * 없이 "제N장" 한글 라벨 + 하위 섹션 배열).
+ */
+export interface ChapterLifeTransitionSubsection {
+  heading: string;
+  body: string;
+}
+
+export interface ChapterLifeTransitionContent {
+  chapterLabel: string;
+  title: string;
+  sections: ChapterLifeTransitionSubsection[];
+}
+
+/**
  * 01 "타고난 본질" 챕터 전용 — 최종 샘플 품질 구조. 02~04는 아직 이 구조로
  * 옮기지 않았으므로 기존 ReportChapter/buildChapters()를 그대로 쓴다 —
  * 이 타입은 오직 01 챕터 렌더링에만 쓰인다.
@@ -256,6 +274,9 @@ export interface ReportResult {
   /** "사랑과 인연"(①~⑤ 통합). 선택적 필드로 두어 DEFAULT_REPORT 등
    * 기존 정적 fallback을 건드리지 않는다. */
   chapterLove?: ChapterLoveContent;
+  /** "인생의 전환점"(①~④ 통합). 선택적 필드로 두어 DEFAULT_REPORT 등
+   * 기존 정적 fallback을 건드리지 않는다. */
+  chapterLifeTransition?: ChapterLifeTransitionContent;
   /** 第五章("돈이 들어와도 남지 않는 이유"). 선택적 필드로 두어
    * DEFAULT_REPORT 등 기존 정적 fallback을 건드리지 않는다. */
   chapterFive?: ChapterFiveContent;
@@ -500,6 +521,22 @@ function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterL
 }
 
 /**
+ * "인생의 전환점" ①~④ — 이미 승인·동결된 lifeTransitionNarrative.ts의
+ * buildLifeTransitionNarrative()를 그대로 호출해 문단(text)만 옮겨
+ * 담는다. 새 계산 없음 — 그 함수 내부에서 이미 buildLifeFlowKey/
+ * buildLifeFlowNarrative(둘 다 기존 동결 함수)만 사용한다.
+ */
+function buildChapterLifeTransition(appData: AppData): ChapterLifeTransitionContent {
+  const transition = buildLifeTransitionNarrative(appData);
+
+  return {
+    chapterLabel: "제3장",
+    title: `${appData.user.name}님의 ${transition.title}`,
+    sections: transition.sections.map((s) => ({ heading: s.heading, body: s.body })),
+  };
+}
+
+/**
  * AppData(=이미 계산+개인화된 결과) → ResultLandingV2가 바로 쓸 수 있는
  * ReportResult로 변환한다. 새 계산 없음 — 기존 함수 호출과 필드 선택만.
  *
@@ -706,6 +743,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     tenYearPreview: groupTenYear(tenYear),
     lifeFlow,
     chapterLove: buildChapterLove(appData, gender),
+    chapterLifeTransition: buildChapterLifeTransition(appData),
     chapterFive,
     chapterSix,
   };
