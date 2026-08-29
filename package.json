@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "framer-motion": "^11.3.19",
     "lucide-react": "^0.427.0",
     "lunar-javascript": "^1.7.7",

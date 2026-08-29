@@ -20,9 +20,19 @@ function formatBirthTime(data: IntakeFormData): string {
 export default function ConfirmInfoScreen({
   data,
   onConfirm,
+  submitting = false,
+  errorMessage = "",
 }: {
   data: IntakeFormData;
   onConfirm: () => void;
+  /** DB + reportId 발급 API 호출 중일 때 true — 중복 클릭으로 report가
+   * 여러 개 생기는 것을 막기 위해 버튼을 비활성화하고 문구만 바꾼다.
+   * 기존 화면 레이아웃/디자인은 그대로 둔다. */
+  submitting?: boolean;
+  /** report 생성 API가 실패했을 때 버튼 아래에 보여줄 안내 문구.
+   * 화면을 error 단계로 통째로 바꾸지 않고 이 화면에서 바로 재시도할 수
+   * 있게 한다. */
+  errorMessage?: string;
 }) {
   const displayName = data.name.trim() || "당신";
   const calendarLabel = data.calendarType === "solar" ? "양력" : "음력";
@@ -49,10 +59,15 @@ export default function ConfirmInfoScreen({
       <button
         type="button"
         onClick={onConfirm}
-        className="mt-2 rounded-pill bg-gradient-to-r from-accentGoldFrom to-accentGoldTo px-8 py-4 text-base font-bold text-dark shadow-[0_0_26px_rgba(231,192,126,0.4)] transition-transform hover:scale-[1.04] active:scale-[0.97]"
+        disabled={submitting}
+        className="mt-2 rounded-pill bg-gradient-to-r from-accentGoldFrom to-accentGoldTo px-8 py-4 text-base font-bold text-dark shadow-[0_0_26px_rgba(231,192,126,0.4)] transition-transform hover:scale-[1.04] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
       >
-        이대로 사주 풀이 보기 →
+        {submitting ? "리포트 준비 중..." : "이대로 사주 풀이 보기 →"}
       </button>
+
+      {errorMessage && (
+        <p className="text-sm text-sceneRed">{errorMessage}</p>
+      )}
     </section>
   );
 }
