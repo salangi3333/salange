@@ -38,6 +38,7 @@ import { generateLoveStabilityConditionNarrative } from "./loveStabilityConditio
 import { analyzeLoveTimingSignals } from "./loveTimingSignals";
 import { generateLoveTimingNarrative } from "./loveTimingNarrative";
 import { buildLifeTransitionNarrative } from "./lifeTransitionNarrative";
+import { buildTenYearNarrative } from "./tenYearNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -168,6 +169,44 @@ export interface ChapterLifeTransitionContent {
 }
 
 /**
+ * "앞으로의 10년" 챕터 — 승인·동결된 tenYearNarrative.ts의
+ * buildTenYearNarrative()가 만든 여는 글/구간/연도별/하이라이트/마지막
+ * 조언을 그대로 옮긴 것뿐, 이 파일에서 새 문장을 짓지 않는다.
+ */
+export interface ChapterTenYearItem {
+  year: number;
+  age: number;
+  ganZhiHanja: string;
+  ganZhiHangul: string;
+  coreSignal: string;
+  narrative: string;
+  /** 모바일 가독성 보강용 — tenYearNarrative.ts가 이미 계산해 둔
+   * LifeAreaLabel(7종) 그대로. 새 계산 없음, 화면에 짧은 핵심 라벨로만
+   * 노출한다. */
+  area: string;
+}
+
+export interface ChapterTenYearSegment {
+  range: string;
+  summary: string;
+}
+
+export interface ChapterTenYearHighlight {
+  year: number;
+  reason: string;
+}
+
+export interface ChapterTenYearContent {
+  chapterLabel: string;
+  title: string;
+  intro: string;
+  segments: ChapterTenYearSegment[];
+  items: ChapterTenYearItem[];
+  highlights: ChapterTenYearHighlight[];
+  closing: string;
+}
+
+/**
  * 01 "타고난 본질" 챕터 전용 — 최종 샘플 품질 구조. 02~04는 아직 이 구조로
  * 옮기지 않았으므로 기존 ReportChapter/buildChapters()를 그대로 쓴다 —
  * 이 타입은 오직 01 챕터 렌더링에만 쓰인다.
@@ -277,6 +316,10 @@ export interface ReportResult {
   /** "인생의 전환점"(①~④ 통합). 선택적 필드로 두어 DEFAULT_REPORT 등
    * 기존 정적 fallback을 건드리지 않는다. */
   chapterLifeTransition?: ChapterLifeTransitionContent;
+  /** "앞으로의 10년"(여는 글/구간/연도별 10개/하이라이트/마지막 조언).
+   * 선택적 필드로 두어 DEFAULT_REPORT 등 기존 정적 fallback을 건드리지
+   * 않는다. */
+  chapterTenYear?: ChapterTenYearContent;
   /** 第五章("돈이 들어와도 남지 않는 이유"). 선택적 필드로 두어
    * DEFAULT_REPORT 등 기존 정적 fallback을 건드리지 않는다. */
   chapterFive?: ChapterFiveContent;
@@ -462,7 +505,14 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
     : undefined;
 
   return {
-    chapterLabel: cover?.chapterLabel ?? "第一章",
+    // 장 번호 통합 정리(승인된 작업) — 무료 3장(한자 第一~三章)과 유료
+    // 4장(한글 제2~4장, 서로 겹치는 번호)이 실제 화면에서 뒤섞여 렌더링
+    // 순서와 번호가 충돌하는 문제가 있어, 전체를 읽는 순서 그대로
+    // "제1장~제7장"(한글) 하나의 체계로 통일한다. storyScenes.ts의
+    // cover?.chapterLabel(第一章 등)은 더 이상 화면 라벨로 쓰지 않고
+    // 무시한다 — 그 파일 자체는 건드리지 않는다. 계산/narrative는 전혀
+    // 바뀌지 않았다, 표시 문자열 하나만 바뀐다.
+    chapterLabel: "제1장",
     // 챕터 제목 자체를 이름 기반으로 바꾼다 — "남들이 보는 나, 그리고
     // 실제의 나"라는 고정 제목 대신, 맨 위에서부터 바로 "OOO님의 타고난
     // 운명"으로 시작하게 한다(사용자 요청: 챕터 시작이 이름+운명이어야
@@ -508,7 +558,8 @@ function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterL
   const timingNarrative = generateLoveTimingNarrative(appData, timing);
 
   return {
-    chapterLabel: "제2장",
+    // 장 번호 통합 정리 — 제1~7장 체계 중 네 번째(제1장 주석 참고).
+    chapterLabel: "제4장",
     title: `${appData.user.name}님의 사랑과 인연`,
     sections: [
       { heading: "① 나는 사랑할 때 어떤 사람인가", body: approach.paragraphs.map((p) => p.text) },
@@ -530,9 +581,43 @@ function buildChapterLifeTransition(appData: AppData): ChapterLifeTransitionCont
   const transition = buildLifeTransitionNarrative(appData);
 
   return {
-    chapterLabel: "제3장",
+    // 장 번호 통합 정리 — 제1~7장 체계 중 여섯 번째(제1장 주석 참고).
+    // 재물운(第四章→제5장)이 이 챕터보다 먼저 읽히므로 여기는 "제3장"이
+    // 아니라 "제6장"이 실제 순서와 맞다.
+    chapterLabel: "제6장",
     title: `${appData.user.name}님의 ${transition.title}`,
     sections: transition.sections.map((s) => ({ heading: s.heading, body: s.body })),
+  };
+}
+
+/**
+ * "앞으로의 10년" ① 여는 글~④ 마지막 조언 — 이미 승인·동결된
+ * tenYearNarrative.ts의 buildTenYearNarrative()를 그대로 호출해 문단만
+ * 옮겨 담는다. 새 계산·새 문장 없음.
+ */
+function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
+  const ty = buildTenYearNarrative(appData);
+
+  return {
+    // 장 번호 통합 정리 — 제1~7장 체계 중 마지막(일곱 번째, 제1장 주석 참고).
+    chapterLabel: "제7장",
+    title: `${appData.user.name}님의 앞으로의 10년`,
+    intro: ty.intro,
+    segments: ty.segments.map((s) => ({
+      range: s.startYear === s.endYear ? `${s.startYear}년` : `${s.startYear}–${s.endYear}년`,
+      summary: s.summary,
+    })),
+    items: ty.items.map((it) => ({
+      year: it.year,
+      age: it.age,
+      ganZhiHanja: it.ganZhiHanja,
+      ganZhiHangul: it.ganZhiHangul,
+      coreSignal: it.coreSignal,
+      narrative: it.narrative,
+      area: it.area,
+    })),
+    highlights: ty.highlights,
+    closing: ty.closing,
   };
 }
 
@@ -597,6 +682,8 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     const chapterTwoOpening = buildChapterTwoOpening(appData);
     chapters[1] = {
       ...chapters[1],
+      // 장 번호 통합 정리 — 제1~7장 체계 중 두 번째(제1장 참고).
+      chapterLabel: "제2장",
       title: `${user.name}님의 타고난 기질`,
       killpoint: chapterTwoOpening?.title ?? temperamentBlock.heading,
       body: paras,
@@ -624,8 +711,9 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
   // 있던 "돈과 일이 움직이는 방식"(재물, 5원소 공통 문장 다수 포함)은
   // 확정된 4챕터 구조상 원래 4챕터("금전운의 흐름") 자리였고, 4챕터는
   // 아직 별도 승인 전이라 이번 범위가 아니다 — 그래서 여기서는 第三章
-  // "본문(body/killpoint/highlight/title)"만 교체하고, chapterLabel(第三章)
-  // 은 그대로 둔다. chapterThreeInterpretation.ts(세력·통근·합충·관살혼잡
+  // "본문(body/killpoint/highlight/title)"만 교체한다. chapterLabel은 장
+  // 번호 통합 정리로 "제3장"으로 다시 맞춘다(제1장 주석 참고).
+  // chapterThreeInterpretation.ts(세력·통근·합충·관살혼잡
   // 판단) + chapterThreeNarrative.ts(그 판단을 실제 문장으로 조립)가
   // 승인된 설계와 홍지영·한소민·윤태호 3편의 구조/문체를 코드로 옮긴
   // 것이다 — GAN_PROFILE.lifestyle/CH3_FACT 등 기존 오행·일간 공통
@@ -635,6 +723,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     const chapterThreeContent = buildChapterThreeNarrative(appData, chapterThreeKey);
     chapters[2] = {
       ...chapters[2],
+      chapterLabel: "제3장",
       title: chapterThreeContent.title,
       killpoint: chapterThreeContent.killpoint,
       body: chapterThreeContent.body,
@@ -744,6 +833,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     lifeFlow,
     chapterLove: buildChapterLove(appData, gender),
     chapterLifeTransition: buildChapterLifeTransition(appData),
+    chapterTenYear: buildChapterTenYear(appData),
     chapterFive,
     chapterSix,
   };

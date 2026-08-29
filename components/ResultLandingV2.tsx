@@ -814,231 +814,18 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </div>
       </section>
 
-      {/* 제2장 — 사랑과 인연. 재물운(第四章)이 4·5·6장을 하나의 대제목
-          아래 하위 섹션 3개로 묶은 것과 같은 패턴이다. ①~⑤ 각각에
-          第二章/第三章 같은 새 한자 대제목을 붙이지 않고, 대제목은
-          "제2장"(한글, 기존 第一~四章 한자 번호 체계와 겹치지 않도록
-          구분) 한 번만 표시한 뒤 ChapterOneSubheading(1장에서 이미 쓰는
-          소제목 스타일 재사용, 새 컴포넌트 아님)으로 ①~⑤ 경계만
-          나눈다. data.chapterLove는 reportMapper.ts가 이미 승인·동결된
-          ①~⑤ narrative 함수 5개의 문단을 그대로 옮겨 담은 것뿐이라 이
-          컴포넌트에서 새 문장을 만들지 않는다.
-
-          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — data.chapterLove
-          자체와 이 JSX는 전혀 건드리지 않고, 렌더링 여부만
-          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단, isPaid/isUnlocked
-          같은 결제 상태가 아니라 이 파일 안에서만 쓰는 렌더링 스위치)로 끈다.
-          유료 화면에 다시 연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다
-          (데이터/계산/이 블록의 나머지 JSX는 그대로, 안쪽
-          `data.chapterLove && (...)` 가드도 원래 그대로 둬 타입 좁히기가
-          그대로 유지되게 했다). */}
-      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
-        data.chapterLove && (
-        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-content2 text-center">
-            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-              {data.chapterLove.chapterLabel}
-            </span>
-            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {data.chapterLove.title}
-            </h2>
-
-            {data.chapterLove.sections.map((sec, idx) => (
-              <Fragment key={idx}>
-                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
-                <div className="space-y-4">
-                  {sec.body.map((p, pIdx) => (
-                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
-                      {wrapHanjaTokens(p)}
-                    </p>
-                  ))}
-                </div>
-              </Fragment>
-            ))}
-          </div>
-        </section>
-        )
-      )}
-
-      {/* 第四章 — 재물운. 예전에는 4·5·6장을 각각 독립된 "第X章"으로
-          표시해, 재물이라는 한 주제가 3개의 별도 챕터처럼 연속 나열되는
-          것처럼 보였다(계산 모듈 경계를 그대로 章 번호로 썼기 때문).
-          이번 변경은 순수 UI/정보계층 변경이다 — chapters[3] /
-          chapterFive / chapterSix가 담은 계산·서술 결과(killpoint/body/
-          highlight/bridgeIntro)는 내용·순서 전부 그대로 보여준다. 章
-          번호는 "고객이 읽는 큰 주제"가 바뀔 때만 올라가야 한다는 원칙에
-          따라 第五章/第六章 한자 라벨과 그 title(둘 다 이름만 바뀌는
-          정적 템플릿이라 내용 손실 없음)을 화면에서 빼고, 대신
-          ChapterOneSubheading(1장에서 이미 쓰던 소제목 스타일 그대로
-          재사용, 새 컴포넌트 아님)으로 3개 하위 섹션의 경계만 표시한다.
-
-          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — 第四章
-          섹션 전체(본문/lockedDetail/chapterFive/chapterSix 하위 섹션 전부)를
-          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단 참고)으로 감싸
-          무료 화면 렌더링에서만 제외한다. data.chapters[3]/chapterFive/
-          chapterSix와 이 JSX 자체는 전혀 건드리지 않았다 — 유료 화면에 다시
-          연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다. */}
-      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
-      <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
-        <div className="mx-auto w-full max-w-content2 text-center">
-          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-            第四章
-          </span>
-          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-            {data.userName}님의 재물운
-          </h2>
-
-          <ChapterOneSubheading>돈이 움직이는 방식</ChapterOneSubheading>
-          <p className="mt-1 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
-            {wrapHanjaTokens(data.chapters[3].killpoint)}
-          </p>
-          <div className="mt-6 space-y-4">
-            {data.chapters[3].body.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                {wrapHanjaTokens(p)}
-              </p>
-            ))}
-          </div>
-
-          {/* 시기 카드는 출시 전 감사에서 하드코딩("2026년/경쟁운")으로
-              확인돼 제거했다 — 4챕터(금전운의 흐름) 최종 원고와 개인화
-              규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
-
-          <HighlightCard text={data.chapters[3].highlight} />
-
-          {/* 재물 잠금 상세(chapterFourNarrative.ts의 lockedDetail) 연결 —
-              ①흔들리는조건 ②과거대운 ③현재대운 ④다음대운 ⑤조언 5개 문단을
-              그대로 옮긴다. 원문/계산 변경 없음, 새 컴포넌트 없음(기존
-              ChapterOneSubheading + space-y-4 문단 패턴 재사용). "lockedDetail"
-              이라는 내부 명칭은 화면에 노출하지 않는다.
-              buildDaYunFlow()는 사용자에 따라 과거/현재/다음 대운 중 일부가
-              없으면(예: 첫 대운을 지나는 중이거나 마지막 대운을 이미 지난
-              경우) 배열 길이가 5가 아닐 수 있다 — 그 경우 이 5단계 라벨과
-              내용이 어긋나므로, 길이가 정확히 5일 때만 렌더링한다(길이가
-              다르면 이 블록 전체를 건너뛴다 — 새 fallback 문장을 만들지
-              않는다). 아직 결제 게이트/블러/잠금 UI는 붙이지 않는다 —
-              화면에는 계속 무료 재물운과 동일하게 완전히 보이는 상태다. */}
-          {Array.isArray(data.chapters[3].lockedDetail) && data.chapters[3].lockedDetail!.length === 5 && (
-            <>
-              <ChapterOneSubheading>① 재물이 흔들리는 조건</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![0])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>② 지나온 흐름에서 돈이 움직인 방식</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![1])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>③ 지금의 재물 흐름</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![2])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>④ 다음 흐름에서 달라지는 것</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![3])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>⑤ 지금 기억해야 할 재물 원칙</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![4])}
-                </p>
-              </div>
-            </>
-          )}
-
-          {/* 하위 섹션 2 — 이전 第五章(돈이 들어와도 남지 않는 이유).
-              bridgeIntro(4→5 연결문)는 있을 때만 본문과 같은 스타일로
-              첫 문단 자리에 얹는다. */}
-          {data.chapterFive && (
-            <>
-              <ChapterOneSubheading>돈이 머무는 힘과 흔들리는 조건</ChapterOneSubheading>
-              <div className="space-y-4">
-                {data.chapterFive.bridgeIntro && (
-                  <p className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
-                  </p>
-                )}
-                {data.chapterFive.body.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(p)}
-                  </p>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* 하위 섹션 3 — 이전 第六章(돈이 움직이는 시기). applicable=false라
-              generateWealthTimingNarrative가 안내 문단 1개만 돌려준
-              사람도 chapterSix 자체는 undefined가 아니므로(reportMapper.ts
-              참고) 이 블록이 그대로 렌더링되고, 문단 내용만 안내문
-              1개가 된다 — 별도 분기 없이 자연스럽게 처리된다. */}
-          {data.chapterSix && (
-            <>
-              <ChapterOneSubheading>앞으로 돈의 흐름이 달라지는 때</ChapterOneSubheading>
-              <div className="space-y-4">
-                {data.chapterSix.bridgeIntro && (
-                  <p className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
-                  </p>
-                )}
-                {data.chapterSix.body.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(p)}
-                  </p>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-      )}
-
-      {/* 제3장 — 인생의 전환점. 유료 핵심 4개 챕터(사랑과 인연/재물운/
-          인생의 전환점/앞으로의 10년) 중 세 번째. data.chapterLifeTransition은
-          reportMapper.ts가 이미 승인·동결된 lifeTransitionNarrative.ts의
-          ①~④ 문단을 그대로 옮겨 담은 것뿐이라 이 컴포넌트에서 새 문장을
-          만들지 않는다. 사랑과 인연/재물운과 같은 패턴으로
-          HIDE_PAID_BLOCKS_ON_FREE_SCREEN으로 무료 화면에서 가린다(타입
-          좁히기 관련 주의사항은 위 두 블록과 동일 — 이 스위치는 boolean
-          타입 상수라 `false &&`의 도달불가 판정 문제가 없어 별도 중첩
-          없이 그대로 && 체인으로 연결한다). */}
-      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterLifeTransition && (
-        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
-          <div className="mx-auto w-full max-w-content2 text-center">
-            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-              {data.chapterLifeTransition.chapterLabel}
-            </span>
-            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {data.chapterLifeTransition.title}
-            </h2>
-
-            {data.chapterLifeTransition.sections.map((sec, idx) => (
-              <Fragment key={idx}>
-                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(sec.body)}
-                </p>
-              </Fragment>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── 선녀 이미지 패널 — 4장 직후로 이동(정적 이미지, 에셋/비율/크롭
+      {/* ── 선녀 이미지 패널 — 무료 제3장 직후(정적 이미지, 에셋/비율/크롭
           변경 없음, RESULT_GUIDE_IMAGE 그대로 재사용). 문구는 무료 종료
           지점(구 위치)으로 분리해 뒤로 옮겼다 — 이미지와 텍스트를 각각
-          다른 자리에 쓰기 위한 구조 변경일 뿐, 이미지 자체는 손대지 않았다. ── */}
+          다른 자리에 쓰기 위한 구조 변경일 뿐, 이미지 자체는 손대지 않았다.
+
+          장 구조 통합 정리(승인된 작업) — 유료 4개 장(제4·5·6·7장)은 예전엔
+          바로 이 자리(무료 제3장 직후)에 있었으나, "무료 마지막(五行→
+          人生大運→무료 종료 문구→잠금목차→CTA) → 유료 4개 장" 순서로 읽혀야
+          자연스럽다는 통합검수 결과에 따라 CTA 섹션 뒤(파일 끝, `</main>`
+          바로 앞)로 옮겼다. 그 4개 블록의 JSX/데이터/계산은 전혀 바뀌지
+          않았고 위치만 이동했다 — 이 자리에는 이제 무료 제1~3장 다음
+          내용(선녀 이미지→五行→...)이 곧바로 이어진다. ── */}
       <section className="relative overflow-hidden border-b border-white/5 bg-sceneBg">
         <div
           // 모바일(96:100, 거의 정사각형)은 원본(4:3 가로)보다 훨씬 좁아
@@ -1332,6 +1119,318 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           </button>
         </div>
       </section>
+      {/* 제4장 — 사랑과 인연(유료 4개 장의 첫 번째, CTA 다음). 재물운이
+          4·5·6장을 하나의 대제목 아래 하위 섹션 3개로 묶은 것과 같은
+          패턴이다. ①~⑤ 각각에 새 대제목을 붙이지 않고, 대제목은
+          data.chapterLove.chapterLabel("제4장", reportMapper.ts에서 장 번호
+          통합 정리로 부여됨) 한 번만 표시한 뒤 ChapterOneSubheading(1장에서
+          이미 쓰는 소제목 스타일 재사용, 새 컴포넌트 아님)으로 ①~⑤ 경계만
+          나눈다. data.chapterLove는 reportMapper.ts가 이미 승인·동결된
+          ①~⑤ narrative 함수 5개의 문단을 그대로 옮겨 담은 것뿐이라 이
+          컴포넌트에서 새 문장을 만들지 않는다.
+
+          위치 이동(승인된 통합검수 작업) — 이 블록은 원래 무료 제3장
+          직후에 있었으나, CTA 다음(유료 4개 장의 시작)으로 옮겼다. JSX/
+          데이터/계산은 전혀 바뀌지 않았다.
+
+          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — data.chapterLove
+          자체와 이 JSX는 전혀 건드리지 않고, 렌더링 여부만
+          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단, isPaid/isUnlocked
+          같은 결제 상태가 아니라 이 파일 안에서만 쓰는 렌더링 스위치)로 끈다.
+          유료 화면에 다시 연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다
+          (데이터/계산/이 블록의 나머지 JSX는 그대로, 안쪽
+          `data.chapterLove && (...)` 가드도 원래 그대로 둬 타입 좁히기가
+          그대로 유지되게 했다). */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
+        data.chapterLove && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterLove.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterLove.title}
+            </h2>
+
+            {data.chapterLove.sections.map((sec, idx) => (
+              <Fragment key={idx}>
+                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                <div className="space-y-4">
+                  {sec.body.map((p, pIdx) => (
+                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                      {wrapHanjaTokens(p)}
+                    </p>
+                  ))}
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+        )
+      )}
+
+      {/* 제5장 — 재물운(유료 4개 장 중 두 번째). 예전에는 4·5·6장을 각각 독립된 "第X章"으로
+          표시해, 재물이라는 한 주제가 3개의 별도 챕터처럼 연속 나열되는
+          것처럼 보였다(계산 모듈 경계를 그대로 章 번호로 썼기 때문).
+          이번 변경은 순수 UI/정보계층 변경이다 — chapters[3] /
+          chapterFive / chapterSix가 담은 계산·서술 결과(killpoint/body/
+          highlight/bridgeIntro)는 내용·순서 전부 그대로 보여준다. 章
+          번호는 "고객이 읽는 큰 주제"가 바뀔 때만 올라가야 한다는 원칙에
+          따라 第五章/第六章 한자 라벨과 그 title(둘 다 이름만 바뀌는
+          정적 템플릿이라 내용 손실 없음)을 화면에서 빼고, 대신
+          ChapterOneSubheading(1장에서 이미 쓰던 소제목 스타일 그대로
+          재사용, 새 컴포넌트 아님)으로 3개 하위 섹션의 경계만 표시한다.
+
+          무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — 第四章
+          섹션 전체(본문/lockedDetail/chapterFive/chapterSix 하위 섹션 전부)를
+          `HIDE_PAID_BLOCKS_ON_FREE_SCREEN`(위 컴포넌트 상단 참고)으로 감싸
+          무료 화면 렌더링에서만 제외한다. data.chapters[3]/chapterFive/
+          chapterSix와 이 JSX 자체는 전혀 건드리지 않았다 — 유료 화면에 다시
+          연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다.
+
+          장 번호 통합 정리(승인된 작업) — 라벨을 "第四章"(하드코딩 리터럴)에서
+          "제5장"으로 바꿨다. 무료 3장(제1~3장)과 유료 나머지 3장(제4·6·7장)이
+          이미 reportMapper.ts에서 한글 "제N장" 체계로 통일됐으므로, 여기
+          하드코딩된 라벨만 그 체계에 맞춘다 — 계산/서술은 전혀 바뀌지 않음. */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
+      <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-content2 text-center">
+          <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+            제5장
+          </span>
+          <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+            {data.userName}님의 재물운
+          </h2>
+
+          <ChapterOneSubheading>돈이 움직이는 방식</ChapterOneSubheading>
+          <p className="mt-1 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
+            {wrapHanjaTokens(data.chapters[3].killpoint)}
+          </p>
+          <div className="mt-6 space-y-4">
+            {data.chapters[3].body.map((p, idx) => (
+              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {wrapHanjaTokens(p)}
+              </p>
+            ))}
+          </div>
+
+          {/* 시기 카드는 출시 전 감사에서 하드코딩("2026년/경쟁운")으로
+              확인돼 제거했다 — 4챕터(금전운의 흐름) 최종 원고와 개인화
+              규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
+
+          <HighlightCard text={data.chapters[3].highlight} />
+
+          {/* 재물 잠금 상세(chapterFourNarrative.ts의 lockedDetail) 연결 —
+              ①흔들리는조건 ②과거대운 ③현재대운 ④다음대운 ⑤조언 5개 문단을
+              그대로 옮긴다. 원문/계산 변경 없음, 새 컴포넌트 없음(기존
+              ChapterOneSubheading + space-y-4 문단 패턴 재사용). "lockedDetail"
+              이라는 내부 명칭은 화면에 노출하지 않는다.
+              buildDaYunFlow()는 사용자에 따라 과거/현재/다음 대운 중 일부가
+              없으면(예: 첫 대운을 지나는 중이거나 마지막 대운을 이미 지난
+              경우) 배열 길이가 5가 아닐 수 있다 — 그 경우 이 5단계 라벨과
+              내용이 어긋나므로, 길이가 정확히 5일 때만 렌더링한다(길이가
+              다르면 이 블록 전체를 건너뛴다 — 새 fallback 문장을 만들지
+              않는다). 아직 결제 게이트/블러/잠금 UI는 붙이지 않는다 —
+              화면에는 계속 무료 재물운과 동일하게 완전히 보이는 상태다. */}
+          {Array.isArray(data.chapters[3].lockedDetail) && data.chapters[3].lockedDetail!.length === 5 && (
+            <>
+              <ChapterOneSubheading>① 재물이 흔들리는 조건</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![0])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>② 지나온 흐름에서 돈이 움직인 방식</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![1])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>③ 지금의 재물 흐름</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![2])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>④ 다음 흐름에서 달라지는 것</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![3])}
+                </p>
+              </div>
+
+              <ChapterOneSubheading>⑤ 지금 기억해야 할 재물 원칙</ChapterOneSubheading>
+              <div className="space-y-4">
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(data.chapters[3].lockedDetail![4])}
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* 하위 섹션 2 — 이전 第五章(돈이 들어와도 남지 않는 이유).
+              bridgeIntro(4→5 연결문)는 있을 때만 본문과 같은 스타일로
+              첫 문단 자리에 얹는다. */}
+          {data.chapterFive && (
+            <>
+              <ChapterOneSubheading>돈이 머무는 힘과 흔들리는 조건</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapterFive.bridgeIntro && (
+                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
+                  </p>
+                )}
+                {data.chapterFive.body.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(p)}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 하위 섹션 3 — 이전 第六章(돈이 움직이는 시기). applicable=false라
+              generateWealthTimingNarrative가 안내 문단 1개만 돌려준
+              사람도 chapterSix 자체는 undefined가 아니므로(reportMapper.ts
+              참고) 이 블록이 그대로 렌더링되고, 문단 내용만 안내문
+              1개가 된다 — 별도 분기 없이 자연스럽게 처리된다. */}
+          {data.chapterSix && (
+            <>
+              <ChapterOneSubheading>앞으로 돈의 흐름이 달라지는 때</ChapterOneSubheading>
+              <div className="space-y-4">
+                {data.chapterSix.bridgeIntro && (
+                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
+                  </p>
+                )}
+                {data.chapterSix.body.map((p, idx) => (
+                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(p)}
+                  </p>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+      )}
+
+      {/* 제6장 — 인생의 전환점. 유료 핵심 4개 챕터(제4장 사랑과 인연/제5장
+          재물운/제6장 인생의 전환점/제7장 앞으로의 10년) 중 세 번째.
+          data.chapterLifeTransition은
+          reportMapper.ts가 이미 승인·동결된 lifeTransitionNarrative.ts의
+          ①~④ 문단을 그대로 옮겨 담은 것뿐이라 이 컴포넌트에서 새 문장을
+          만들지 않는다. 사랑과 인연/재물운과 같은 패턴으로
+          HIDE_PAID_BLOCKS_ON_FREE_SCREEN으로 무료 화면에서 가린다(타입
+          좁히기 관련 주의사항은 위 두 블록과 동일 — 이 스위치는 boolean
+          타입 상수라 `false &&`의 도달불가 판정 문제가 없어 별도 중첩
+          없이 그대로 && 체인으로 연결한다). */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterLifeTransition && (
+        <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterLifeTransition.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterLifeTransition.title}
+            </h2>
+
+            {data.chapterLifeTransition.sections.map((sec, idx) => (
+              <Fragment key={idx}>
+                <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(sec.body)}
+                </p>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 제7장 — 앞으로의 10년. 유료 핵심 4개 챕터 중 마지막. data.chapterTenYear는
+          reportMapper.ts가 이미 승인·동결된 tenYearNarrative.ts의 문단을
+          그대로 옮겨 담은 것뿐이라 이 컴포넌트에서 새 문장을 만들지 않는다.
+          연도 10개를 각각 거대 카드로 만들지 않고(요청사항), 기존
+          ChapterOneSubheading 스타일의 가벼운 연도 라벨 + 본문 문단만
+          이어지는 구조로 둬 장문 리포트를 읽는 흐름을 유지한다. 여는
+          글/마지막 조언은 "\n\n"로 문단이 나뉜 문자열이라 split해서 각각
+          <p>로 렌더링한다(기존 다른 챕터의 배열 렌더링과 같은 처리 방식). */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterTenYear && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterTenYear.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterTenYear.title}
+            </h2>
+
+            <div className="mt-6 space-y-4">
+              {data.chapterTenYear.intro.split("\n\n").map((p, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(p)}
+                </p>
+              ))}
+            </div>
+
+            <ChapterOneSubheading>① 앞으로 10년의 큰 흐름</ChapterOneSubheading>
+            <div className="space-y-4">
+              {data.chapterTenYear.segments.map((seg, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <span className="font-bold text-sceneGold">{seg.range}</span>
+                  {" — "}
+                  {wrapHanjaTokens(seg.summary)}
+                </p>
+              ))}
+            </div>
+
+            <ChapterOneSubheading>② 10년, 연도별 흐름</ChapterOneSubheading>
+            <div className="space-y-6 text-left">
+              {data.chapterTenYear.items.map((it, idx) => (
+                <div key={idx}>
+                  {/* 모바일 가독성 보강(승인된 최소 수정) — 연도 heading 줄에
+                      기존 계산 area(LifeAreaLabel)를 짧은 핵심 라벨로 덧붙인다.
+                      새 스타일 언어 없이 이미 쓰던 " · " 구분자와 클래스를
+                      그대로 재사용한다 — 색상/아이콘/배지 추가 없음. */}
+                  <p className="text-[13px] font-bold uppercase tracking-wide text-sceneGold">
+                    {it.year}년 · {it.age}세 · {it.ganZhiHanja}({it.ganZhiHangul}) · {it.area}
+                  </p>
+                  <p className="mt-1 text-[13.5px] italic leading-relaxed text-sceneTextSub">
+                    {wrapHanjaTokens(it.coreSignal)}
+                  </p>
+                  <p className="mt-2 text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(it.narrative)}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <ChapterOneSubheading>③ 특히 기억할 시기</ChapterOneSubheading>
+            <div className="space-y-4 text-left">
+              {data.chapterTenYear.highlights.map((h, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <span className="font-bold text-sceneGold">{h.year}년</span>
+                  {" — "}
+                  {wrapHanjaTokens(h.reason)}
+                </p>
+              ))}
+            </div>
+
+            <ChapterOneSubheading>④ 이 10년을 지나가는 방법</ChapterOneSubheading>
+            <div className="space-y-4">
+              {data.chapterTenYear.closing.split("\n\n").map((p, idx) => (
+                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  {wrapHanjaTokens(p)}
+                </p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
     </main>
   );
 }
