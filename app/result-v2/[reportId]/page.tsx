@@ -1,7 +1,22 @@
+import type { Metadata } from "next";
 import ResultLandingV2 from "@/components/ResultLandingV2";
 import { getReportInput } from "@/lib/reportStore";
+import { isReportPaid } from "@/lib/orderStore";
 import { buildAppData } from "@/lib/sajuContent";
 import { buildReportResult } from "@/lib/reportMapper";
+
+/**
+ * 개인정보·보안 감사(2026-09)에서 확인된 미비점 보완 — 이 라우트는 이름·
+ * 생년월일시가 포함된 개인 리포트를 보여준다. 검색엔진이 이 페이지를
+ * 크롤링·색인하면 링크가 어딘가에 한 번이라도 노출됐을 때 영구히 검색결과에
+ * 남을 수 있으므로, 모든 reportId 인스턴스에 noindex/nofollow를 적용한다.
+ * title/description은 루트 레이아웃의 일반 문구를 그대로 상속하며, 이 파일은
+ * 별도의 title/description을 생성하지 않는다 — 이름이나 reportId가 메타데이터
+ * (title, description, Open Graph 등)에 노출될 경로 자체를 만들지 않기 위함.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * DB + reportId + 영구 재접속 구조의 핵심 route.
@@ -49,10 +64,25 @@ export default async function ResultV2ReportPage({
     return <ErrorScreen message="유효하지 않거나 존재하지 않는 리포트입니다." />;
   }
 
+  // 결제 여부는 서버(orders 테이블)가 판정한다 — client가 query string이나
+  // localStorage로 이 값을 만들어낼 방법이 없다(TossPayments 1차 구현,
+  // 승인된 작업). 조회 자체가 실패해도(DB 일시 오류 등) 결제 안 된 것으로
+  // 보수적으로 처리한다 — 실패 시 유료 콘텐츠가 열리는 방향으로는 절대
+  // 넘어가지 않는다.
+  let paid = false;
+  try {
+    paid = await isReportPaid(params.reportId);
+  } catch (e) {
+    console.error(
+      "[result-v2/[reportId]] 결제상태 조회 실패:",
+      e instanceof Error ? e.message : e
+    );
+  }
+
   try {
     const appData = buildAppData(input);
     const report = buildReportResult(appData, input.gender);
-    return <ResultLandingV2 report={report} />;
+    return <ResultLandingV2 report={report} reportId={params.reportId} isPaid={paid} />;
   } catch (e) {
     // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 가능성은 이미
     // POST /api/reports에서 저장 전에 한 번 걸러졌지만, 혹시 모를 경우에도

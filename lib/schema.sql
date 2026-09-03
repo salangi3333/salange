@@ -28,3 +28,31 @@ create table if not exists reports (
   time_unknown boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- TossPayments 테스트 결제 1차 구현(승인된 작업) — reports와 결제정보를
+-- 분리한 별도 테이블. 카드번호/계좌번호 등 민감한 결제수단 정보는 여기에도
+-- 저장하지 않는다(토스페이먼츠가 자체적으로 보관) — payment_key(토스가 발급하는
+-- 식별자)만 저장한다.
+--
+-- order_id는 우리가 생성해 토스에 전달하는 주문번호로, reports.id와 마찬가지로
+-- gen_random_uuid()를 쓴다 — 토스의 orderId 규칙(영문/숫자/-/_로 이루어진
+-- 6~64자)에 UUID v4(36자, 하이픈 포함)가 그대로 부합한다.
+--
+-- report_id에 FK를 걸어 존재하지 않는 report에는 주문을 만들 수 없게 한다.
+-- 결제금액(amount)은 서버가 FULL_REPORT_PRICE(lib/orderStore.ts)로 항상
+-- 고정해서 넣는다 — 클라이언트가 보낸 금액을 절대 신뢰하지 않는다.
+create table if not exists orders (
+  id uuid primary key default gen_random_uuid(),
+  report_id uuid not null references reports(id),
+  order_id text not null unique,
+  amount int not null,
+  status text not null default 'PENDING'
+    check (status in ('PENDING', 'PAID', 'FAILED', 'CANCELLED')),
+  order_name text not null,
+  payment_key text unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  paid_at timestamptz
+);
+
+create index if not exists orders_report_id_idx on orders (report_id);

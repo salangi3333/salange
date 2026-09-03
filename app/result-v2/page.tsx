@@ -58,12 +58,23 @@ export default function ResultV2Page({
 }) {
   const intake = parseIntakeFromQuery(searchParams);
   if (intake) {
+    // [임시 QA용, 검수 끝나면 제거] &paid=1 을 붙이면 유료 화면(제4~8장
+    // 포함)을 미리 볼 수 있다. 이 파일은 이미 자체 주석대로 "개발/QA용"
+    // 진입 경로이고, 실제 결제 판정(lib/orderStore.ts의 isReportPaid,
+    // app/result-v2/[reportId]/page.tsx)은 전혀 건드리지 않는다 — 그쪽은
+    // 여전히 DB(orders 테이블)만 보고 결제 여부를 판정한다.
+    const previewPaid = readParam(searchParams, "paid") === "1";
     // 쿼리스트링은 폼 검증을 거치지 않고 바로 들어오는 경로라, 여기서도
     // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 수 있다 — 그 경우
     // 화면이 깨지는 대신 안내 문구만 보여준다(개발/테스트용 진입 경로라
     // 별도 재입력 폼은 두지 않는다).
     try {
-      return <ResultLandingV2 report={buildReportResult(buildAppData(intake), intake.gender)} />;
+      return (
+        <ResultLandingV2
+          report={buildReportResult(buildAppData(intake), intake.gender)}
+          isPaid={previewPaid}
+        />
+      );
     } catch (e) {
       const message = e instanceof Error ? e.message : "입력하신 생년월일을 다시 확인해주세요.";
       return (
