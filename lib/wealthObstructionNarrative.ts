@@ -212,8 +212,19 @@ export function generateWealthObstructionNarrative(result: WealthObstructionResu
     paragraphs.push(buildZeroObstructionExplanation());
     const caveatPara = buildCaveatParagraph(result.caveats);
     if (caveatPara) paragraphs.push(caveatPara);
-    paragraphs.push(buildZeroObstructionSupportNote());
-    paragraphs.push(buildEndingParagraph("단일원인없음형", null));
+    // 출시 전 감사(F-1) — structuralObstructions가 비어 있어도
+    // supportConstraints/yongsinResolutionStatus는 이미 독립적으로 계산돼
+    // 있다(analyzeWealthObstruction 참고). 이전에는 이 두 값을 무시하고
+    // 항상 같은 두 문장(SupportNote·단일원인없음형)만 썼는데, 이미 있는
+    // 데이터를 그대로 사용하도록 바꾼다 — 새 판정 기준을 만들지 않고,
+    // 비어있지 않은 분기에서는 n≥1일 때 이미 쓰던 것과 같은 함수
+    // (buildSupportParagraph/buildEndingParagraph)를 그대로 재사용한다.
+    paragraphs.push(
+      result.supportConstraints.length > 0 ? buildSupportParagraph(result.supportConstraints) : buildZeroObstructionSupportNote()
+    );
+    paragraphs.push(
+      buildEndingParagraph(result.yongsinResolutionStatus !== "resolved" ? "판정보류형" : "단일원인없음형", null)
+    );
     return { paragraphs };
   }
 

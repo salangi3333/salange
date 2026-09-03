@@ -328,18 +328,25 @@ function buildSegments(items: TenYearItem[], periodsByYear: (DaYunWealthPeriod |
 
   return segments.map((seg) => {
     if (!seg.ganSipseong || !SEGMENT_SUMMARY[seg.ganSipseong]) {
-      return { ...seg, summary: `${seg.startYear}년부터 ${seg.endYear}년까지는 특정한 한 힘으로 정리되기보다 여러 힘이 함께 작동하는 구간입니다.` };
+      return { ...seg, summary: `${yearSpanClause(seg.startYear, seg.endYear)} 특정한 한 힘으로 정리되기보다 여러 힘이 함께 작동하는 구간입니다.` };
     }
     const s = SEGMENT_SUMMARY[seg.ganSipseong];
     return {
       ...seg,
-      summary: `${seg.startYear}년부터 ${seg.endYear}년까지는 ${s.gains}이 삶의 중심에 있는 구간입니다. 큰 방향을 바꾸기보다 ${s.prepare}을 곁에 두면 이 구간을 지나기가 한결 수월해집니다.`,
+      summary: `${yearSpanClause(seg.startYear, seg.endYear)} ${s.gains}이 삶의 중심에 있는 구간입니다. 큰 방향을 바꾸기보다 ${s.prepare}을 곁에 두면 이 구간을 지나기가 한결 수월해집니다.`,
     };
   });
 }
 
 function segmentGains(seg: TenYearSegment): string {
   return seg.ganSipseong && SEGMENT_SUMMARY[seg.ganSipseong] ? SEGMENT_SUMMARY[seg.ganSipseong].gains : "여러 힘이 섞인 흐름";
+}
+
+// 구간이 정확히 1년뿐일 때 "OO년부터 OO년까지는"처럼 같은 해가 중복
+// 표기되는 걸 막는다. 시작·종료 연도가 다른 정상 범위는 기존 표현을
+// 그대로 쓴다 — 연도 계산이나 구간 분할 로직 자체는 건드리지 않는다.
+function yearSpanClause(startYear: number, endYear: number): string {
+  return startYear === endYear ? `${startYear}년에는` : `${startYear}년부터 ${endYear}년까지는`;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -360,7 +367,7 @@ function buildIntro(segments: TenYearSegment[]): string {
   const restText = rest.map((seg) => `${seg.startYear}년부터는 ${segmentGains(seg)}이 그 자리를 넘겨받습니다.`).join(" ");
 
   return [
-    `앞으로 10년의 지도를 먼저 펼쳐보면, 이 10년은 한 흐름으로 쭉 이어지지 않습니다. ${first.startYear}년부터 ${first.endYear}년까지는 ${segmentGains(first)}이 삶의 앞자리에 있고, ${restText} 대운 자체가 바뀌는 경계가 이 10년 안에 들어 있는 셈이라, 앞부분에서 맞았던 방식이 뒷부분에서는 조금 다르게 다가올 수 있습니다.`,
+    `앞으로 10년의 지도를 먼저 펼쳐보면, 이 10년은 한 흐름으로 쭉 이어지지 않습니다. ${yearSpanClause(first.startYear, first.endYear)} ${segmentGains(first)}이 삶의 앞자리에 있고, ${restText} 대운 자체가 바뀌는 경계가 이 10년 안에 들어 있는 셈이라, 앞부분에서 맞았던 방식이 뒷부분에서는 조금 다르게 다가올 수 있습니다.`,
     `이렇게 중심이 옮겨가는 흐름이기 때문에, 앞부분과 뒷부분을 하나로 뭉뚱그려 읽기보다 두 구간으로 나눠 읽는 편이 이 사람의 실제 흐름에 더 가깝습니다. 지금 서 있는 자리와 앞으로 넘어갈 자리, 두 개의 결을 함께 보시면 됩니다.`,
   ].join("\n\n");
 }

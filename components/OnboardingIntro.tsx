@@ -27,7 +27,7 @@ export default function OnboardingIntro({ onEnter }: { onEnter: () => void }) {
         className="relative flex w-full max-w-content flex-col items-center gap-6"
       >
         <p className="text-sm tracking-[0.3em] text-accentGoldFrom">
-          — 命理四柱 —
+          — 命理四柱 · 사주 —
         </p>
 
         <div className="flex w-full min-h-[100px] flex-col gap-2">

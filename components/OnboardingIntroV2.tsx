@@ -69,7 +69,7 @@ export default function OnboardingIntroV2({ onEnter }: { onEnter: () => void }) 
       {/* 텍스트 블록 — 0.6초 지연 후 1초에 걸쳐 fade-in(원본과 동일 타이밍).
           타이핑 대신 완성된 문장을 그대로 보여준다(글자 단위 reveal 금지). */}
       <div className="relative flex w-full max-w-content animate-[resultV2FadeIn_1s_ease-out_0.6s_forwards] flex-col items-center gap-6 opacity-0">
-        <p className="text-sm tracking-[0.3em] text-accentGoldFrom">— 命理四柱 —</p>
+        <p className="text-sm tracking-[0.3em] text-accentGoldFrom">— 命理四柱 · 사주 —</p>
 
         <div className="flex w-full flex-col gap-2">
           <p className="font-serif-kr text-xl font-bold leading-relaxed text-white sm:text-2xl">
