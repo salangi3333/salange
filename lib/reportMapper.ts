@@ -39,6 +39,7 @@ import { analyzeLoveTimingSignals } from "./loveTimingSignals";
 import { generateLoveTimingNarrative } from "./loveTimingNarrative";
 import { buildLifeTransitionNarrative } from "./lifeTransitionNarrative";
 import { buildTenYearNarrative } from "./tenYearNarrative";
+import { buildGwiinSinsalSection, GwiinSinsalSection } from "./gwiinSinsalNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -326,6 +327,11 @@ export interface ReportResult {
   /** 第六章("돈이 움직이는 시기"). 6장이 applicable=false인 사람은
    * undefined — 화면에 빈 챕터를 만들지 않는다. */
   chapterSix?: ChapterSixContent;
+  /** "귀인과 신살"(제8장) — 승인된 원고(content/paid-report/05-gwiin-sinsal-draft.md)를
+   * gwiinSinsalNarrative.ts가 그대로 조립한 것. 계산에서 실제로 확인된
+   * 귀인·신살이 없을 때만(이론상 발생하지 않음) undefined — 선택적
+   * 필드로 두어 기존 정적 fallback을 건드리지 않는다. */
+  gwiinSinsalSection?: GwiinSinsalSection;
 }
 
 function firstLine(text: string): string {
@@ -508,11 +514,13 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
     // 장 번호 통합 정리(승인된 작업) — 무료 3장(한자 第一~三章)과 유료
     // 4장(한글 제2~4장, 서로 겹치는 번호)이 실제 화면에서 뒤섞여 렌더링
     // 순서와 번호가 충돌하는 문제가 있어, 전체를 읽는 순서 그대로
-    // "제1장~제7장"(한글) 하나의 체계로 통일한다. storyScenes.ts의
+    // "第一章~第八章"(한자, 팔자문 기존 디자인 방식) 하나의 체계로
+    // 통일한다(2026-09 재정리 — 이전엔 한글 "제1장~제7장"으로 잠깐
+    // 통일했었으나, 최종적으로 한자 표기로 다시 확정). storyScenes.ts의
     // cover?.chapterLabel(第一章 등)은 더 이상 화면 라벨로 쓰지 않고
     // 무시한다 — 그 파일 자체는 건드리지 않는다. 계산/narrative는 전혀
     // 바뀌지 않았다, 표시 문자열 하나만 바뀐다.
-    chapterLabel: "제1장",
+    chapterLabel: "第一章",
     // 챕터 제목 자체를 이름 기반으로 바꾼다 — "남들이 보는 나, 그리고
     // 실제의 나"라는 고정 제목 대신, 맨 위에서부터 바로 "OOO님의 타고난
     // 운명"으로 시작하게 한다(사용자 요청: 챕터 시작이 이름+운명이어야
@@ -558,8 +566,8 @@ function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterL
   const timingNarrative = generateLoveTimingNarrative(appData, timing);
 
   return {
-    // 장 번호 통합 정리 — 제1~7장 체계 중 네 번째(제1장 주석 참고).
-    chapterLabel: "제4장",
+    // 장 번호 통합 정리 — 第一章~第八章 체계 중 네 번째(제1장 주석 참고).
+    chapterLabel: "第四章",
     title: `${appData.user.name}님의 사랑과 인연`,
     sections: [
       { heading: "① 나는 사랑할 때 어떤 사람인가", body: approach.paragraphs.map((p) => p.text) },
@@ -581,10 +589,10 @@ function buildChapterLifeTransition(appData: AppData): ChapterLifeTransitionCont
   const transition = buildLifeTransitionNarrative(appData);
 
   return {
-    // 장 번호 통합 정리 — 제1~7장 체계 중 여섯 번째(제1장 주석 참고).
-    // 재물운(第四章→제5장)이 이 챕터보다 먼저 읽히므로 여기는 "제3장"이
-    // 아니라 "제6장"이 실제 순서와 맞다.
-    chapterLabel: "제6장",
+    // 장 번호 통합 정리 — 第一章~第八章 체계 중 여섯 번째(제1장 주석 참고).
+    // 재물운(第四章→第五章)이 이 챕터보다 먼저 읽히므로 여기는 "第三章"이
+    // 아니라 "第六章"이 실제 순서와 맞다.
+    chapterLabel: "第六章",
     title: `${appData.user.name}님의 ${transition.title}`,
     sections: transition.sections.map((s) => ({ heading: s.heading, body: s.body })),
   };
@@ -599,8 +607,8 @@ function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
   const ty = buildTenYearNarrative(appData);
 
   return {
-    // 장 번호 통합 정리 — 제1~7장 체계 중 마지막(일곱 번째, 제1장 주석 참고).
-    chapterLabel: "제7장",
+    // 장 번호 통합 정리 — 第一章~第八章 체계 중 일곱 번째(제1장 주석 참고).
+    chapterLabel: "第七章",
     title: `${appData.user.name}님의 앞으로의 10년`,
     intro: ty.intro,
     segments: ty.segments.map((s) => ({
@@ -682,8 +690,8 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     const chapterTwoOpening = buildChapterTwoOpening(appData);
     chapters[1] = {
       ...chapters[1],
-      // 장 번호 통합 정리 — 제1~7장 체계 중 두 번째(제1장 참고).
-      chapterLabel: "제2장",
+      // 장 번호 통합 정리 — 第一章~第八章 체계 중 두 번째(제1장 참고).
+      chapterLabel: "第二章",
       title: `${user.name}님의 타고난 기질`,
       killpoint: chapterTwoOpening?.title ?? temperamentBlock.heading,
       body: paras,
@@ -712,7 +720,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
   // 확정된 4챕터 구조상 원래 4챕터("금전운의 흐름") 자리였고, 4챕터는
   // 아직 별도 승인 전이라 이번 범위가 아니다 — 그래서 여기서는 第三章
   // "본문(body/killpoint/highlight/title)"만 교체한다. chapterLabel은 장
-  // 번호 통합 정리로 "제3장"으로 다시 맞춘다(제1장 주석 참고).
+  // 번호 통합 정리로 "第三章"으로 다시 맞춘다(제1장 주석 참고).
   // chapterThreeInterpretation.ts(세력·통근·합충·관살혼잡
   // 판단) + chapterThreeNarrative.ts(그 판단을 실제 문장으로 조립)가
   // 승인된 설계와 홍지영·한소민·윤태호 3편의 구조/문체를 코드로 옮긴
@@ -723,7 +731,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     const chapterThreeContent = buildChapterThreeNarrative(appData, chapterThreeKey);
     chapters[2] = {
       ...chapters[2],
-      chapterLabel: "제3장",
+      chapterLabel: "第三章",
       title: chapterThreeContent.title,
       killpoint: chapterThreeContent.killpoint,
       body: chapterThreeContent.body,
@@ -836,5 +844,6 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     chapterTenYear: buildChapterTenYear(appData),
     chapterFive,
     chapterSix,
+    gwiinSinsalSection: buildGwiinSinsalSection(user),
   };
 }

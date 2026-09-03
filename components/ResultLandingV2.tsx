@@ -4,6 +4,8 @@ import { RESULT_GUIDE_IMAGE } from "@/lib/guideImages";
 import { ReportResult } from "@/lib/reportMapper";
 import { Element } from "@/lib/hanjaTables";
 import LifePhaseTimeline from "./LifePhaseTimeline";
+import Footer from "./Footer";
+import PaymentCTAButton from "./PaymentCTAButton";
 
 /**
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
@@ -516,20 +518,31 @@ function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance
   );
 }
 
-export default function ResultLandingV2({ report }: { report?: ReportResult } = {}) {
+export default function ResultLandingV2({
+  report,
+  reportId,
+  isPaid = false,
+}: {
+  report?: ReportResult;
+  /** DB reportId — 결제 CTA가 /api/orders에 주문을 붙일 대상을 알기 위해
+   * 필요하다(승인된 작업, TossPayments 1차 구현). 개발용 쿼리스트링 진입
+   * (app/result-v2/page.tsx) 등 DB reportId가 없는 경로에서는 undefined로
+   * 두면 PaymentCTAButton이 결제를 시도하지 않고 안내만 보여준다. */
+  reportId?: string;
+  /** 서버(app/result-v2/[reportId]/page.tsx)가 orders 테이블을 조회해 이미
+   * PAID 상태인지 판정한 결과. client가 query string/localStorage 등으로
+   * 이 값을 조작할 수 있는 경로는 없다 — 항상 서버가 내려준 값 그대로
+   * 쓴다. */
+  isPaid?: boolean;
+} = {}) {
   const data = report ?? DEFAULT_REPORT;
 
-  // 무료/유료 경계 1차 정리(승인된 작업, 이 커밋 시점 한정) — React 상태가
-  // 아니라 이 컴포넌트 파일 안에서만 쓰는 렌더링 스위치다. isPaid/isUnlocked
-  // 같은 결제 상태 개념이 아니라, "무료 화면에서 유료 5블록을 잠깐 숨긴다"는
-  // 뜻만 갖는 값이다. `boolean` 타입으로 선언한 이유: 리터럴 `false`를 바로
-  // 쓰면 TypeScript가 그 분기를 "도달 불가능한 코드"로 판단해 하위 JSX의
-  // 타입 좁히기(narrowing)를 건너뛰어 data.chapterFive 등이 실제로는 문제
-  // 없는 자리에서 "possibly undefined" 오류를 낸다 — 그 타입체크 우회
-  // 목적일 뿐, 계산/데이터/디자인은 전혀 건드리지 않는다. 유료 화면에 다시
-  // 연결할 때는 이 값을 true로 바꾸거나, 아래 각 자리의
-  // `HIDE_PAID_BLOCKS_ON_FREE_SCREEN &&`를 지우면 된다.
-  const HIDE_PAID_BLOCKS_ON_FREE_SCREEN: boolean = true;
+  // 무료/유료 경계 — TossPayments 1차 구현(승인된 작업)으로 이 스위치를
+  // 서버가 판정한 실제 결제 상태(isPaid)에 연결했다. 결제 전(isPaid=false)
+  // 에는 기존과 똑같이 유료 5블록을 숨기고, 결제 완료(isPaid=true) 후에는
+  // 보여준다. 계산/데이터/디자인 자체는 이전과 동일 — 이 값을 무엇에
+  // 연결하는지만 바뀌었다.
+  const HIDE_PAID_BLOCKS_ON_FREE_SCREEN = !isPaid;
 
   return (
     <main className="bg-sceneBg text-sceneText">
@@ -623,6 +636,20 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
               </span>
             ))}
           </div>
+
+          {/* 귀인·신살 무료 미리보기 — data.gwiinSinsalSection.freePreview 1개만
+              짧게(원고의 short 문단, gwiinSinsalNarrative.ts). 나머지 상세
+              해설은 유료 제8장에서만 보여준다. 값이 없으면(이론상 발생하지
+              않지만 방어적으로) 아무것도 렌더링하지 않는다. */}
+          {data.gwiinSinsalSection?.freePreview && (
+            <p className="mt-4 text-[13.5px] leading-relaxed text-sceneTextSub">
+              <span className="font-bold text-sceneGold">
+                {data.gwiinSinsalSection.freePreview.name}
+              </span>
+              {" — "}
+              {wrapHanjaTokens(data.gwiinSinsalSection.freePreview.body)}
+            </p>
+          )}
         </div>
       </section>
 
@@ -1089,9 +1116,13 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </section>
       )}
 
-      {/* ── 결제 CTA — 신규 정적 섹션. UI/문구만 구현, 실제 결제 연결 및
-          "30명 이후 가격 전환" 로직은 다음 단계. 이름은 data.userName(실제
-          계산 경로에서 넘어온 값)을 그대로 쓰고 하드코딩하지 않는다. ── */}
+      {/* ── 결제 CTA — TossPayments 1차 구현(승인된 작업)으로 실제 결제에
+          연결했다. 이미 결제 완료(isPaid=true)한 사용자에게는 다시 살
+          필요가 없는 업셀 섹션이라 통째로 숨긴다. UI/문구/가격표시는
+          기존과 완전히 동일 — 버튼 안쪽만 PaymentCTAButton(client
+          컴포넌트)으로 교체했다. 이름은 data.userName(실제 계산 경로에서
+          넘어온 값)을 그대로 쓰고 하드코딩하지 않는다. ── */}
+      {!isPaid && (
       <section className="bg-sceneBg px-6 py-16">
         {/* [카드 배경 수정] 밝은 아이보리(sceneCard) 카드를 페이지 톤과
             이어지는 짙은 갈색(sceneBgAlt) 카드로 교체 — 라운드/여백/얇은
@@ -1111,14 +1142,13 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
             <span className="font-serif-kr text-[30px] font-bold text-sceneGold">29,800원</span>
           </div>
 
-          <button
-            type="button"
-            className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10"
-          >
-            나의 전체 인생 리포트 열기 →
-          </button>
+          <PaymentCTAButton
+            reportId={reportId}
+            className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10 disabled:opacity-60"
+          />
         </div>
       </section>
+      )}
       {/* 제4장 — 사랑과 인연(유료 4개 장의 첫 번째, CTA 다음). 재물운이
           4·5·6장을 하나의 대제목 아래 하위 섹션 3개로 묶은 것과 같은
           패턴이다. ①~⑤ 각각에 새 대제목을 붙이지 않고, 대제목은
@@ -1189,14 +1219,15 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
           연결할 때는 이 스위치를 지우거나 값을 바꾸면 된다.
 
           장 번호 통합 정리(승인된 작업) — 라벨을 "第四章"(하드코딩 리터럴)에서
-          "제5장"으로 바꿨다. 무료 3장(제1~3장)과 유료 나머지 3장(제4·6·7장)이
-          이미 reportMapper.ts에서 한글 "제N장" 체계로 통일됐으므로, 여기
-          하드코딩된 라벨만 그 체계에 맞춘다 — 계산/서술은 전혀 바뀌지 않음. */}
+          "第五章"으로 바꿨다. 무료 3장(第一~三章)과 유료 나머지 3장
+          (第四·六·七章)이 이미 reportMapper.ts에서 한자 "第N章" 체계로
+          통일됐으므로, 여기 하드코딩된 라벨만 그 체계에 맞춘다 —
+          계산/서술은 전혀 바뀌지 않음. */}
       {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-            제5장
+            第五章
           </span>
           <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
             {data.userName}님의 재물운
@@ -1431,6 +1462,68 @@ export default function ResultLandingV2({ report }: { report?: ReportResult } = 
         </section>
       )}
 
+      {/* 제8장 — 귀인과 신살. content/paid-report/05-gwiin-sinsal-draft.md
+          (2026-09-03 승인 원고)를 gwiinSinsalNarrative.ts가 그대로 조립한
+          결과만 옮긴다 — 이 컴포넌트에서 새 문장을 만들지 않는다. "주요
+          해설"(최대 3개, long 문단)은 소제목마다 카드 하나, "함께 들어
+          있는 기운"(나머지, short 문단)은 목록 하나로 짧게 묶는다. 무료
+          화면에서는 다른 유료 4개 장과 같은 스위치(HIDE_PAID_BLOCKS_ON_FREE_SCREEN)로
+          가린다. */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.gwiinSinsalSection && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.gwiinSinsalSection.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.gwiinSinsalSection.title}
+            </h2>
+            <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
+              {wrapHanjaTokens(data.gwiinSinsalSection.intro)}
+            </p>
+
+            <div className="mt-6 space-y-8 text-left">
+              {data.gwiinSinsalSection.detail.map((item, idx) => (
+                <div key={idx}>
+                  <ChapterOneSubheading>{item.name}</ChapterOneSubheading>
+                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                    {wrapHanjaTokens(item.body)}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {data.gwiinSinsalSection.brief.length > 0 && (
+              <>
+                <ChapterOneSubheading>함께 들어 있는 기운</ChapterOneSubheading>
+                <div className="space-y-4 text-left">
+                  {data.gwiinSinsalSection.brief.map((item, idx) => (
+                    <p key={idx} className="text-[14px] leading-[1.9] text-sceneBody">
+                      <span className="font-bold text-sceneGold">{item.name}</span>
+                      {" — "}
+                      {wrapHanjaTokens(item.body)}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* 마무리 문단 — 신살 목록으로 갑자기 끝나지 않도록 짧게 닫는다.
+                gwiinSinsalNarrative.ts의 고정 문구 그대로, 새 문장 없음. */}
+            {data.gwiinSinsalSection.closing && (
+              <p className="mt-8 text-[15px] leading-[1.95] text-sceneBody">
+                {wrapHanjaTokens(data.gwiinSinsalSection.closing)}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* 법적고지 Footer(승인된 작업, 2026-09 개인정보·보안 통합) — 무료/유료
+          콘텐츠와 무관하게 항상 표시한다. 어두운 scene 배경에 맞춰
+          variant="dark" 토큰을 쓴다(components/Footer.tsx 참고). 리포트
+          본문/계산/디자인은 건드리지 않았다. */}
+      <Footer variant="dark" />
     </main>
   );
 }
