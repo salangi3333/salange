@@ -72,7 +72,7 @@ export default function TermsPage() {
           <li>이용자가 입력한 생년월일시·성별 정보를 이용한 사주(명리) 계산</li>
           <li>계산 결과를 바탕으로 한 개인화된 사주·운세 해석 리포트 제공</li>
           <li>무료로 제공되는 리포트 구성 부분</li>
-          <li>결제 후 제공 예정인 유료 전체 인생 리포트 <Todo>(TossPayments 연동 전이므로 현재는 제공되지 않음)</Todo></li>
+          <li>결제 후 제공 예정인 유료 전체 인생 리포트</li>
         </ul>
       </Article>
 
@@ -109,10 +109,10 @@ export default function TermsPage() {
       <Article no="제8조" title="유료 서비스 및 결제">
         <p>현재 확정된 유료 리포트 판매가격은 29,800원입니다.</p>
         <p>
+          결제는 TossPayments를 통해 제공됩니다.{" "}
           <Todo>
-            결제수단, 결제대행사(PG) 연동 세부사항은 TossPayments 결제 기능
-            구현 후 확정하여 반영합니다. 현재는 실제 결제 기능이 제공되지
-            않습니다.
+            구체적인 결제수단 구성은 서비스 정식 오픈 시점에 확정하여
+            반영합니다. 정식 오픈 전까지는 실제 결제가 제공되지 않습니다.
           </Todo>
         </p>
       </Article>
@@ -124,8 +124,8 @@ export default function TermsPage() {
         </p>
         <p>
           <Todo>
-            실제 제공 개시 시점 및 "결제 완료"로 보는 기준은 TossPayments
-            연동 이후 확정합니다.
+            실제 제공 개시 시점 및 "결제 완료"로 보는 기준은 서비스 정식
+            오픈 시점에 확정합니다.
           </Todo>
         </p>
       </Article>
@@ -143,7 +143,7 @@ export default function TermsPage() {
         <p>
           <Todo>
             디지털 콘텐츠 제공 개시 후 청약철회가 제한되는 구체적 조건과 절차는
-            TossPayments 연동 및 법률 자문 이후 최종 확정합니다.
+            법률 자문 이후 최종 확정합니다.
           </Todo>
         </p>
       </Article>

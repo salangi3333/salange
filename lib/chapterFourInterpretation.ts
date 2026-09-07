@@ -42,7 +42,10 @@ export interface CategoryCompare {
   gapTier: GapTier;
 }
 
-function compareCategories(wealth: WealthStrengthResult, a: SipseongCategory, b: SipseongCategory): CategoryCompare {
+/** 第五章 재물운 확장(2026-09, 승인된 작업)에서 재사용하기 위해 export로
+ * 바꿨다 — 로직/반환값은 한 글자도 바꾸지 않았다(새 계산 아님, 기존
+ * 순수함수를 다른 파일에서도 부를 수 있게 가시성만 연 것). */
+export function compareCategories(wealth: WealthStrengthResult, a: SipseongCategory, b: SipseongCategory): CategoryCompare {
   const ca = wealth.byCategory[a];
   const cb = wealth.byCategory[b];
   const gap = ca.total - cb.total;

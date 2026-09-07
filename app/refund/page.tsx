@@ -32,16 +32,18 @@ export default function RefundPage() {
       <p className="text-sm text-textSub">시행일: <Todo>서비스 오픈일 확정 후 기재</Todo></p>
       <h1 className="mt-2 font-serif-kr text-2xl font-bold text-textMain">환불정책</h1>
       <p className="mt-4 text-[15px] leading-[1.9] text-textSub">
-        현재 팔자문은 결제 기능(TossPayments)이 아직 연동되지 않았습니다. 이
-        페이지는 결제 기능을 열기 전에 이용자가 미리 확인할 수 있도록 정책의
-        기본 구조만 정리한 것이며, 실제 결제 절차와 함께 최종 확정됩니다.
+        현재 팔자문은 TossPayments 결제 기능이 연동되어 있으며, 실제 결제
+        오픈은 가맹점 심사 절차가 완료된 이후 진행됩니다. 이 페이지는 결제
+        기능을 정식으로 열기 전에 이용자가 미리 확인할 수 있도록 정책의
+        기본 구조를 정리한 것이며, 세부 내용은 정식 오픈과 함께 최종
+        확정됩니다.
       </p>
 
       <Section title="주문 취소 및 결제 취소">
         <p>
           <Todo>
             결제 완료 전(주문 단계)에는 언제든지 취소할 수 있도록 할 예정입니다.
-            결제 승인 이후 취소 가능 시점과 절차는 TossPayments 연동 후
+            결제 승인 이후 취소 가능 시점과 절차는 서비스 정식 오픈 전까지
             확정합니다.
           </Todo>
         </p>
@@ -65,7 +67,7 @@ export default function RefundPage() {
         <p>
           <Todo>
             팔자문에 적용할 구체적인 제한 조건·고지 방법·동의 절차는 법률
-            자문 및 TossPayments 연동 이후 최종 확정합니다. 확정 전까지는
+            자문 이후 최종 확정합니다. 확정 전까지는
             "제공 개시 후 무조건 환불 불가" 등 확정되지 않은 내용을 적용하지
             않습니다.
           </Todo>
@@ -81,7 +83,7 @@ export default function RefundPage() {
         </ul>
         <p>위 사유가 확인되는 경우 회사는 결제 금액 전액을 환불합니다.</p>
         <p>
-          <Todo>환불 처리 소요기간(영업일 기준)은 결제대행사 연동 후 확정합니다.</Todo>
+          <Todo>환불 처리 소요기간(영업일 기준)은 서비스 정식 오픈 전까지 확정합니다.</Todo>
         </p>
       </Section>
 

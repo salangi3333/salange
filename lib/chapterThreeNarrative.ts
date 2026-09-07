@@ -122,8 +122,11 @@ function buildAxisIntro(name: string, key: ChapterThreeKey): string {
   const core = AXIS_PROFILE[axis].coreLabel;
 
   if (tier === "A") {
-    const lead = gwansal.present ? "이 명식에서 가장 두드러지는 힘은" : `${name}님의 명식에서 가장 두드러지는 힘은`;
-    return `${lead} ${core}입니다. 다른 어떤 기운보다 크게 앞서 있어, 살아가는 방식 전체를 사실상 이 힘 하나가 이끌고 있다고 봐도 무리가 없습니다.`;
+    // killpoint("이끄는 힘은 오직 하나, {core}입니다.")가 바로 위에서 이미
+    // 이 축을 명시하므로, 여기서 "{core}입니다"를 다시 반복하지 않는다
+    // (첫 도입부 의미 중복 최소 압축, 2026-09 승인 예외). 근거·결론
+    // 문장(다른 기운보다 앞선다 → 이 힘 하나가 이끈다)은 그대로 둔다.
+    return "다른 어떤 기운보다 크게 앞서 있어, 살아가는 방식 전체를 사실상 이 힘 하나가 이끌고 있다고 봐도 무리가 없습니다.";
   }
   if (tier === "C" && secondAxis) {
     const core2 = AXIS_PROFILE[secondAxis].coreLabel;

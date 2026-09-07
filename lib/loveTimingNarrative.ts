@@ -137,6 +137,21 @@ const relationLabel: Record<SpousePalaceRelationType, string> = {
   자형: "같은 결이 되풀이해서 겹치는",
 };
 
+/**
+ * 深化(2026-09, 승인된 확장) — 새 계산 없음. 이미 판정된 6갈래 branch에
+ * "이미 관계가 있는 사람에게는 이 시기가 어떻게 작용하는지"와 "무엇을
+ * 준비/주의하면 좋은지"를 한 문단으로 묶어 추가한다. "반드시 온다/
+ * 결혼한다" 단정은 여기서도 쓰지 않는다.
+ */
+const PRACTICAL_NOTE_BY_BRANCH: Record<BranchType, string> = {
+  twinCross: "이미 만나고 있는 사람이 있다면, 이 시기는 관계를 더 가깝게 다지는 계기로 작용하기 쉽습니다. 새로운 인연을 기다리는 중이라면, 평소보다 사람에게 곁을 내주기 쉬운 상태라는 것 정도만 미리 알아두면 충분합니다. 서두르기보다, 이 시기에 자연스럽게 다가오는 마음을 억지로 밀어내지 않는 정도의 준비면 됩니다.",
+  sequential: "이미 관계가 있다면, 마음이 움직이는 시기와 곁을 내줄 여유가 넓어지는 시기가 따로 오는 만큼 그 사이 시차를 서로 오해하지 않는 것이 중요합니다. 새로운 인연을 기다리는 중이라면, 두 시기 중 하나만 왔다고 조급해하지 않고 나머지 흐름을 기다리는 여유가 도움이 됩니다.",
+  starOnly: "이미 관계가 있다면, 이 시기엔 상대에 대한 마음 자체가 다시 짙어지는 경험을 할 수 있습니다. 새로운 인연을 기다리는 중이라면, 사람을 보는 마음은 움직이지만 곁을 내줄 여유까지 함께 넓어지는 건 아니라는 걸 미리 알아두면 성급한 기대를 줄일 수 있습니다.",
+  palaceOnly: "이미 관계가 있다면, 이 시기엔 관계의 형태나 거리감 자체가 자연스럽게 변할 수 있습니다. 함께 지내는 방식을 조정해볼 만한 때입니다. 새로운 인연을 기다리는 중이라면, 마음보다 환경이 먼저 움직이는 시기라 평소와 다른 자리에 나가보는 것 정도가 준비가 될 수 있습니다.",
+  daYunBackgroundOnly: "이미 관계가 있다면, 특별한 사건 없이도 관계를 지탱하는 바탕 자체는 꾸준히 이어지고 있다고 보면 됩니다. 새로운 인연을 기다리는 중이라면, 지금은 특정 시기를 짚어 기다리기보다 평소의 태도를 다지는 시간으로 삼는 편이 실질적입니다.",
+  quiet: "이미 관계가 있다면, 지금은 관계보다 스스로를 정리하는 시간에 더 마음이 쓰일 수 있습니다. 이 자체가 관계에 나쁜 신호는 아닙니다. 새로운 인연을 기다리는 중이라면, 지금은 사람을 찾아 나서기보다 스스로 무엇을 원하는지 정리해두는 편이 다음 시기를 준비하는 데 더 도움이 됩니다.",
+};
+
 // ── 서사 표현층 — T1~T8 판정과 하위 분기 조건(leadWithPalace, multi,
 // consecutive, starFirst, multiStar/multiPalace, daYunActive, exposure
 // 등)은 지난 라운드 그대로 유지한다. 이번엔 오직 "문장 자체"만 다시
@@ -219,7 +234,8 @@ function buildTwinCross(appData: AppData, timing: LoveTimingRawSignals, key: Cla
     conclusion = { text: "이 한 해가 앞으로 어떻게 이어질지, 천천히 드러날 것입니다.", sourceNote: "twinCross-single-noBonus 결론(여운)" };
   }
 
-  return [opening, scene, timingPara, conclusion];
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.twinCross, sourceNote: "실전조언(branch=twinCross)" };
+  return [opening, scene, timingPara, practicalNote, conclusion];
 }
 
 function buildSequential(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -290,7 +306,8 @@ function buildSequential(appData: AppData, timing: LoveTimingRawSignals, key: Cl
     };
   }
 
-  return [opening, scene, timingPara, conclusion];
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.sequential, sourceNote: "실전조언(branch=sequential)" };
+  return [opening, scene, timingPara, practicalNote, conclusion];
 }
 
 function buildStarOnly(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -347,7 +364,8 @@ function buildStarOnly(appData: AppData, timing: LoveTimingRawSignals, key: Clas
     conclusion = { text: "짧게 지나가는 결일 수 있지만, 그 다음에 어떻게 이어지는지는 계속 지켜볼 만합니다.", sourceNote: "starOnly-single-inactive 결론(여운)" };
   }
 
-  return [opening, scene, timingPara, conclusion];
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.starOnly, sourceNote: "실전조언(branch=starOnly)" };
+  return [opening, scene, timingPara, practicalNote, conclusion];
 }
 
 function buildPalaceOnly(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -387,7 +405,8 @@ function buildPalaceOnly(appData: AppData, timing: LoveTimingRawSignals, key: Cl
       ? { text: "이 시기를 지나며 사람을 보는 자리 자체가 새로워질 수 있습니다.", sourceNote: "palaceOnly 결론(태도)" }
       : { text: "서두르지 않고 지켜보는 것만으로 충분한 시기입니다.", sourceNote: "palaceOnly 결론(여운)" };
 
-  return [opening, scene, timingPara, conclusion];
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.palaceOnly, sourceNote: "실전조언(branch=palaceOnly)" };
+  return [opening, scene, timingPara, practicalNote, conclusion];
 }
 
 function buildDaYunBackgroundOnly(appData: AppData, timing: LoveTimingRawSignals): NarrativeParagraph[] {
@@ -413,8 +432,9 @@ function buildDaYunBackgroundOnly(appData: AppData, timing: LoveTimingRawSignals
     text: "특별한 사건을 기다리기보다, 지금 이 시간 전체를 하나의 바탕으로 받아들이면 됩니다.",
     sourceNote: "daYunBackgroundOnly 결론(태도)",
   };
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.daYunBackgroundOnly, sourceNote: "실전조언(branch=daYunBackgroundOnly)" };
 
-  return [opening, scene, conclusion];
+  return [opening, scene, practicalNote, conclusion];
 }
 
 function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativeParagraph[] {
@@ -455,8 +475,9 @@ function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativePa
     text: "닫혀 있는 건 아니라는 것, 지금은 그것만으로도 충분합니다.",
     sourceNote: "quiet 결론(여운)",
   };
+  const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.quiet, sourceNote: "실전조언(branch=quiet)" };
 
-  return [opening, ...basis, conclusion];
+  return [opening, ...basis, practicalNote, conclusion];
 }
 
 export function generateLoveTimingNarrative(appData: AppData, timing: LoveTimingRawSignals): LoveTimingNarrativeResult {

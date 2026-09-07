@@ -308,9 +308,15 @@ function BlurBridge({ lead, blurred }: { lead: string; blurred: string }) {
  * 두지 않는다.
  */
 function ChapterOneSubheading({ children }: { children: React.ReactNode }) {
+  // 모바일 통합 실독 QA(2026-09) 발견 — 제목이 길어 2줄로 줄바꿈되면
+  // items-center가 gold 장식을 h3 전체 높이(2줄분)의 세로 중앙으로
+  // 맞추면서, 장식이 첫 줄 옆에서 위로 끌려 올라가 붙는 것처럼 보였다.
+  // items-start로 바꾸고, 장식에 h3 첫 줄 중앙 높이만큼만 margin-top을
+  // 줘서 "1줄일 때"와 똑같이 첫 줄 옆에 자연스럽게 붙게 한다(한 줄
+  // 제목에서는 원래도 첫 줄=유일한 줄이라 결과가 이전과 동일하다).
   return (
-    <div className="mt-10 mb-3 flex items-center justify-center gap-2 first:mt-0">
-      <span aria-hidden className="h-px w-4 bg-sceneGold/70" />
+    <div className="mt-10 mb-3 flex items-start justify-center gap-2 first:mt-0">
+      <span aria-hidden className="mt-2.5 h-px w-4 shrink-0 bg-sceneGold/70" />
       <h3 className="font-serif-kr text-[15px] font-bold tracking-wide text-sceneGold">{children}</h3>
     </div>
   );
@@ -461,44 +467,159 @@ function BrushDivider() {
   );
 }
 
-/** 오행 밸런스 다이어그램 — 오각형 배치의 정적 SVG. 애니메이션 없음 */
+/** 오행 순환도 전용 기하 헬퍼 — 각도/비율을 화면 좌표로 옮기기만 한다.
+ * 어떤 명리 값도 새로 만들지 않는다. cx,cy 기준 각도(angleDeg, 12시=0°,
+ * 시계방향)에 있는 점의 좌표를 구한다. */
+function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+/** 각 오행 점 주변의 "비율 링" 호(arc) 경로 — valuePercent(0~100, 이미
+ * 계산된 elementBalance[].value)만큼 원을 12시 방향부터 시계로 채운다.
+ * 링의 완성도가 곧 실제 비율이다. 새 계산 없음, 좌표 변환뿐. */
+function ratioArcPath(cx: number, cy: number, r: number, valuePercent: number): string {
+  const sweep = Math.max(0, Math.min(100, valuePercent)) * 3.6;
+  if (sweep <= 0) return "";
+  const clamped = Math.min(sweep, 359.9); // 360°면 시작=끝점이라 호가 안 그려짐
+  const start = polarPoint(cx, cy, r, 0);
+  const end = polarPoint(cx, cy, r, clamped);
+  const largeArc = clamped > 180 ? 1 : 0;
+  return `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+}
+
+/** 궤도 위 인접한 두 오행 사이(木→火, 火→土 …) 중간 지점에 찍는 아주
+ * 작은 방향 표시(">") 하나의 경로 — 상생 순서를 은은하게 암시할 뿐,
+ * 상극선이나 큰 화살표는 만들지 않는다. 좌표 계산뿐, 새 값 없음. */
+function flowChevronPath(cx: number, cy: number, r: number, angleDeg: number, size: number): string {
+  const back = polarPoint(cx, cy, r, angleDeg - 1.6);
+  const ahead = polarPoint(cx, cy, r, angleDeg + 1.6);
+  const fx = ahead.x - back.x;
+  const fy = ahead.y - back.y;
+  const flen = Math.hypot(fx, fy) || 1;
+  const fux = fx / flen;
+  const fuy = fy / flen;
+  const pux = -fuy; // 진행 방향에 수직인 법선
+  const puy = fux;
+  const center = polarPoint(cx, cy, r, angleDeg);
+  const tip = { x: center.x + fux * size * 0.6, y: center.y + fuy * size * 0.6 };
+  const wingA = { x: center.x - fux * size * 0.5 + pux * size * 0.4, y: center.y - fuy * size * 0.5 + puy * size * 0.4 };
+  const wingB = { x: center.x - fux * size * 0.5 - pux * size * 0.4, y: center.y - fuy * size * 0.5 - puy * size * 0.4 };
+  return `M ${wingA.x.toFixed(2)} ${wingA.y.toFixed(2)} L ${tip.x.toFixed(2)} ${tip.y.toFixed(2)} L ${wingB.x.toFixed(2)} ${wingB.y.toFixed(2)}`;
+}
+
+/** 오행 순환도 — 원형 궤도 위에 木→火→土→金→水가 놓인 정적 SVG.
+ * balance 배열은 hanjaTables.ts의 Element 순서(목·화·토·금·수 = 상생
+ * 순서) 그대로 넘어오므로, 배열 순서대로 점을 찍기만 해도 시계방향으로
+ * 상생 순환이 된다 — 순서를 새로 정하지 않는다.
+ *
+ * 각 점의 "비율 링"(ratioArcPath)과 마커 반지름 둘 다 balance[].value를
+ * 그대로 쓴다. 마커 크기 변화 폭은 절제(10~15.5px)해서 버블차트처럼
+ * 과장되지 않게 하고, 비율 차이는 링의 채워진 정도로 읽히게 한다.
+ * 애니메이션 없음. */
 function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance"] }) {
-  const cx = 140;
-  const cy = 130;
-  const r = 92;
-  // 오각형 5개 꼭짓점 좌표 (12시 방향부터 시계방향)
+  const width = 320;
+  const height = 300;
+  const cx = width / 2;
+  const cy = height / 2 + 8;
+  const orbitR = 78;
+  const dialR = 19;
+
   const points = balance.map((el, i) => {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
-    return {
-      ...el,
-      x: cx + r * Math.cos(angle),
-      y: cy + r * Math.sin(angle),
-    };
+    const angle = i * (360 / balance.length);
+    const p = polarPoint(cx, cy, orbitR, angle);
+    const labelPos = polarPoint(cx, cy, orbitR + dialR + 15, angle);
+    const hanja = el.label.match(/\(([^)]+)\)/)?.[1] ?? el.label[0];
+    return { ...el, x: p.x, y: p.y, labelX: labelPos.x, labelY: labelPos.y, hanja };
   });
 
   return (
     <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-6">
-      <svg viewBox="0 0 280 260" style={{ width: "100%", height: "auto" }} aria-hidden role="img">
-        {/* 상생 순환을 잇는 정적 연결선 */}
-        {points.map((p, i) => {
-          const next = points[(i + 1) % points.length];
+      <svg viewBox={`0 0 ${width} ${height}`} style={{ width: "100%", height: "auto" }} aria-hidden role="img">
+        {/* 순환 궤도 — 점묘 점선 1겹 위에, 구조를 잡아주는 아주 옅은 실선 1겹.
+            5개 기운이 이 원 위에서 목→화→토→금→수 순서로 흐른다는 느낌만 준다.
+            큰 화살표를 반복하는 교육용 도표 대신, 점이 흐르는 궤도로 표현한다. */}
+        <circle cx={cx} cy={cy} r={orbitR} fill="none" stroke="#D4A34A" strokeOpacity={0.12} strokeWidth={1} />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={orbitR}
+          fill="none"
+          stroke="#D4A34A"
+          strokeOpacity={0.5}
+          strokeWidth={2.2}
+          strokeLinecap="round"
+          strokeDasharray="0.1 13"
+        />
+
+        {/* 방향 표시를 점선과 분리된 아이콘으로 얹지 않고, 각 오행 노드에
+            "도착하기 직전" 지점에서 점선 궤도 자체가 아주 작은 화살촉으로
+            끝나는 것처럼 표현한다 — 木→火→土→金→水→木 순서. 점선 궤도와
+            같은 좌표(orbitR) 위, 같은 색·같은 강도라 별도 장식처럼 안
+            보이고 점선의 일부처럼 자연스럽게 섞인다. 노드의 비율 링(dialR)과
+            안 겹치도록 노드 각도에서 18°만큼 앞에서 멈춘다. */}
+        {balance.map((_, i) => {
+          const arrivalAngle = i * (360 / balance.length) - 18;
           return (
-            <line
-              key={`line-${i}`}
-              x1={p.x}
-              y1={p.y}
-              x2={next.x}
-              y2={next.y}
-              stroke="rgba(212,163,74,0.25)"
-              strokeWidth={1}
+            <path
+              key={`flow-${i}`}
+              d={flowChevronPath(cx, cy, orbitR, arrivalAngle, 4.5)}
+              fill="none"
+              stroke="#D4A34A"
+              strokeOpacity={0.5}
+              strokeWidth={1.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           );
         })}
+
+        {/* 중앙 인장 — 페이지 상단 SealMark와 같은 계열의 「命」 모티프.
+            SealMark는 낙관처럼 살짝 기울어져 있지만, 이 원의 정중앙에 놓이는
+            命은 오행 순환의 중심축이라 수평으로 고정한다(회전 없음). */}
+        <g transform={`translate(${cx} ${cy})`}>
+          <rect
+            x={-15}
+            y={-15}
+            width={30}
+            height={30}
+            rx={4}
+            fill="none"
+            stroke="#D84A3A"
+            strokeOpacity={0.75}
+            strokeWidth={1.6}
+          />
+          <text x={0} y={6} textAnchor="middle" fontSize={15} fontFamily="serif" fill="#D84A3A" fillOpacity={0.85}>
+            命
+          </text>
+        </g>
+
         {points.map((p) => (
           <g key={p.key}>
-            <circle cx={p.x} cy={p.y} r={18 + p.value * 0.4} fill={ELEMENT_COLORS[p.key]} opacity={0.85} />
-            <text x={p.x} y={p.y + 5} textAnchor="middle" fontSize="14" fill="#FFF7EA" fontWeight={700}>
-              {p.label[0]}
+            {/* 비율 링 트랙(항상 보임) + 실제 값만큼 채운 호 */}
+            <circle cx={p.x} cy={p.y} r={dialR} fill="none" stroke="#8B7257" strokeOpacity={0.28} strokeWidth={2} />
+            <path
+              d={ratioArcPath(p.x, p.y, dialR, p.value)}
+              fill="none"
+              stroke={ELEMENT_COLORS[p.key]}
+              strokeWidth={2.4}
+              strokeLinecap="round"
+              opacity={0.9}
+            />
+            <circle cx={p.x} cy={p.y} r={10 + p.value * 0.055} fill={ELEMENT_COLORS[p.key]} fillOpacity={0.55} />
+            <text
+              x={p.x}
+              y={p.y + 5}
+              textAnchor="middle"
+              fontSize={13}
+              fontFamily="serif"
+              fill="#FFF7EA"
+              fontWeight={700}
+            >
+              {p.hanja}
+            </text>
+            <text x={p.labelX} y={p.labelY} textAnchor="middle" fontSize={11} fill="#CBBFB1">
+              {p.label.slice(0, 1)} {p.value}%
             </text>
           </g>
         ))}
@@ -514,6 +635,481 @@ function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/**
+ * 第一章 유료 심화 전용 — "겉으로 드러난 나 ↔ 안에 뿌리내린 나" 비교 카드.
+ * chapterOneDeepNarrative.ts가 이미 계산해 둔 실제 값(어느 자리에 어떤
+ * 십성이 겉으로 있는지 / 지장간 어디에 어떤 힘이 숨어 있고 투간됐는지)만
+ * 그대로 나열한다 — 점수나 그래프가 아니라 목록형 비교 카드다. 새 수치를
+ * 만들지 않는다(개수도 화면에 노출하지 않고, 항목을 그대로 나열만 한다).
+ *
+ * [가독성 수정] 카드 배경이 어두운 sceneBgAlt인데 항목 글자색이
+ * sceneCardText(#2B2622, 아이보리 카드 전용 짙은 색)였던 버그를 고쳤다 —
+ * 다른 본문과 같은 sceneBody(밝은 아이보리)로 통일해 명도 대비를 확보했다.
+ * insight는 chapterOneDeepNarrative.ts의 compareInsight(visible/rootHits
+ * 비교 결과로만 결정되는 문장, 새 수치 없음)를 카드 아래 한 줄로 보여준다.
+ */
+function RootExposureCompare({
+  visible,
+  hidden,
+  insight,
+}: {
+  visible: { sipseong: string; stage: string }[];
+  hidden: { sipseong: string; stage: string; position: string; tou: boolean }[];
+  insight?: string;
+}) {
+  if (visible.length === 0 && hidden.length === 0) return null;
+  const STAGE_KO: Record<string, string> = { year: "년주", month: "월주", day: "일주", hour: "시주" };
+  return (
+    <div className="mt-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="rounded-card border border-sceneGold/25 bg-sceneBgAlt px-4 py-4 text-left">
+          <p className="text-center text-[13px] font-bold tracking-wide text-sceneGold">겉으로 드러난 나</p>
+          <ul className="mt-3 space-y-1.5">
+            {visible.length === 0 && (
+              <li className="text-[13px] text-sceneTextSub">겉으로 유독 두드러지는 힘은 없습니다.</li>
+            )}
+            {visible.map((v, i) => (
+              <li key={i} className="flex items-center justify-between text-[13px] text-sceneBody">
+                <span>{v.sipseong}</span>
+                <span className="text-sceneTextSub">{STAGE_KO[v.stage] ?? v.stage}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="rounded-card border border-sceneGold/25 bg-sceneBgAlt px-4 py-4 text-left">
+          <p className="text-center text-[13px] font-bold tracking-wide text-sceneGold">안에서 뿌리내린 힘</p>
+          <ul className="mt-3 space-y-1.5">
+            {hidden.length === 0 && (
+              <li className="text-[13px] text-sceneTextSub">지장간 안에 따로 숨은 힘은 없습니다.</li>
+            )}
+            {hidden.map((h, i) => (
+              <li key={i} className="flex items-center justify-between text-[13px] text-sceneBody">
+                <span>
+                  {h.sipseong}
+                  {h.tou && <span className="ml-1 text-[10px] text-accentGoldTo">투간</span>}
+                </span>
+                <span className="text-sceneTextSub">
+                  {STAGE_KO[h.stage] ?? h.stage} · {h.position}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {insight && (
+        <p className="mt-3 text-center text-[13px] leading-relaxed text-sceneTextSub">{wrapHanjaTokens(insight)}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 第一章 유료 심화 전용 — "쉽게 쓰는 힘 / 에너지가 더 필요한 힘" 태그.
+ * chapterOneDeepNarrative.ts의 easy/effortful(CategoryStrength 순위 +
+ * 완전 부재 카테고리, 전부 이미 계산된 값)을 그대로 태그로만 나열한다.
+ * 점수·등급 없음 — "부족/문제"로 읽히지 않도록 태그 색은 중립(금색 톤
+ * 하나)으로 통일한다.
+ */
+function EasyEffortfulTags({ easy, effortful }: { easy: string[]; effortful: string[] }) {
+  if (easy.length === 0 && effortful.length === 0) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-4 text-center">
+        <p className="text-[13px] font-bold tracking-wide text-sceneGold">쉽게 쓰는 힘</p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {easy.map((c) => (
+            <span key={c} className="rounded-pill bg-sceneCard px-3 py-1.5 text-[13px] font-bold text-sceneCardText">
+              {c}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-4 text-center">
+        <p className="text-[13px] font-bold tracking-wide text-sceneGold">에너지가 더 필요한 힘</p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {effortful.length === 0 ? (
+            <span className="text-[13px] text-sceneTextSub">뚜렷하게 약하거나 없는 힘은 없습니다.</span>
+          ) : (
+            effortful.map((c) => (
+              <span key={c} className="rounded-pill bg-sceneCard px-3 py-1.5 text-[13px] font-bold text-sceneCardText">
+                {c}
+              </span>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 第二章 유료 심화 전용 — "나를 움직이는 힘들"의 상대적 구조를 보여주는
+ * 막대. chapterTwoDeepNarrative.ts의 widthPercent(이 사람의 active
+ * 카테고리 안에서만 min-max로 정규화한 상대 길이, buildFlowIntensity와
+ * 동일한 원칙)를 막대 길이로만 쓴다 — 숫자(점수)는 화면에 표시하지
+ * 않는다. "운세 점수"로 오해될 수 있는 정보는 아예 노출하지 않는 쪽을
+ * 택했다(사용자 지시 원칙).
+ *
+ * [가독성 수정] 라벨 글자색이 아이보리 카드 전용 sceneCardText(어두운
+ * 배경 위라 거의 안 보였다)였던 버그를 一章 RootExposureCompare와 같은
+ * 방식으로 고쳤다 — 본문과 같은 sceneBody로 통일해 모바일에서도 즉시
+ * 읽히도록 했다.
+ */
+function SipseongStrengthBars({ bars }: { bars: { category: string; rank: number; widthPercent: number }[] }) {
+  if (bars.length === 0) return null;
+  return (
+    <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-5">
+      <div className="space-y-3">
+        {bars.map((b) => (
+          <div key={b.category} className="flex items-center gap-3">
+            <span className="w-12 shrink-0 text-left text-[13px] font-bold text-sceneBody">{b.category}</span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-sceneCard">
+              <div
+                className="h-full rounded-full bg-sceneGold/80"
+                style={{ width: `${Math.max(8, Math.min(100, b.widthPercent))}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-center text-[11px] text-sceneTextSub">
+        이 명식 안에서 실제로 존재하는 힘들의 상대적인 크기이며, 절대적인 점수가 아닙니다.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * 第二章 유료 심화 전용 — "상황에 따라 달라지는 나"(일/돈/관계/선택)
+ * 2×2 미니카드. chapterTwoDeepNarrative.ts가 이미 고른 카테고리(사람마다
+ * 실제 active 구성에 따라 달라짐)와 문장을 그대로 옮긴다 — 새 점수 없음.
+ */
+function DomainCards({
+  domains,
+}: {
+  domains: { area: string; category: string; lead: string; detail: string }[];
+}) {
+  if (domains.length === 0) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {domains.map((d) => (
+        <div key={d.area} className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-4 text-left">
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-bold tracking-wide text-sceneGold">{d.area}</span>
+            <span className="rounded-pill bg-sceneCard px-2.5 py-1 text-[11px] font-bold text-sceneCardText">
+              {d.category}
+            </span>
+          </div>
+          <p className="mt-2 text-[13.5px] leading-relaxed text-sceneBody">{wrapHanjaTokens(d.lead)}</p>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-sceneTextSub">{wrapHanjaTokens(d.detail)}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 第三章 유료 심화 전용 — 축(axis/secondAxis)과 원국 내부 합·충 관계를
+ * 카드형으로 보여준다. heChong 관계는 chapterThreeDeepNarrative.ts가
+ * 이미 계산해 둔 실제 목록 그대로이며, 새 관계를 만들지 않는다.
+ */
+function AxisRelationCards({
+  axis,
+  secondAxis,
+  relations,
+}: {
+  axis: string | null;
+  secondAxis: string | null;
+  relations: { aLabel: string; bLabel: string; type: "합" | "충" }[];
+}) {
+  if (!axis && relations.length === 0) return null;
+  return (
+    <div className="mt-6 space-y-3">
+      {axis && (
+        <div className="flex items-center justify-center gap-3 rounded-card border border-sceneGold/25 bg-sceneBgAlt px-4 py-3">
+          <span className="rounded-pill bg-sceneCard px-3 py-1.5 text-[13px] font-bold text-sceneGold">{axis}</span>
+          {secondAxis && (
+            <>
+              <span className="text-[12px] text-sceneTextSub">함께</span>
+              <span className="rounded-pill bg-sceneCard px-3 py-1.5 text-[13px] font-bold text-sceneCardText">
+                {secondAxis}
+              </span>
+            </>
+          )}
+        </div>
+      )}
+      {relations.length > 0 && (
+        <div className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-4">
+          <ul className="space-y-2">
+            {relations.map((r, i) => (
+              <li key={i} className="flex items-center justify-center gap-2 text-[13px] text-sceneCardText">
+                <span>{r.aLabel}</span>
+                <span
+                  className={
+                    r.type === "합"
+                      ? "rounded-full bg-sceneGold/20 px-2 py-0.5 text-[11px] font-bold text-sceneGold"
+                      : "rounded-full bg-sceneRed/20 px-2 py-0.5 text-[11px] font-bold text-sceneRed"
+                  }
+                >
+                  {r.type}
+                </span>
+                <span>{r.bLabel}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * 第三章 유료 심화 전용(2026-09 재설계) — "나에게 편한 관계 / 긴장이
+ * 생기기 쉬운 관계" 2단 카드. chapterThreeDeepNarrative.ts가 이미 나눠
+ * 둔 comfort(합)/tension(충) 목록을 그대로 나열한다 — 새 점수·퍼센트
+ * 없음. 第二章의 4분면 카드(일/돈/관계/선택)와는 다른 질문(관계 구조
+ * 자체)이라 형태도 다르게, 좌우 대비 카드로만 구성했다. AxisRelationCards
+ * (기존 승인 로직, 손대지 않음)는 이 자리에서 더 이상 쓰지 않는다 —
+ * 축 정체성은 一·二章이 이미 충분히 다뤘고, 第三章은 관계 구조 자체에
+ * 집중한다.
+ */
+function RelationComfortTensionCards({
+  comfort,
+  tension,
+}: {
+  comfort: { aLabel: string; bLabel: string; aHint: string; bHint: string }[];
+  tension: { aLabel: string; bLabel: string; aHint: string; bHint: string }[];
+}) {
+  if (comfort.length === 0 && tension.length === 0) return null;
+  return (
+    <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="rounded-card border border-sceneGold/25 bg-sceneBgAlt px-4 py-4 text-left">
+        <p className="text-center text-[13px] font-bold tracking-wide text-sceneGold">나에게 편한 관계</p>
+        <ul className="mt-3 space-y-3">
+          {comfort.length === 0 ? (
+            <li className="text-center text-[13px] text-sceneTextSub">뚜렷하게 편안해지는 자리는 없습니다.</li>
+          ) : (
+            comfort.map((r, i) => (
+              <li key={i} className="text-center text-[13px] leading-relaxed text-sceneBody">
+                {r.aLabel} <span className="text-sceneGold">↔</span> {r.bLabel}
+                <br />
+                <span className="text-[11px] text-sceneTextSub">
+                  {r.aHint} ↔ {r.bHint}
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
+      <div className="rounded-card border border-sceneGold/20 bg-sceneBgAlt px-4 py-4 text-left">
+        <p className="text-center text-[13px] font-bold tracking-wide text-sceneRed">긴장이 생기기 쉬운 관계</p>
+        <ul className="mt-3 space-y-3">
+          {tension.length === 0 ? (
+            <li className="text-center text-[13px] text-sceneTextSub">뚜렷하게 부딪히는 자리는 없습니다.</li>
+          ) : (
+            tension.map((r, i) => (
+              <li key={i} className="text-center text-[13px] leading-relaxed text-sceneBody">
+                {r.aLabel} <span className="text-sceneRed">↔</span> {r.bLabel}
+                <br />
+                <span className="text-[11px] text-sceneTextSub">
+                  {r.aHint} ↔ {r.bHint}
+                </span>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/** 「10년 흐름」 그래프 전용 — LifeAreaLabel(7종) 전체를 화면 폭이 좁은
+ * 모바일에서도 겹치지 않게 2글자로 줄인 표시용 축약어일 뿐, 새 카테고리를
+ * 만들지 않는다(원래 라벨은 그대로 존재 — 여기서만 짧게 보여줄 뿐). */
+const AREA_ABBREV: Record<string, string> = {
+  "돈과 일": "돈일",
+  "관계와 인연": "관계",
+  "표현과 활동": "표현",
+  "책임과 압박": "책임",
+  "배움과 준비": "배움",
+  "변화와 선택": "변화",
+  "안정과 정리": "안정",
+};
+
+/** 실제 데이터 포인트를 정확히 지나는 부드러운 곡선 경로(Catmull-Rom →
+ * 3차 베지어 표준 변환). 각 점 사이를 매끄럽게 보간할 뿐 — 점 좌표(=이미
+ * 계산된 flowIntensity를 그대로 옮긴 값) 자체는 하나도 바꾸지 않고, 실제
+ * 데이터에 없는 새 중간값도 만들지 않는다. 그려지는 선은 항상 각 점을
+ * 정확히 통과한다. */
+function smoothPathD(pts: { x: number; y: number }[]): string {
+  if (pts.length === 0) return "";
+  if (pts.length === 1) return `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  let d = `M ${pts[0].x.toFixed(2)} ${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+  }
+  return d;
+}
+
+/**
+ * 「앞으로 10년, 운의 흐름」 — 10개 연도를 점+곡선으로 잇는 미니 타임라인.
+ * 세로 위치(y)는 reportMapper.ts의 buildFlowIntensity()가 scoreYear()
+ * 원값을 "이 사람의 10년 안에서만" 0~100으로 재배율한 값을 그대로 쓴다.
+ * 여기서는 그 숫자를 좌표로 옮기고(변경 없음) 옮긴 점 사이를 곡선으로
+ * 잇기만 할 뿐, 어떤 계산도 하지 않는다.
+ *
+ * 강조(인장형 표식)는 "대운 전환 해"이거나 "특히 기억할 시기"(highlights)에
+ * 든 해일 때만 켠다 — 둘 다 이미 계산된 사실이고, 강조가 곧 "좋은 해"를
+ * 뜻하지 않는다는 점을 그래프 바로 아래 설명 문구로 분명히 한다.
+ */
+function TenYearFlowChart({
+  items,
+  highlightYears,
+}: {
+  items: { year: number; flowIntensity: number; area: string; isTransitionYear: boolean }[];
+  highlightYears: Set<number>;
+}) {
+  if (items.length === 0) return null;
+
+  const width = 650;
+  const padX = 34;
+  const plotWidth = width - padX * 2;
+  const step = items.length > 1 ? plotWidth / (items.length - 1) : 0;
+  // yTop을 위쪽에 여유(전환 태그 자리)를 두고 잡는다 — flowIntensity가
+  // 100(최고)인 점이라도 그 값 숫자 라벨(pointY-11)이 "전환" 태그
+  // (고정 y=16)와 겹치지 않도록, 최고점 라벨 위치(yTop-11)가 태그보다
+  // 확실히 아래(숫자가 더 큼)에 오게 하는 값이다.
+  const yTop = 50; // flowIntensity 100
+  const yBottom = 150; // flowIntensity 0
+  // 실제로 그리는 세로 범위는 yTop~yBottom보다 한 단계 더 안쪽으로 줄인다
+  // (plotInset). flowIntensity 숫자 자체(0~100, min-max 결과)는 전혀 안
+  // 바꾸고, 오직 "그 값을 화면의 어느 높이에 찍을지"만 살짝 안쪽으로
+  // 당긴다 — 100인 점도 그래프 박스 맨 위 끝에 딱 닿지 않고, 0인 점도
+  // 맨 아래 끝에 딱 닿지 않게 해서 "시험 점수 100/0"처럼 보이는 인상을
+  // 줄이기 위함이다(사장님 3번 지시사항). 연도 간 상대적 높낮이 순서와
+  // 간격 비율은 그대로 유지된다 — 단순 선형 축소일 뿐이다.
+  const plotInset = 14;
+  const drawTop = yTop + plotInset;
+  const drawBottom = yBottom - plotInset;
+  const valueY = (v: number) => drawBottom - (Math.max(0, Math.min(100, v)) / 100) * (drawBottom - drawTop);
+
+  const points = items.map((it, i) => ({
+    ...it,
+    x: padX + i * step,
+    y: valueY(it.flowIntensity),
+    notable: it.isTransitionYear || highlightYears.has(it.year),
+  }));
+
+  // 실제 점(x,y)만 곡선 보간에 넘긴다 — 좌표는 위에서 계산된 값 그대로다.
+  const curveD = points.length >= 2 ? smoothPathD(points.map((p) => ({ x: p.x, y: p.y }))) : "";
+  const areaD =
+    points.length >= 2
+      ? `${curveD} L ${points[points.length - 1].x.toFixed(2)} ${drawBottom} L ${points[0].x.toFixed(2)} ${drawBottom} Z`
+      : "";
+
+  return (
+    <div className="mt-6 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-2 py-6 sm:px-4">
+      <svg viewBox={`0 0 ${width} 200`} style={{ width: "100%", height: "auto" }} aria-hidden role="img">
+        {points.length >= 2 && (
+          <defs>
+            <linearGradient id="tyfAreaFade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#D4A34A" stopOpacity={0.09} />
+              <stop offset="100%" stopColor="#D4A34A" stopOpacity={0} />
+            </linearGradient>
+            <filter id="tyfSoftGlow" x="-20%" y="-80%" width="140%" height="260%">
+              <feGaussianBlur stdDeviation="1.4" />
+            </filter>
+          </defs>
+        )}
+        {/* 아주 옅은 여백광 — 곡선 아래를 살짝 채워 "기록서에 그려진 궤적" 느낌만 준다 */}
+        {points.length >= 2 && <path d={areaD} fill="url(#tyfAreaFade)" stroke="none" />}
+        {/* 절제된 소프트 글로우 — 선 자체는 얇고 또렷하게, 뒤에 흐린 사본 1겹만 */}
+        {points.length >= 2 && (
+          <path
+            d={curveD}
+            fill="none"
+            stroke="#E8B55B"
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            opacity={0.22}
+            filter="url(#tyfSoftGlow)"
+          />
+        )}
+        {points.length >= 2 && (
+          <path d={curveD} fill="none" stroke="#E8B55B" strokeWidth={1.4} strokeLinecap="round" opacity={0.9} />
+        )}
+        {points.map((p) => (
+          <g key={p.year}>
+            {p.notable && (
+              <rect
+                x={p.x - 6.5}
+                y={p.y - 6.5}
+                width={13}
+                height={13}
+                rx={2}
+                fill="none"
+                stroke="#D4A34A"
+                strokeWidth={1.3}
+                opacity={0.45}
+                transform={`rotate(-6 ${p.x} ${p.y})`}
+              />
+            )}
+            <circle
+              cx={p.x}
+              cy={p.y}
+              r={p.notable ? 4.5 : 3.2}
+              fill={p.notable ? "#D4A34A" : "rgba(212,163,74,0.4)"}
+            />
+            <text
+              x={p.x}
+              y={p.y - 11}
+              textAnchor="middle"
+              fontSize={13}
+              fontWeight={700}
+              fill={p.notable ? "#E8B55B" : "#CBBFB1"}
+            >
+              {p.flowIntensity}
+            </text>
+            {p.isTransitionYear && (
+              <text x={p.x} y={16} textAnchor="middle" fontSize={10} fontWeight={700} fill="#D4A34A">
+                전환
+              </text>
+            )}
+            <text x={p.x} y={172} textAnchor="middle" fontSize={10.5} fill="#CBBFB1" opacity={0.9}>
+              {AREA_ABBREV[p.area] ?? p.area.slice(0, 2)}
+            </text>
+            <text
+              x={p.x}
+              y={188}
+              textAnchor="middle"
+              fontSize={10.5}
+              fontWeight={p.notable ? 700 : 400}
+              fill={p.notable ? "#FFF7EA" : "#CBBFB1"}
+            >
+              {"'"}
+              {String(p.year).slice(2)}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <p className="mt-3 text-center text-[12px] leading-relaxed text-sceneTextSub">
+        금색으로 강조된 해는 대운이 바뀌거나 여러 신호가 겹쳐, 이 10년 중 특히 눈여겨볼 시기입니다.
+      </p>
+      <p className="mt-2 text-center text-[12px] leading-relaxed text-sceneTextSub/90">
+        숫자가 높다고 좋은 해, 낮다고 나쁜 해라는 뜻이 아닙니다. 이 수치는 그 해에 대운·세운이 원국과 만나 합·충 같은 신호를 얼마나 많이 만들어내는지 — 즉 얼마나 뚜렷하게 움직이는 해인지를, 이 사주의 10년 안에서만 서로 비교해 보여줍니다.
+      </p>
     </div>
   );
 }
@@ -751,6 +1347,49 @@ export default function ResultLandingV2({
 
           <HighlightCard text={data.chapterOne.cardText} />
 
+          {/* 第一章 유료 심화 — "겉으로 보이는 나, 안에서 움직이는 힘".
+              무료 본문(위)은 전혀 건드리지 않고, 같은 장 안에서 결제
+              고객에게만 자연스럽게 이어진다. data.chapterOneDeep은
+              chapterOneDeepNarrative.ts가 만든 결과를 그대로 옮긴 것뿐,
+              이 컴포넌트에서 새 문장을 만들지 않는다. */}
+          {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterOneDeep && (
+            <>
+              <RootExposureCompare
+                visible={data.chapterOneDeep.visual.visible.map((v) => ({ sipseong: v.sipseong, stage: v.stage }))}
+                hidden={data.chapterOneDeep.visual.hidden.map((h) => ({
+                  sipseong: h.sipseong,
+                  stage: h.stage,
+                  position: h.position,
+                  tou: h.tou,
+                }))}
+                insight={data.chapterOneDeep.visual.compareInsight}
+              />
+              {data.chapterOneDeep.sections.map((sec, idx) => {
+                // "第一章의 발견"은 이 장의 핵심 통찰이라 다른 소제목 절과
+                // 다르게 아이보리 HighlightCard로 마무리한다(강조색 규칙:
+                // 흰색=본문, 금색=소제목, 아이보리=가져갈 통찰, 빨강=1문장뿐).
+                if (sec.heading === "第一章의 발견") {
+                  return <HighlightCard key={`ch1-deep-${idx}`} text={sec.body.join(" ")} />;
+                }
+                return (
+                  <Fragment key={`ch1-deep-${idx}`}>
+                    <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                    {sec.heading === "쉽게 버티는 상황, 힘이 빠지는 상황" && (
+                      <EasyEffortfulTags easy={data.chapterOneDeep!.visual.easy} effortful={data.chapterOneDeep!.visual.effortful} />
+                    )}
+                    <div className="space-y-4">
+                      {sec.body.map((p, pIdx) => (
+                        <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                          {wrapHanjaTokens(p)}
+                        </p>
+                      ))}
+                    </div>
+                  </Fragment>
+                );
+              })}
+            </>
+          )}
+
           {/* 챕터 전환 블러 다리 — 다음 장 실제 문장 일부를 인용, 무료→무료라 자물쇠 없음 */}
           {data.chapterOne.teaser && (
             <BlurBridge lead={data.chapterOne.teaser.lead} blurred={data.chapterOne.teaser.blurred} />
@@ -797,6 +1436,34 @@ export default function ResultLandingV2({
 
               <HighlightCard text={data.chapters[1].highlight} />
 
+              {/* 第二章 유료 심화 — "나를 움직이는 여러 힘"(십성 전체
+                  지도). 무료 본문(위)은 전혀 건드리지 않는다. */}
+              {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterTwoDeep && (
+                <>
+                  <SipseongStrengthBars bars={data.chapterTwoDeep.visual.bars} />
+                  {data.chapterTwoDeep.sections.map((sec, idx) => {
+                    if (sec.heading === "第二章의 발견") {
+                      return <HighlightCard key={`ch2-deep-${idx}`} text={sec.body.join(" ")} />;
+                    }
+                    return (
+                      <Fragment key={`ch2-deep-${idx}`}>
+                        <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                        <div className="space-y-4">
+                          {sec.body.map((p, pIdx) => (
+                            <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                              {wrapHanjaTokens(p)}
+                            </p>
+                          ))}
+                        </div>
+                        {sec.heading === "상황에 따라 달라지는 나" && (
+                          <DomainCards domains={data.chapterTwoDeep!.visual.domains} />
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </>
+              )}
+
               {data.chapters[1].richBody.teaser && (
                 <BlurBridge
                   lead={data.chapters[1].richBody.teaser.lead}
@@ -814,6 +1481,31 @@ export default function ResultLandingV2({
                 ))}
               </div>
               <HighlightCard text={data.chapters[1].highlight} />
+              {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterTwoDeep && (
+                <>
+                  <SipseongStrengthBars bars={data.chapterTwoDeep.visual.bars} />
+                  {data.chapterTwoDeep.sections.map((sec, idx) => {
+                    if (sec.heading === "第二章의 발견") {
+                      return <HighlightCard key={`ch2-deep-fallback-${idx}`} text={sec.body.join(" ")} />;
+                    }
+                    return (
+                      <Fragment key={`ch2-deep-fallback-${idx}`}>
+                        <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                        <div className="space-y-4">
+                          {sec.body.map((p, pIdx) => (
+                            <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                              {wrapHanjaTokens(p)}
+                            </p>
+                          ))}
+                        </div>
+                        {sec.heading === "상황에 따라 달라지는 나" && (
+                          <DomainCards domains={data.chapterTwoDeep!.visual.domains} />
+                        )}
+                      </Fragment>
+                    );
+                  })}
+                </>
+              )}
             </>
           )}
         </div>
@@ -838,6 +1530,37 @@ export default function ResultLandingV2({
               개인화 규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
 
           <HighlightCard text={data.chapters[2].highlight} />
+
+          {/* 第三章 유료 심화(2026-09 재설계) — "그 힘이 실제 관계 안에서
+              어떤 장면으로 나타나는가"(현실 관계 장면 분석). 무료 본문
+              (위)은 전혀 건드리지 않는다. */}
+          {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterThreeDeep && (
+            <>
+              {data.chapterThreeDeep.sections.map((sec, idx) => {
+                if (sec.heading === "第三章의 발견") {
+                  return <HighlightCard key={`ch3-deep-${idx}`} text={sec.body.join(" ")} />;
+                }
+                return (
+                  <Fragment key={`ch3-deep-${idx}`}>
+                    <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                    <div className="space-y-4">
+                      {sec.body.map((p, pIdx) => (
+                        <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                          {wrapHanjaTokens(p)}
+                        </p>
+                      ))}
+                    </div>
+                    {sec.heading === "반복되기 쉬운 관계 장면" && (
+                      <RelationComfortTensionCards
+                        comfort={data.chapterThreeDeep!.visual.comfort}
+                        tension={data.chapterThreeDeep!.visual.tension}
+                      />
+                    )}
+                  </Fragment>
+                );
+              })}
+            </>
+          )}
         </div>
       </section>
 
@@ -1223,7 +1946,7 @@ export default function ResultLandingV2({
           (第四·六·七章)이 이미 reportMapper.ts에서 한자 "第N章" 체계로
           통일됐으므로, 여기 하드코딩된 라벨만 그 체계에 맞춘다 —
           계산/서술은 전혀 바뀌지 않음. */}
-      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && (
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterWealthInsight && (
       <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
         <div className="mx-auto w-full max-w-content2 text-center">
           <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
@@ -1233,148 +1956,76 @@ export default function ResultLandingV2({
             {data.userName}님의 재물운
           </h2>
 
-          <ChapterOneSubheading>돈이 움직이는 방식</ChapterOneSubheading>
+          {/* 재물운 구조 개편(2026-09, 승인된 작업) — 기존 4·5·6장과 3차
+              확장 콘텐츠를 하나의 연속된 ①~⑩ 흐름으로 재배치했다.
+              data.chapterWealthInsight는 wealthInsightNarrative.ts의
+              assembleWealthChapterSections가 만든 결과를 그대로 옮긴
+              것뿐이라 이 컴포넌트에서 새 문장을 만들지 않는다 — 章
+              중간에 소제목 번호가 다시 ①로 리셋되던 문제를 없애기 위해,
+              고정 훅/킬포인트/하이라이트 카드 다음부터는 sections를 그대로
+              한 번만 순회한다(예전처럼 lockedDetail/chapterFive/
+              chapterWealthInsight/chapterSix를 따로따로 렌더링하지
+              않는다). data.chapters[3]/chapterFive/chapterSix 필드
+              자체는 PDF 등 다른 소비자를 위해 reportMapper.ts에 그대로
+              남아 있다 — 이 블록만 chapterWealthInsight를 읽도록 바꿨다. */}
           <p className="mt-1 font-serif-kr text-[17px] font-bold leading-snug text-sceneRed sm:text-[19px]">
-            {wrapHanjaTokens(data.chapters[3].killpoint)}
+            {wrapHanjaTokens(data.chapterWealthInsight.killpoint)}
           </p>
           <div className="mt-6 space-y-4">
-            {data.chapters[3].body.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                {wrapHanjaTokens(p)}
-              </p>
-            ))}
+            <p className="text-[15px] leading-[1.95] text-sceneBody">
+              {wrapHanjaTokens(data.chapterWealthInsight.hook)}
+            </p>
           </div>
 
-          {/* 시기 카드는 출시 전 감사에서 하드코딩("2026년/경쟁운")으로
-              확인돼 제거했다 — 4챕터(금전운의 흐름) 최종 원고와 개인화
-              규칙이 들어오기 전까지는 숨김 처리(임의 fallback 금지). */}
+          <HighlightCard text={data.chapterWealthInsight.highlight} />
 
-          <HighlightCard text={data.chapters[3].highlight} />
-
-          {/* 재물 잠금 상세(chapterFourNarrative.ts의 lockedDetail) 연결 —
-              ①흔들리는조건 ②과거대운 ③현재대운 ④다음대운 ⑤조언 5개 문단을
-              그대로 옮긴다. 원문/계산 변경 없음, 새 컴포넌트 없음(기존
-              ChapterOneSubheading + space-y-4 문단 패턴 재사용). "lockedDetail"
-              이라는 내부 명칭은 화면에 노출하지 않는다.
-              buildDaYunFlow()는 사용자에 따라 과거/현재/다음 대운 중 일부가
-              없으면(예: 첫 대운을 지나는 중이거나 마지막 대운을 이미 지난
-              경우) 배열 길이가 5가 아닐 수 있다 — 그 경우 이 5단계 라벨과
-              내용이 어긋나므로, 길이가 정확히 5일 때만 렌더링한다(길이가
-              다르면 이 블록 전체를 건너뛴다 — 새 fallback 문장을 만들지
-              않는다). 아직 결제 게이트/블러/잠금 UI는 붙이지 않는다 —
-              화면에는 계속 무료 재물운과 동일하게 완전히 보이는 상태다. */}
-          {Array.isArray(data.chapters[3].lockedDetail) && data.chapters[3].lockedDetail!.length === 5 && (
-            <>
-              <ChapterOneSubheading>① 재물이 흔들리는 조건</ChapterOneSubheading>
+          {data.chapterWealthInsight.sections.map((sec, idx) => (
+            <Fragment key={`wi-${idx}`}>
+              <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
               <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![0])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>② 지나온 흐름에서 돈이 움직인 방식</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![1])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>③ 지금의 재물 흐름</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![2])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>④ 다음 흐름에서 달라지는 것</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![3])}
-                </p>
-              </div>
-
-              <ChapterOneSubheading>⑤ 지금 기억해야 할 재물 원칙</ChapterOneSubheading>
-              <div className="space-y-4">
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(data.chapters[3].lockedDetail![4])}
-                </p>
-              </div>
-            </>
-          )}
-
-          {/* 하위 섹션 2 — 이전 第五章(돈이 들어와도 남지 않는 이유).
-              bridgeIntro(4→5 연결문)는 있을 때만 본문과 같은 스타일로
-              첫 문단 자리에 얹는다. */}
-          {data.chapterFive && (
-            <>
-              <ChapterOneSubheading>돈이 머무는 힘과 흔들리는 조건</ChapterOneSubheading>
-              <div className="space-y-4">
-                {data.chapterFive.bridgeIntro && (
-                  <p className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(data.chapterFive.bridgeIntro)}
-                  </p>
-                )}
-                {data.chapterFive.body.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                {sec.body.map((p, pIdx) => (
+                  <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(p)}
                   </p>
                 ))}
               </div>
-            </>
-          )}
-
-          {/* 하위 섹션 3 — 이전 第六章(돈이 움직이는 시기). applicable=false라
-              generateWealthTimingNarrative가 안내 문단 1개만 돌려준
-              사람도 chapterSix 자체는 undefined가 아니므로(reportMapper.ts
-              참고) 이 블록이 그대로 렌더링되고, 문단 내용만 안내문
-              1개가 된다 — 별도 분기 없이 자연스럽게 처리된다. */}
-          {data.chapterSix && (
-            <>
-              <ChapterOneSubheading>앞으로 돈의 흐름이 달라지는 때</ChapterOneSubheading>
-              <div className="space-y-4">
-                {data.chapterSix.bridgeIntro && (
-                  <p className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(data.chapterSix.bridgeIntro)}
-                  </p>
-                )}
-                {data.chapterSix.body.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
-                    {wrapHanjaTokens(p)}
-                  </p>
-                ))}
-              </div>
-            </>
-          )}
+            </Fragment>
+          ))}
         </div>
       </section>
       )}
 
       {/* 제6장 — 인생의 전환점. 유료 핵심 4개 챕터(제4장 사랑과 인연/제5장
           재물운/제6장 인생의 전환점/제7장 앞으로의 10년) 중 세 번째.
-          data.chapterLifeTransition은
-          reportMapper.ts가 이미 승인·동결된 lifeTransitionNarrative.ts의
-          ①~④ 문단을 그대로 옮겨 담은 것뿐이라 이 컴포넌트에서 새 문장을
-          만들지 않는다. 사랑과 인연/재물운과 같은 패턴으로
-          HIDE_PAID_BLOCKS_ON_FREE_SCREEN으로 무료 화면에서 가린다(타입
-          좁히기 관련 주의사항은 위 두 블록과 동일 — 이 스위치는 boolean
-          타입 상수라 `false &&`의 도달불가 판정 문제가 없어 별도 중첩
-          없이 그대로 && 체인으로 연결한다). */}
-      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterLifeTransition && (
+          第六章 프리미엄 확장(2026-09, 승인된 작업) — 처음부터 완성형으로
+          설계했다. data.chapterLifeTransitionInsight는
+          lifeTransitionInsightNarrative.ts가 만든 sections를 그대로 옮긴
+          것뿐이라 이 컴포넌트에서 새 문장을 만들지 않는다(第五章 구조
+          개편과 동일 패턴 — ChapterOneSubheading + space-y-4, 단일 연속
+          소제목 체계). 기존 data.chapterLifeTransition(4섹션, body가
+          string)은 PDF 등 다른 소비자를 위해 그대로 두고 화면만 새 필드로
+          바꿨다. HIDE_PAID_BLOCKS_ON_FREE_SCREEN 무료 화면 가림은 기존과
+          동일. */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterLifeTransitionInsight && (
         <section className="border-b border-white/5 bg-sceneBg px-6 py-14 sm:py-16">
           <div className="mx-auto w-full max-w-content2 text-center">
             <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
-              {data.chapterLifeTransition.chapterLabel}
+              第六章
             </span>
             <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
-              {data.chapterLifeTransition.title}
+              {data.userName}님의 인생의 전환점
             </h2>
 
-            {data.chapterLifeTransition.sections.map((sec, idx) => (
+            {data.chapterLifeTransitionInsight.sections.map((sec, idx) => (
               <Fragment key={idx}>
                 <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
-                <p className="text-[15px] leading-[1.95] text-sceneBody">
-                  {wrapHanjaTokens(sec.body)}
-                </p>
+                <div className="space-y-4">
+                  {sec.body.map((p, pIdx) => (
+                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                      {wrapHanjaTokens(p)}
+                    </p>
+                  ))}
+                </div>
               </Fragment>
             ))}
           </div>
@@ -1406,6 +2057,15 @@ export default function ResultLandingV2({
                 </p>
               ))}
             </div>
+
+            {/* 「10년 흐름」 그래프 — 연도별 상세 해석(②)을 읽기 전에, 10년
+                전체를 먼저 한눈에 보여준다. 기존 ①~④ 원고는 그대로 두고
+                그 사이에 새 섹션만 끼워 넣는다. */}
+            <ChapterOneSubheading>앞으로 10년, 운의 흐름</ChapterOneSubheading>
+            <TenYearFlowChart
+              items={data.chapterTenYear.items}
+              highlightYears={new Set(data.chapterTenYear.highlights.map((h) => h.year))}
+            />
 
             <ChapterOneSubheading>① 앞으로 10년의 큰 흐름</ChapterOneSubheading>
             <div className="space-y-4">

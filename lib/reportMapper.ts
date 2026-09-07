@@ -31,15 +31,25 @@ import { generateWealthObstructionNarrative } from "./wealthObstructionNarrative
 import { analyzeWealthTiming } from "./wealthTimingAnalysis";
 import { generateWealthTimingNarrative } from "./wealthTimingNarrative";
 import { buildWealthChapterBridge } from "./wealthChapterBridge";
+import { assembleWealthChapterSections } from "./wealthInsightNarrative";
+import { generateLifeTransitionInsightNarrative } from "./lifeTransitionInsightNarrative";
 import { generateLoveApproachStyleNarrative } from "./loveApproachStyleNarrative";
 import { generateLoveAttractionReasonNarrative } from "./loveAttractionReasonNarrative";
 import { generateLoveRepeatingSceneNarrative } from "./loveRepeatingSceneNarrative";
 import { generateLoveStabilityConditionNarrative } from "./loveStabilityConditionNarrative";
 import { analyzeLoveTimingSignals } from "./loveTimingSignals";
 import { generateLoveTimingNarrative } from "./loveTimingNarrative";
+import { generateLoveDeepeningNarrative } from "./loveDeepeningNarrative";
+import { generateLoveHurtPointNarrative } from "./loveHurtPointNarrative";
+import { generateLoveSpousePartnerNarrative } from "./loveSpousePartnerNarrative";
+import { generateLoveGoingForwardNarrative } from "./loveGoingForwardNarrative";
+import { generateLoveSipseongInsightNarrative } from "./loveSipseongInsightNarrative";
 import { buildLifeTransitionNarrative } from "./lifeTransitionNarrative";
 import { buildTenYearNarrative } from "./tenYearNarrative";
 import { buildGwiinSinsalSection, GwiinSinsalSection } from "./gwiinSinsalNarrative";
+import { buildChapterOneDeepNarrative, ChapterOneDeepVisual } from "./chapterOneDeepNarrative";
+import { buildChapterTwoDeepNarrative, ChapterTwoDeepVisual } from "./chapterTwoDeepNarrative";
+import { buildChapterThreeDeepNarrative, ChapterThreeDeepVisual } from "./chapterThreeDeepNarrative";
 
 /**
  * ResultLandingV2 전용 데이터 매핑 레이어.
@@ -185,6 +195,14 @@ export interface ChapterTenYearItem {
    * LifeAreaLabel(7종) 그대로. 새 계산 없음, 화면에 짧은 핵심 라벨로만
    * 노출한다. */
   area: string;
+  /** tenYearNarrative.ts의 TenYearItem.isTransitionYear 그대로 — 이미
+   * 계산돼 있었지만 이 필드까지는 화면에 안 넘기고 있었다. 「10년 흐름」
+   * 그래프에서 대운 전환 해를 표시하는 데만 쓴다. */
+  isTransitionYear: boolean;
+  /** 「10년 흐름」 그래프 전용 표시값 — tenYearNarrative.ts의 scoreYear()
+   * 원값(신호 밀도)을 이 사람의 10년 안에서만 0~100으로 재배율(min-max)한
+   * 것. 절대적인 길흉 점수가 아니다 — buildFlowIntensity() 참고. */
+  flowIntensity: number;
 }
 
 export interface ChapterTenYearSegment {
@@ -315,8 +333,13 @@ export interface ReportResult {
    * 기존 정적 fallback을 건드리지 않는다. */
   chapterLove?: ChapterLoveContent;
   /** "인생의 전환점"(①~④ 통합). 선택적 필드로 두어 DEFAULT_REPORT 등
-   * 기존 정적 fallback을 건드리지 않는다. */
+   * 기존 정적 fallback을 건드리지 않는다. PDF 등 다른 소비자를 위해
+   * 그대로 유지 — 화면은 아래 chapterLifeTransitionInsight를 읽는다. */
   chapterLifeTransition?: ChapterLifeTransitionContent;
+  /** 第六章(인생의 전환점) 프리미엄 확장(2026-09, 승인된 작업) — 처음부터
+   * 완성형으로 설계. lifeTransitionInsightNarrative.ts가 만든 sections를
+   * 그대로 옮긴 것뿐, 이 파일에서 새 문장을 짓지 않는다. */
+  chapterLifeTransitionInsight?: { sections: { heading: string; body: string[] }[] };
   /** "앞으로의 10년"(여는 글/구간/연도별 10개/하이라이트/마지막 조언).
    * 선택적 필드로 두어 DEFAULT_REPORT 등 기존 정적 fallback을 건드리지
    * 않는다. */
@@ -327,11 +350,36 @@ export interface ReportResult {
   /** 第六章("돈이 움직이는 시기"). 6장이 applicable=false인 사람은
    * undefined — 화면에 빈 챕터를 만들지 않는다. */
   chapterSix?: ChapterSixContent;
+  /** 第五章(재물운) 구조 개편(2026-09, 승인된 작업) — 기존 chapters[3]
+   * ("돈이 움직이는 방식")/chapterFive("돈이 새는 이유")/chapterSix
+   * ("돈이 움직이는 시기")와 3차 확장에서 새로 만든 문단을 하나의 연속된
+   * ①~⑩ 흐름으로 재배치한 것. 이 필드는 화면(ResultLandingV2) 전용이고,
+   * chapters[3]/chapterFive/chapterSix 필드 자체는 PDF 등 다른 소비자를
+   * 위해 그대로 유지한다(assembleWealthChapterSections는 그 결과를
+   * 입력으로만 받아 새 문장을 짓지 않는다). */
+  chapterWealthInsight?: {
+    hook: string;
+    killpoint: string;
+    highlight: string;
+    sections: { heading: string; body: string[] }[];
+  };
   /** "귀인과 신살"(제8장) — 승인된 원고(content/paid-report/05-gwiin-sinsal-draft.md)를
    * gwiinSinsalNarrative.ts가 그대로 조립한 것. 계산에서 실제로 확인된
    * 귀인·신살이 없을 때만(이론상 발생하지 않음) undefined — 선택적
    * 필드로 두어 기존 정적 fallback을 건드리지 않는다. */
   gwiinSinsalSection?: GwiinSinsalSection;
+  /** 第一~三章 유료 심화(2026-09, 이번 작업) — 무료 第一~三章 본문은
+   * 전혀 건드리지 않고, 결제 고객에게만 같은 장 안에서 추가로 보이는
+   * 확장 섹션. chapterOneDeepNarrative.ts/chapterTwoDeepNarrative.ts/
+   * chapterThreeDeepNarrative.ts가 만든 결과를 그대로 옮긴 것뿐, 이
+   * 파일에서 새 문장을 짓지 않는다. 선택적 필드로 두어 기존 정적
+   * fallback(DEFAULT_REPORT)을 건드리지 않는다. */
+  chapterOneDeep?: { sections: { heading: string; body: string[] }[]; visual: ChapterOneDeepVisual };
+  chapterTwoDeep?: { sections: { heading: string; body: string[] }[]; visual: ChapterTwoDeepVisual };
+  chapterThreeDeep?: {
+    sections: { heading: string; body: string[] }[];
+    visual: ChapterThreeDeepVisual;
+  };
 }
 
 function firstLine(text: string): string {
@@ -557,13 +605,35 @@ function buildChapterOneDetail(appData: AppData, scenes: StoryScene[]): ChapterO
  * 없음 — buildReportResult 호출부가 사용자가 입력한 gender를 그대로
  * 넘긴다).
  */
+/**
+ * 第四章 확장(승인된 작업, 2026-09) — 기존 ①②③④⑤ 5개 섹션은 문장 한
+ * 글자도 바꾸지 않고 그대로 보존한다. 새로 추가하는 4개 섹션(③⑤⑦⑨,
+ * 번호는 9개 전체 기준으로 다시 매겼다)은 각각 독립 파일
+ * (loveDeepeningNarrative.ts/loveHurtPointNarrative.ts/
+ * loveSpousePartnerNarrative.ts/loveGoingForwardNarrative.ts)에서
+ * 기존에 검증된 계산 함수만 재호출해 만든다 — 이 함수는 그 결과를
+ * 순서대로 배열에 담기만 한다.
+ */
 function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterLoveContent {
   const approach = generateLoveApproachStyleNarrative(appData, gender);
   const attraction = generateLoveAttractionReasonNarrative(appData, gender);
+  const deepening = generateLoveDeepeningNarrative(appData, gender);
   const repeating = generateLoveRepeatingSceneNarrative(appData, gender);
+  const hurtPoint = generateLoveHurtPointNarrative(appData, gender);
   const stability = generateLoveStabilityConditionNarrative(appData, gender);
+  const spousePartner = generateLoveSpousePartnerNarrative(appData, gender);
   const timing = analyzeLoveTimingSignals(appData, gender);
   const timingNarrative = generateLoveTimingNarrative(appData, timing);
+  const goingForward = generateLoveGoingForwardNarrative(appData);
+  // 3차 보강(승인된 작업) — "사랑을 움직이는 나의 십성". 기존 ①~⑨의
+  // HOW(어떻게 나타나는가)와 역할을 분리한 WHY(명리적으로 왜 그런가)
+  // 해설층. picks는 명식마다 2~3개로 가변적이다(억지로 개수를 맞추지
+  // 않음) — 각 pick을 그대로 하나의 하위 섹션으로 옮긴다.
+  const sipseongInsight = generateLoveSipseongInsightNarrative(appData, gender);
+  const sipseongSections = sipseongInsight.picks.map((pick, idx) => ({
+    heading: pick.heading,
+    body: idx === 0 ? [sipseongInsight.intro, ...pick.paragraphs.map((p) => p.text)] : pick.paragraphs.map((p) => p.text),
+  }));
 
   return {
     // 장 번호 통합 정리 — 第一章~第八章 체계 중 네 번째(제1장 주석 참고).
@@ -572,9 +642,14 @@ function buildChapterLove(appData: AppData, gender: "male" | "female"): ChapterL
     sections: [
       { heading: "① 나는 사랑할 때 어떤 사람인가", body: approach.paragraphs.map((p) => p.text) },
       { heading: "② 이상하게 마음이 가는 사람에는 이유가 있다", body: attraction.paragraphs.map((p) => p.text) },
-      { heading: "③ 사랑에서 자꾸 반복되는 장면", body: repeating.paragraphs.map((p) => p.text) },
-      { heading: "④ 내 인연이 머무는 자리", body: stability.paragraphs.map((p) => p.text) },
-      { heading: "⑤ 인연의 흐름이 움직이는 때", body: timingNarrative.paragraphs.map((p) => p.text) },
+      { heading: "③ 관계가 깊어졌을 때의 나", body: deepening.paragraphs.map((p) => p.text) },
+      { heading: "④ 사랑에서 자꾸 반복되는 장면", body: repeating.paragraphs.map((p) => p.text) },
+      { heading: "⑤ 내가 사랑에서 상처받는 지점", body: hurtPoint.paragraphs.map((p) => p.text) },
+      { heading: "⑥ 내 인연이 머무는 자리", body: stability.paragraphs.map((p) => p.text) },
+      { heading: "⑦ 배우자·동반자 관계", body: spousePartner.paragraphs.map((p) => p.text) },
+      { heading: "⑧ 인연의 흐름이 움직이는 때", body: timingNarrative.paragraphs.map((p) => p.text) },
+      { heading: "⑨ 앞으로 사랑이 편해지는 방법", body: goingForward.paragraphs.map((p) => p.text) },
+      ...sipseongSections,
     ],
   };
 }
@@ -599,12 +674,41 @@ function buildChapterLifeTransition(appData: AppData): ChapterLifeTransitionCont
 }
 
 /**
+ * 「10년 흐름」 그래프 전용 표시 계층 변환 — tenYearNarrative.ts의
+ * scoreYear() 원값(TenYearItem.rawScore)을 그대로 받아, 이 사람의 10년
+ * 안에서만 비교할 수 있도록 0~100으로 min-max 재배율한다.
+ *
+ * 이건 명리 판단이 아니다 — scoreYear() 자체(무엇을 세는지, 합/충/형/
+ * 전환/대운일치를 어떻게 합산하는지)는 tenYearNarrative.ts에 그대로
+ * 있고 한 글자도 안 건드렸다. 여기서는 이미 나온 숫자들의 "눈금"만
+ * 화면에 읽기 좋게 다시 그린다.
+ *
+ * - 10개 값이 전부 같으면(신호 밀도 차이가 없으면) 임의로 고저를
+ *   지어내지 않고 전부 50(중간)으로 둔다.
+ * - 음수/0/극단값은 min-max 정규화 특성상 자연스럽게 처리된다(그 자체가
+ *   상대적 위치이므로 부호나 절댓값 크기는 결과에 영향 없음).
+ * - undefined/NaN처럼 방어적으로만 있을 수 있는 값은 0으로 취급해
+ *   계산이 깨지지 않게 한다(정상 흐름에서는 buildTenYearNarrative가
+ *   항상 값을 채워 넣으므로 실제로는 발생하지 않음).
+ */
+function buildFlowIntensity(rawScores: (number | undefined)[]): number[] {
+  const safe = rawScores.map((s) => (typeof s === "number" && Number.isFinite(s) ? s : 0));
+  if (safe.length === 0) return [];
+  const min = Math.min(...safe);
+  const max = Math.max(...safe);
+  if (max === min) return safe.map(() => 50);
+  return safe.map((s) => Math.round(((s - min) / (max - min)) * 100));
+}
+
+/**
  * "앞으로의 10년" ① 여는 글~④ 마지막 조언 — 이미 승인·동결된
  * tenYearNarrative.ts의 buildTenYearNarrative()를 그대로 호출해 문단만
- * 옮겨 담는다. 새 계산·새 문장 없음.
+ * 옮겨 담는다. 새 계산·새 문장 없음. flowIntensity만 위 buildFlowIntensity()
+ * 로 추가 변환한다(표시 전용, 새 명리 판단 아님).
  */
 function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
   const ty = buildTenYearNarrative(appData);
+  const flowIntensities = buildFlowIntensity(ty.items.map((it) => it.rawScore));
 
   return {
     // 장 번호 통합 정리 — 第一章~第八章 체계 중 일곱 번째(제1장 주석 참고).
@@ -615,7 +719,7 @@ function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
       range: s.startYear === s.endYear ? `${s.startYear}년` : `${s.startYear}–${s.endYear}년`,
       summary: s.summary,
     })),
-    items: ty.items.map((it) => ({
+    items: ty.items.map((it, i) => ({
       year: it.year,
       age: it.age,
       ganZhiHanja: it.ganZhiHanja,
@@ -623,6 +727,8 @@ function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
       coreSignal: it.coreSignal,
       narrative: it.narrative,
       area: it.area,
+      isTransitionYear: it.isTransitionYear,
+      flowIntensity: flowIntensities[i],
     })),
     highlights: ty.highlights,
     closing: ty.closing,
@@ -826,6 +932,17 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
         }
       : undefined;
 
+  // 第五章(재물운) 구조 개편 — 새 명리 판단 없이 위에서 이미 계산해 둔
+  // chapterFourKey/wealthObstructionResult와 같은 원천을 다시 읽기만
+  // 한다(다른 파일들과 동일 패턴). assembleWealthChapterSections 내부가
+  // buildChapterFourKey/analyzeWealthObstruction을 스스로 재호출한다.
+  // chapterFourContent(publicPreview/lockedDetail/glossedInIntro)는
+  // chapters[3] 조립 때 쓴 것과 같은 순수함수를 다시 불러 얻는다 — 값은
+  // 100% 동일하고, chapters[3]/chapterFive/chapterSix 필드 자체는
+  // PDF 등 다른 소비자를 위해 이 아래에서도 그대로 유지된다.
+  const chapterFourContentForInsight = buildChapterFourNarrative(appData, buildChapterFourKey(appData));
+  const wealthInsight = assembleWealthChapterSections(appData, chapterFourContentForInsight, chapterFive, chapterSix);
+
   return {
     userName: user.name,
     summaryTitle: user.typeLabel,
@@ -844,6 +961,11 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     chapterTenYear: buildChapterTenYear(appData),
     chapterFive,
     chapterSix,
+    chapterWealthInsight: wealthInsight,
+    chapterLifeTransitionInsight: generateLifeTransitionInsightNarrative(appData),
     gwiinSinsalSection: buildGwiinSinsalSection(user),
+    chapterOneDeep: buildChapterOneDeepNarrative(appData),
+    chapterTwoDeep: buildChapterTwoDeepNarrative(appData),
+    chapterThreeDeep: buildChapterThreeDeepNarrative(appData),
   };
 }

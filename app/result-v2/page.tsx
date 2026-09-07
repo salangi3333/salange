@@ -58,12 +58,16 @@ export default function ResultV2Page({
 }) {
   const intake = parseIntakeFromQuery(searchParams);
   if (intake) {
-    // [임시 QA용, 검수 끝나면 제거] &paid=1 을 붙이면 유료 화면(제4~8장
-    // 포함)을 미리 볼 수 있다. 이 파일은 이미 자체 주석대로 "개발/QA용"
-    // 진입 경로이고, 실제 결제 판정(lib/orderStore.ts의 isReportPaid,
-    // app/result-v2/[reportId]/page.tsx)은 전혀 건드리지 않는다 — 그쪽은
-    // 여전히 DB(orders 테이블)만 보고 결제 여부를 판정한다.
-    const previewPaid = readParam(searchParams, "paid") === "1";
+    // [보안 수정, 2026-09] 예전에는 &paid=1 쿼리로 이 자리에서 바로 유료
+    // 화면(제4~8장)을 열 수 있었다 — DB(orders 테이블) 조회 없이 URL
+    // 파라미터 하나로 유료 콘텐츠가 풀리는 구조라 프로덕션에 그대로
+    // 나가면 안 되는 결제 우회였다(Toss 결제 인프라 조사에서 A등급으로
+    // 확인). 이 경로(쿼리스트링 진입)는 실제 결제 판정 대상이 아니므로
+    // isPaid는 항상 false로 고정한다 — 쿼리 파라미터로는 어떤 값을 넣어도
+    // 유료 권한이 생기지 않는다. 실제 결제 해금은 여전히
+    // app/result-v2/[reportId]/page.tsx가 DB(orders 테이블, PAID 상태)만
+    // 보고 판정하며, 이 파일은 그 판정 로직을 전혀 건드리지 않는다.
+    //
     // 쿼리스트링은 폼 검증을 거치지 않고 바로 들어오는 경로라, 여기서도
     // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 수 있다 — 그 경우
     // 화면이 깨지는 대신 안내 문구만 보여준다(개발/테스트용 진입 경로라
@@ -72,7 +76,7 @@ export default function ResultV2Page({
       return (
         <ResultLandingV2
           report={buildReportResult(buildAppData(intake), intake.gender)}
-          isPaid={previewPaid}
+          isPaid={false}
         />
       );
     } catch (e) {

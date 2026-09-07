@@ -171,6 +171,15 @@ export interface ChapterOneNarrative {
   temperament: string[];
 }
 
+/** "목" / "목과 화" / "목·화·수" 식으로 오행 라벨 여러 개를 자연스럽게
+ * 묶는다 — 동률(공동 최고/공동 최저) 오행이 2개 이상일 때만 쓰인다.
+ * 새 명리 판단이 아니라 이미 정해진 라벨을 나열 규칙대로 잇는 것뿐이다. */
+function joinElementLabels(labels: string[]): string {
+  if (labels.length <= 1) return labels[0] ?? "";
+  if (labels.length === 2) return `${labels[0]}과 ${labels[1]}`;
+  return `${labels.slice(0, -1).join("·")}과 ${labels[labels.length - 1]}`;
+}
+
 export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative {
   const { user, chars } = appData;
   const name = user.name;
@@ -188,21 +197,47 @@ export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative 
   );
 
   const dayLabel = ELEMENT_LABEL[dayElement];
-  const weakestLabel = ELEMENT_LABEL[elementAnalysis.weakest];
   const dayCount = elementAnalysis.counts[dayElement];
 
-  if (dayElement === elementAnalysis.strongest) {
+  // 오행 최고/최저 동률 판정 — buildElementAnalysis()가 이미 계산해 둔
+  // counts(계산 엔진 결과, 손대지 않음)만 읽는다. strongest/weakest
+  // 필드는 동률일 때 그중 하나만 임의로 골라 담기 때문에(단일값), 그
+  // 필드로 dayElement를 비교하면 동률인데도 "가장 적다/많다"고 단정하는
+  // 문장이 나오거나, dayElement가 실제로는 동률의 일원인데도 엉뚱하게
+  // "적당히 자리한다" 문장으로 빠지는 경우가 생긴다. 그래서 여기서는
+  // counts의 최댓값/최솟값과 그 값을 가진 오행 전부를 직접 구해 판정한다.
+  const elementOrder = Object.keys(elementAnalysis.counts) as Element[]; // 목화토금수 고정 순서
+  const countValues = elementOrder.map((el) => elementAnalysis.counts[el]);
+  const maxCount = Math.max(...countValues);
+  const minCount = Math.min(...countValues);
+  // 5개 오행 개수가 전부 같은 극단 케이스 — 이때는 "가장 많다/적다" 자체가
+  // 성립하지 않으므로 강/약 판정을 하지 않고 아래 else(균형) 문장으로 둔다.
+  const isFullyEven = maxCount === minCount;
+  const strongestElements = elementOrder.filter((el) => elementAnalysis.counts[el] === maxCount);
+  const weakestElements = elementOrder.filter((el) => elementAnalysis.counts[el] === minCount);
+  const dayIsStrongest = !isFullyEven && dayCount === maxCount;
+  const dayIsWeakest = !isFullyEven && dayCount === minCount;
+
+  if (dayIsStrongest) {
+    const weakestLabelClause = joinElementLabels(weakestElements.map((el) => ELEMENT_LABEL[el]));
     const weakestClause =
-      elementAnalysis.counts[elementAnalysis.weakest] === 0
-        ? `${weakestLabel} 기운은 한 글자도 없습니다`
-        : `${weakestLabel} 기운은 상대적으로 옅게 자리합니다`;
+      minCount === 0
+        ? `${weakestLabelClause} 기운은 한 글자도 없습니다`
+        : `${weakestLabelClause} 기운은 상대적으로 옅게 자리합니다`;
     identity.push(
       `그런데 이 기운은 혼자 놓여 있지 않습니다. 사주 전체에 ${dayLabel} 기운이 유독 짙게 깔려 있고, ${weakestClause}. 그래서 타고난 기운이 옅어지지 않고 오히려 뚜렷하게 드러나는 편입니다.`
     );
-  } else if (dayElement === elementAnalysis.weakest) {
-    identity.push(
-      `그런데 사주 전체를 보면 오히려 ${dayLabel} 기운이 가장 적습니다. 흔치 않은 만큼, 이 기운이 있는 자리마다 존재감이 또렷하게 남는 편입니다.`
-    );
+  } else if (dayIsWeakest) {
+    if (weakestElements.length === 1) {
+      identity.push(
+        `그런데 사주 전체를 보면 오히려 ${dayLabel} 기운이 가장 적습니다. 흔치 않은 만큼, 이 기운이 있는 자리마다 존재감이 또렷하게 남는 편입니다.`
+      );
+    } else {
+      const tiedLabel = joinElementLabels(weakestElements.map((el) => ELEMENT_LABEL[el]));
+      identity.push(
+        `그런데 사주 전체를 보면 오히려 ${tiedLabel} 기운이 함께 가장 적은 편입니다. 흔치 않은 만큼, 이 기운들이 있는 자리마다 존재감이 또렷하게 남는 편입니다.`
+      );
+    }
   } else {
     identity.push(
       `여덟 글자 중 ${dayLabel} 기운은 ${dayCount}개로, 아주 많지도 적지도 않게 자리하고 있습니다. 그만큼 다른 기운들과 비교적 균형 있게 섞여 있는 구조입니다.`

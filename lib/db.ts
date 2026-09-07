@@ -28,6 +28,16 @@ export function getSql(): NeonQueryFunction<false, false> {
       "DATABASE_URL이 설정되어 있지 않습니다. Vercel의 Neon 연동(Storage 탭)을 확인하세요."
     );
   }
-  cachedSql = neon(url);
+  // [버그 수정, 2026-09] Toss 결제 E2E 검증 중 발견 — neon()이 내부적으로
+  // 쓰는 fetch() 호출이 Next.js의 기본 fetch 캐시(Data Cache)에 걸려, 결제
+  // 전에 조회된 "PAID 아님" 결과가 실제 결제 완료 후에도 계속 재사용되는
+  // 문제가 있었다(App Router 라우트 단위 `force-dynamic`만으로는 이 앱의
+  // 모든 DB 호출 경로를 다 못 막는 것으로 실측 확인됨 — 서버 프로세스가
+  // 살아있는 동안 새 reportId마다 계속 재현됨). fetchOptions는 neon()이
+  // fetch()에 전달하는 옵션에 그대로 병합되는 공식 지원 옵션(타입:
+  // HTTPTransactionOptions.fetchOptions)이라, 여기서 `cache: "no-store"`를
+  // 강제해 이 앱의 모든 DB 쿼리가 항상 최신 상태를 읽도록 한다 — 쿼리
+  // 내용/트랜잭션/재시도 로직은 전혀 바뀌지 않는다.
+  cachedSql = neon(url, { fetchOptions: { cache: "no-store" } });
   return cachedSql;
 }

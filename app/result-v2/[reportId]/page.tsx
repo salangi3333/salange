@@ -19,6 +19,19 @@ export const metadata: Metadata = {
 };
 
 /**
+ * [버그 수정, 2026-09] Toss 결제 E2E 검증 중 발견 — 이 페이지가 결제 전에
+ * 한 번이라도 렌더링되면, 아래 isReportPaid()가 내부적으로 쓰는
+ * @neondatabase/serverless(neon() HTTP 드라이버)의 fetch() 호출이 Next.js
+ * 기본 fetch 캐시(Data Cache)에 걸려 "PAID 아님" 응답이 캐싱된다. 이후 실제
+ * 결제가 완료돼 DB가 PAID로 바뀌어도, 캐시된 옛 응답이 재사용돼 같은
+ * reportId를 새로고침해도 계속 무료 화면으로 보이는 문제가 있었다.
+ * `force-dynamic`은 이 라우트의 모든 fetch를 `cache: "no-store"`와 동일하게
+ * 만들어 매 요청마다 DB를 다시 조회하게 한다 — Toss confirm/orderStore 등
+ * 다른 로직은 전혀 건드리지 않는다.
+ */
+export const dynamic = "force-dynamic";
+
+/**
  * DB + reportId + 영구 재접속 구조의 핵심 route.
  *
  * 여기서 사주 계산 로직을 새로 만들지 않는다 — DB에서 저장된 입력값을

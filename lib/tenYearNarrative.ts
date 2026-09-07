@@ -44,6 +44,17 @@ export interface TenYearItem {
   /** 화면에 노출하지 않는 근거 추적용 — 어떤 세운 십성/관계 신호로 이
    * 문단이 조립됐는지. UI는 이 필드를 읽지 않는다. */
   sourceNote: string;
+  /** scoreYear()가 이미 계산해 온 "이 해에 겹치는 명리 신호(합·충·형·
+   * 대운전환·대운일치)의 개수" 원값 그대로. 이 값 자체는 좋음/나쁨이
+   * 아니라 신호 밀도이고, 계산 로직(scoreYear)은 이 필드를 추가하며
+   * 전혀 건드리지 않았다 — 이미 있던 값을 표시 계층(reportMapper.ts)에
+   * 전달하기 위해 항목에 실어 보내는 것뿐이다. reportMapper.ts에서
+   * "이 사람의 10년 안에서"만 0~100으로 재배율(min-max)해 화면에 쓴다.
+   * buildYearItem() 시점에는 아직 값이 없어(scoreYear는 항목 전체가
+   * 조립된 뒤에야 호출됨) 선택적 필드로 두고, buildTenYearNarrative()
+   * 마지막에 채워 넣는다 — scoreYear/buildSegments/buildHighlights의
+   * 기존 시그니처(TenYearItem 그대로)는 전혀 바꾸지 않기 위한 선택이다. */
+  rawScore?: number;
 }
 
 export interface TenYearSegment {
@@ -179,11 +190,6 @@ function termDisplay(term: string): string {
   return hanja ? `${term}(${hanja})` : term;
 }
 
-function firstSentence(text: string): string {
-  const idx = text.indexOf(".");
-  return (idx >= 0 ? text.slice(0, idx + 1) : text).trim();
-}
-
 /** ③ "특히 기억할 시기" 전용 — 세운 지지/천간이 원국·대운의 어느 기둥과
  * 관계를 맺었는지를 사람이 읽는 말로 바꾼다. 새 명리 관계가 아니라
  * SeunKey.natalRelations 등에 이미 있는 stage 값만 문구로 옮긴다. */
@@ -274,7 +280,16 @@ function buildYearItem(
     parts.push("게다가 이 흐름은 배우자 자리와도 맞물려 있어, 가까운 사람과의 관계에서도 비슷한 결의 신호가 함께 움직일 수 있습니다.");
   }
   if (axisMatch) {
-    parts.push("이 힘은 원래도 이 사람을 가장 크게 움직여온 축이라, 다른 해보다 유독 선명하고 낯설지 않게 느껴질 수 있습니다.");
+    // "다른 해보다 유독 선명하고"(비교급 표현)는 그래프의 flowIntensity(신호
+    // 밀도, 이 사람의 10년 안에서만 상대 비교)와 별개 축인데도 "이 해가
+    // 다른 해보다 두드러진다"는 인상을 준다 — axisMatch는 scoreYear()
+    // 합산에 들어가지 않는 신호라, 실제로 flowIntensity가 이 사람의 10년
+    // 중 가장 낮은 해에도 axisMatch만 켜지는 경우가 있다(출시 전 정밀 QA,
+    // 그래프↔본문 일관성 점검에서 발견). 판정(axisMatch)과 "낯설지 않다/
+    // 익숙하다"는 사실은 그대로 두고, 그래프와 충돌해 보일 수 있는 비교급
+    // 표현만 뺐다 — 익숙함은 flowIntensity와 무관하게 항상 성립하는
+    // 주관적 느낌이라 그래프 수치와 부딪힐 일이 없다.
+    parts.push("이 힘은 원래도 이 사람을 가장 크게 움직여온 축이라, 낯설지 않고 익숙하게 느껴질 수 있습니다.");
   }
   if (selfPunish) {
     parts.push("같은 자리끼리 부딪히는 결이 겹쳐 있어, 밖으로 벌이는 것보다 안에서 스스로와 부대끼며 정리하는 데 더 마음이 쓰이는 해이기도 합니다.");
@@ -474,12 +489,20 @@ function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[])
 
     const whyClause = buildWhyClause(item.isTransitionYear, evidence, dayunTier);
     const rankClause = buildRankClause(score, scores);
-    const realLifeClause = firstSentence(entry.core);
+    // realLifeClause(entry.core의 첫 문장)는 삭제됨(2026-09 출시 전 정밀
+    // QA에서 발견) — 이 문장이 바로 위 ②(연도별 흐름)에서 같은 해의
+    // 서술로 이미 토씨 하나 안 틀리고 나온 뒤라, 여기서 다시 그대로
+    // 인용하면 "방금 읽은 문장을 또 읽는" 순수 복붙이 된다. ③의 역할은
+    // "이 해가 왜 유독 눈에 띄는가"(whyClause·rankClause, ②에는 없는
+    // 새 정보)이지 그 해의 장면을 재서술하는 것이 아니므로, 그 부분만
+    // 지웠다. entry.action(실전 팁)은 ②에도 나오지만 "그래서 이 해엔
+    // 이렇게" 하는 실용적 마무리로 남겨둔다(첫 문장 재서술과 달리 새로운
+    // 정보 없이도 요약 시점에 다시 언급할 가치가 있는 조언이라 판단).
     const transitionClause = item.isTransitionYear
       ? " 이 해를 기점으로 앞서 이어지던 방식과는 결이 달라지므로, 익숙했던 방식을 그대로 끌고 가기보다 새로 맞춰가는 자세가 필요합니다."
       : "";
 
-    const reason = `${item.year}년은 ${whyClause}입니다. ${rankClause} ${realLifeClause}${transitionClause} ${entry.action}`;
+    const reason = `${item.year}년은 ${whyClause}입니다. ${rankClause}${transitionClause} ${entry.action}`;
 
     return { year: item.year, reason };
   });
@@ -556,10 +579,15 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
   const segments = buildSegments(items, periodsByYear);
   const highlights = buildHighlights(items, scores, sks);
 
+  // scoreYear()가 이미 계산해 둔 원값을 각 항목에 실어 보낸다 — scoreYear
+  // 자체의 계산식은 위 한 줄(scores = items.map(...))에서 이미 끝났고,
+  // 여기서는 그 결과를 항목에 붙이기만 한다(새 계산 없음).
+  const itemsWithScore: TenYearItem[] = items.map((item, i) => ({ ...item, rawScore: scores[i] }));
+
   return {
     intro: buildIntro(segments),
     segments,
-    items,
+    items: itemsWithScore,
     highlights,
     closing: buildClosing(segments, highlights),
   };

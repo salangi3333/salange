@@ -182,12 +182,45 @@ const BRANCH_TEXT: Record<TopBranch, Record<SubtypeFocus, FocusText>> = {
   },
 };
 
+/**
+ * 深化(2026-09, 승인된 확장) — 새 신호를 추가하지 않는다. 이미 계산된
+ * branch(exposure×isDayBranch)와 shape(visible/rooted/hidden 우세)를
+ * "다른 질문"에 한 번씩 더 적용해, 성향 설명 하나로 끝나지 않고
+ * 초반 행동 → 표현·속마음 차이 → 필요로 하는 안정감/거리감까지
+ * 이어지게 한다. branch 축은 이미 BRANCH_TEXT(scene/conclusion)가
+ * 쓰고 있어 같은 갈래를 "다른 국면"에 다시 쓰는 것뿐이고, shape 축은
+ * 이 챕터에서 지금까지 결론 보강에만 쓰였는데 여기서 "표현과 속마음의
+ * 차이"라는, 원래 shape가 의미하는 것과 정확히 맞아떨어지는 질문에
+ * 처음 정면으로 쓴다.
+ */
+const EARLY_BEHAVIOR_BY_BRANCH: Record<TopBranch, string> = {
+  본연: "호감이 생긴 초반에는 굳이 애쓰지 않고 원래 하던 대로 다가갑니다. 먼저 말을 걸거나 약속을 잡는 것도 평소 사람을 대하던 방식 그대로라, 상대 입장에서는 '이 사람이 나한테 관심이 있는 건가' 싶다가도 자연스러워서 부담스럽지 않게 느껴지기 쉽습니다.",
+  맥락: "호감이 생긴 초반에는 평소보다 눈에 띄게 다른 모습이 나옵니다. 말수가 늘거나, 먼저 연락하는 빈도가 잦아지거나, 평소라면 안 하던 행동을 하게 되는 식입니다. 주변 사람이 먼저 변화를 알아챌 정도로 티가 나는 경우도 있습니다.",
+  숨음: "호감이 생긴 초반에는 겉으로 거의 드러나지 않습니다. 먼저 다가가기보다 그 사람이 있는 자리에 자연스럽게 있으려 하거나, 대화 몇 마디를 유심히 기억해두는 식으로 조용히 마음을 쌓아갑니다. 상대는 한참 뒤에야 그 마음을 눈치채는 경우가 많습니다.",
+};
+
+const NEED_BY_BRANCH: Record<TopBranch, string> = {
+  본연: "이 사람에게 필요한 건 매번 확인받는 안정감이 아니라, 평소 모습 그대로 있어도 괜찮다는 여유입니다. 관계를 위해 억지로 다른 사람이 되지 않아도 되는 거리감에서 가장 편안해집니다.",
+  맥락: "이 사람에게 필요한 건, '평소의 나'와 '사랑할 때의 나'가 다르다는 걸 이상하게 보지 않고 자연스럽게 받아들여 주는 안정감입니다. 그 낙차 자체를 설명하지 않아도 되는 관계에서 편해집니다.",
+  숨음: "이 사람에게 필요한 건 표현을 재촉받지 않는 거리감입니다. 마음을 확인하기까지 걸리는 시간을 조급하게 채근하지 않고 곁을 지켜주는 관계에서, 서서히 마음을 더 열게 됩니다.",
+};
+
+const EXPRESSION_GAP_BY_SHAPE: Record<ExposureShape, string> = {
+  visible: "속으로 느끼는 것과 겉으로 드러나는 것 사이에 시차가 거의 없는 편입니다. 마음이 움직이면 표정이나 말투에 비교적 빨리 묻어나서, 굳이 캐묻지 않아도 상대가 먼저 알아차리는 경우가 많습니다.",
+  rooted: "겉으로 확 티가 나는 편은 아니지만, 속에서는 그 마음이 쉽게 식지 않고 꾸준히 이어집니다. 처음엔 무심해 보여도 시간이 지날수록 한결같다는 인상을 주게 됩니다.",
+  hidden: "속으로 느끼는 것과 겉으로 드러나는 것 사이에 꽤 큰 차이가 있습니다. 마음은 분명히 움직이고 있는데 표정이나 말로는 거의 새어 나오지 않아서, 스스로도 답답하고 상대도 알아채기 어려운 경우가 많습니다.",
+  none: "속으로 느끼는 것과 겉으로 드러나는 정도가 상황에 따라 그때그때 달라지는 편이라, 한 가지 패턴으로 딱 잘라 말하기는 어렵습니다.",
+};
+
 function buildBranchParagraphs(branch: TopBranch, focus: SubtypeFocus, shape: ExposureShape, noteHead: string): NarrativeParagraph[] {
   const t = BRANCH_TEXT[branch][focus];
   const clause = shapeClauseFor(branch, shape);
   const conclusion = conclusionFor(branch, focus, shape, t.conclusion);
   return [
     { text: `${t.scene}${clause}`, sourceNote: `${noteHead}, focus=${focus}, shape=${shape}` },
+    { text: EARLY_BEHAVIOR_BY_BRANCH[branch], sourceNote: `초반행동(branch=${branch})` },
+    { text: EXPRESSION_GAP_BY_SHAPE[shape], sourceNote: `표현-속마음 차이(shape=${shape})` },
+    { text: NEED_BY_BRANCH[branch], sourceNote: `필요한 안정감/거리감(branch=${branch})` },
     { text: conclusion, sourceNote: `${branch} 결론(focus=${focus}, shape=${shape})` },
   ];
 }

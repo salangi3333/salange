@@ -288,7 +288,15 @@ function buildShakingParagraph(key: ChapterFourKey): string {
     );
   }
   if (is_.leadCategory === "인성" && is_.gapTier !== "비슷") {
-    clauses.push("또한 안정과 신뢰를 우선하는 힘이 만들어내는 힘을 눌러, 적극적으로 벌이기보다 신중하게 멈춰 서는 순간이 잦습니다.");
+    // 앞의 두 분기(283행 gb 케이스와 동일 패턴) — 이 문장이 유일한
+    // clause일 때 "또한"으로 시작하면 앞 문장 없이 갑자기 이어지는
+    // 접속사처럼 읽힌다(第五章 최종 문장 편집 QA에서 발견, 연결 표현만
+    // 최소 수정). 판정 조건은 그대로다.
+    clauses.push(
+      clauses.length === 0
+        ? "안정과 신뢰를 우선하는 힘이 만들어내는 힘을 눌러, 적극적으로 벌이기보다 신중하게 멈춰 서는 순간이 잦습니다."
+        : "또한 안정과 신뢰를 우선하는 힘이 만들어내는 힘을 눌러, 적극적으로 벌이기보다 신중하게 멈춰 서는 순간이 잦습니다."
+    );
   }
   if (clauses.length === 0) {
     clauses.push("뚜렷하게 흔드는 힘은 없지만, 그만큼 재물을 적극적으로 키우는 힘도 크지 않아 큰 변화 없이 완만하게 흘러가는 구조입니다.");
@@ -490,6 +498,9 @@ export interface ChapterFourContent {
   lockedDetail: string[];
   /** 항상 노출되는 카드 한 줄(궁금증 유지용, 결론 아님) */
   highlight: string;
+  /** publicPreview 안에서 이미 뜻풀이가 나온 십성 목록(제五章 구조
+   * 개편에서 중복 뜻풀이 방지용으로만 참고). */
+  glossedInIntro: string[];
 }
 
 /** 4장 첫 훅 — 1~3장(성격·기질·삶의 방식)에서 벗어나 처음으로 "돈" 이야기로
@@ -520,6 +531,14 @@ export function buildChapterFourNarrative(appData: AppData, key: ChapterFourKey)
     if (boost) publicPreview[0] = `${publicPreview[0]}${boost}`;
   }
 
+  // 第五章 재물운 구조 개편(2026-09, 승인된 작업)에서 재사용 — publicPreview
+  // 안에서 이미 뜻풀이(glossOnFirstUse)가 나온 십성 목록을 스냅샷해둔다.
+  // wealthInsightNarrative.ts가 같은 십성을 "돈을 움직이는 나의 십성"에서
+  // 다시 고를 때, 뜻을 또 설명하지 않고 바로 "이 명식에서 어떻게
+  // 작동하는가"로 넘어가기 위한 참고용 목록일 뿐 — 이 함수의 반환 텍스트
+  // 자체(publicPreview/lockedDetail 문장)는 한 글자도 바뀌지 않는다.
+  const glossedInIntro = [...usedTerms];
+
   // 고정 훅은 길이 보강 로직(위) 이후에 맨 앞으로 붙인다 — 400자 기준
   // 판단은 항상 "실제 계산된 근거 문단들"만으로 하고(훅은 사람마다 안
   // 바뀌므로 여기 포함시키지 않는다), 화면에는 훅 → 근거 순서로 보인다.
@@ -533,5 +552,5 @@ export function buildChapterFourNarrative(appData: AppData, key: ChapterFourKey)
 
   const highlight = buildHighlight();
 
-  return { title, killpoint, publicPreview, lockedDetail, highlight };
+  return { title, killpoint, publicPreview, lockedDetail, highlight, glossedInIntro };
 }
