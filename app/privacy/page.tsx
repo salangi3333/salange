@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
           <li><Todo>이전 시기 및 방법(예: 실시간 네트워크 전송 여부 등)의 정확한 기술적 서술</Todo></li>
           <li><Todo>이전 항목별 보유·이용기간(제3조 확정 이후 연동)</Todo></li>
           <li><Todo>국외 이전에 대한 법적 근거 및 별도 동의 필요 여부 — 「개인정보 보호법」 제28조의8 요건 충족 여부를 법률 자문을 통해 확인 필요</Todo></li>
-          <li><Todo>관련 문의를 받을 연락처</Todo></li>
+          <li>관련 문의: 전화 010-8315-3338 · 이메일 jrina5632@naver.com</li>
         </ul>
       </Section>
 
@@ -199,9 +199,9 @@ export default function PrivacyPolicyPage() {
           <li>개인정보 처리정지 요구권</li>
         </ul>
         <p>
-          현재 별도의 회원가입·마이페이지 기능은 없으므로, 권리 행사는{" "}
-          <Todo>고객센터 이메일/연락처</Todo>로 문의해주시면 본인 확인 후
-          지체 없이 처리합니다.
+          현재 별도의 회원가입·마이페이지 기능은 없으므로, 권리 행사는
+          아래 고객센터(전화 010-8315-3338, 이메일 jrina5632@naver.com)로
+          문의해주시면 본인 확인 후 지체 없이 처리합니다.
         </p>
       </Section>
 
@@ -236,7 +236,7 @@ export default function PrivacyPolicyPage() {
               </tr>
               <tr>
                 <Th>연락처</Th>
-                <Td><Todo>이메일 / 전화번호</Todo></Td>
+                <Td>010-8315-3338 · jrina5632@naver.com</Td>
               </tr>
             </tbody>
           </table>

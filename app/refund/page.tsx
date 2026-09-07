@@ -89,9 +89,11 @@ export default function RefundPage() {
 
       <Section title="환불 처리 방법 및 고객센터 접수">
         <p>
-          환불이 필요한 경우 <Todo>고객센터 이메일/연락처</Todo>로 결제 정보와
-          함께 문의해주시면 확인 후 안내해드립니다.
+          환불이 필요한 경우 아래 고객센터로 결제 정보와 함께 문의해주시면
+          확인 후 안내해드립니다.
         </p>
+        <p>전화: 010-8315-3338</p>
+        <p>이메일: jrina5632@naver.com</p>
       </Section>
 
       <Footer />
