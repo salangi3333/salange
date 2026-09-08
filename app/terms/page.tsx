@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Todo from "@/components/legal/Todo";
 import Footer from "@/components/Footer";
 
 /**
@@ -41,7 +40,7 @@ function Article({
 export default function TermsPage() {
   return (
     <main className="mx-auto min-h-screen max-w-content px-6 py-16">
-      <p className="text-sm text-textSub">시행일: <Todo>서비스 오픈일 확정 후 기재</Todo></p>
+      <p className="text-sm text-textSub">시행일: 서비스 정식 오픈일에 시행됩니다.</p>
       <h1 className="mt-2 font-serif-kr text-2xl font-bold text-textMain">이용약관</h1>
 
       <Article no="제1조" title="목적">
@@ -109,11 +108,9 @@ export default function TermsPage() {
       <Article no="제8조" title="유료 서비스 및 결제">
         <p>현재 확정된 유료 리포트 판매가격은 29,800원입니다.</p>
         <p>
-          결제는 TossPayments를 통해 제공됩니다.{" "}
-          <Todo>
-            구체적인 결제수단 구성은 서비스 정식 오픈 시점에 확정하여
-            반영합니다. 정식 오픈 전까지는 실제 결제가 제공되지 않습니다.
-          </Todo>
+          결제는 결제대행사 TossPayments를 통해 제공되는 신용·체크카드 및
+          회사가 제공하는 전자결제수단으로 진행됩니다. 정식 오픈 전까지는
+          실제 결제가 제공되지 않습니다.
         </p>
       </Article>
 

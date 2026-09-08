@@ -51,7 +51,7 @@ function Td({ children }: { children: React.ReactNode }) {
 export default function PrivacyPolicyPage() {
   return (
     <main className="mx-auto min-h-screen max-w-content px-6 py-16">
-      <p className="text-sm text-textSub">시행일: <Todo>서비스 오픈일 확정 후 기재</Todo></p>
+      <p className="text-sm text-textSub">시행일: 서비스 정식 오픈일에 시행됩니다.</p>
       <h1 className="mt-2 font-serif-kr text-2xl font-bold text-textMain">개인정보처리방침</h1>
       <p className="mt-4 text-[15px] leading-[1.9] text-textSub">
         코다온(이하 "회사")는 「개인정보 보호법」 제30조에 따라
@@ -66,11 +66,12 @@ export default function PrivacyPolicyPage() {
           <li>이용자가 입력한 생년월일시·성별 정보를 바탕으로 한 사주 계산</li>
           <li>개인화된 팔자문 리포트의 생성 및 제공</li>
           <li>발급된 리포트를 이후에도 동일한 링크로 다시 열람할 수 있도록 하는 재열람 기능</li>
+          <li>유료 리포트 결제 처리(TossPayments를 통한 결제 진행·승인 및 주문 확인)</li>
           <li>서비스 운영 및 오류 대응에 필요한 최소한의 처리</li>
         </ul>
         <p className="text-xs">
           위 목적 외의 용도(예: 마케팅, 제3자 제공 등)로는 이용하지 않습니다. 현재
-          회원가입, 결제, 광고 발송 기능이 없으므로 관련 목적은 기재하지 않았습니다.
+          회원가입, 광고 발송 기능이 없으므로 관련 목적은 기재하지 않았습니다.
         </p>
       </Section>
 
@@ -83,11 +84,12 @@ export default function PrivacyPolicyPage() {
           <li>윤달 여부</li>
           <li>생년월일</li>
           <li>출생시간 (입력하지 않을 수 있으며, 이 경우 "시간 모름"으로 처리)</li>
+          <li>결제 시 생성되는 주문번호, 결제금액, 결제상태, 결제일시</li>
         </ul>
         <p className="text-xs">
-          주민등록번호, 주소, 전화번호, 카드번호, 계좌번호, 건강정보 등은 수집하지
-          않습니다. 결제 기능 도입 시 추가로 수집되는 항목은 그 시점에 본 방침을
-          개정하여 반영합니다 — 현재는 수집하지 않습니다.
+          주민등록번호, 주소, 전화번호, 건강정보 등은 수집하지 않습니다. 카드번호·
+          계좌번호 등 결제수단 정보는 결제대행사인 TossPayments가 직접 처리하며,
+          회사는 이를 전달받거나 저장하지 않습니다.
         </p>
       </Section>
 
@@ -100,8 +102,9 @@ export default function PrivacyPolicyPage() {
         </p>
         <p>
           <Todo>
-            결제 관련 기록의 보유기간 — 현재 결제 기능이 없어 해당 없음. 결제
-            기능 도입 시 전자상거래법 등 관계 법령에 따른 기간을 확인해 반영합니다.
+            결제 관련 기록(주문번호, 결제금액, 결제상태, 결제일시)의 보유기간 —
+            「전자상거래 등에서의 소비자보호에 관한 법률」 등 관계 법령에 따른
+            구체적 기간을 확인해 반영합니다.
           </Todo>
         </p>
         <p className="text-xs">
@@ -147,6 +150,11 @@ export default function PrivacyPolicyPage() {
               <tr>
                 <Td>Neon, Inc.</Td>
                 <Td>리포트 데이터베이스(PostgreSQL) 저장 및 관리</Td>
+                <Td>서비스 이용 기간</Td>
+              </tr>
+              <tr>
+                <Td>주식회사 토스페이먼츠</Td>
+                <Td>유료 리포트 결제 처리(신용·체크카드 등 전자결제 수단을 통한 결제 진행 및 승인)</Td>
                 <Td>서비스 이용 기간</Td>
               </tr>
             </tbody>

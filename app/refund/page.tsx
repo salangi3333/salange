@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Todo from "@/components/legal/Todo";
 import Footer from "@/components/Footer";
 
 /**
@@ -15,7 +14,7 @@ import Footer from "@/components/Footer";
  * 전 동의 화면)에 반영되어 있다. "제공 개시 후 무조건 환불 불가"가 아니라,
  * 회사 재량에 의한 환불(제4조)까지 함께 두어 과도하게 경직되지 않게 한다.
  *
- * 시행일만 서비스 정식 오픈 시점에 확정하는 <Todo>로 남긴다.
+ * 시행일은 "서비스 정식 오픈일에 시행"으로 표기하고, 구체적 날짜는 그때 확정한다.
  */
 
 export const metadata: Metadata = {
@@ -36,7 +35,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function RefundPage() {
   return (
     <main className="mx-auto min-h-screen max-w-content px-6 py-16">
-      <p className="text-sm text-textSub">시행일: <Todo>서비스 오픈일 확정 후 기재</Todo></p>
+      <p className="text-sm text-textSub">시행일: 서비스 정식 오픈일에 시행됩니다.</p>
       <h1 className="mt-2 font-serif-kr text-2xl font-bold text-textMain">환불정책</h1>
 
       <Section title="제1조 (청약철회의 원칙과 제한)">
