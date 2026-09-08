@@ -20,11 +20,17 @@ import Footer from "@/components/Footer";
  * 명시된 법정 기간이다 — 경쟁사가 그렇게 썼기 때문이 아니라 법령 자체를
  * 근거로 반영했다.
  *
- * 아직 법적으로 확정할 수 없는 것(국외이전 시 별도동의가 법적으로 반드시
- * 필요한지 여부)은 "동의 없이도 된다" 또는 "반드시 동의가 필요하다" 어느
- * 쪽으로도 단정하지 않고, 확인되는 대로 반영하겠다는 문장으로만 남긴다
- * (제6조 마지막 문단) — 눈에 띄는 [TODO] 표시는 없애되, 실제로 미확정이라는
- * 사실 자체를 숨기지 않는다.
+ * 국외이전 별도동의 필요 여부(2026-09-08 최종 확인) — law.go.kr(국가법령
+ * 정보센터) 「개인정보 보호법」 제28조의8 원문을 직접 확인했다. 팔자문의
+ * 구조(이용자가 구매한 리포트를 제공·보관하기 위해 Neon에 DB 보관을
+ * 위탁)는 같은 조 제1항제3호 "정보주체와의 계약 체결 및 이행을 위한
+ * 처리위탁·보관"에 해당하는 것으로 판단된다 — 이 경우 법은 "별도 동의"가
+ * 아니라 같은 조 제2항 각 호 사항(이전 항목/국가·시기·방법/이전받는 자
+ * 성명·연락처/이용목적·보유기간/거부 방법·효과)을 개인정보처리방침에
+ * 공개하는 것으로 충분하다고 규정한다. 제6조를 이 요건에 맞춰 채웠다.
+ * 다만 이는 원문에 근거한 판단이며, 실제 분쟁 발생 시를 대비해 최종적으로는
+ * 전문 법률 자문을 받는 것을 권장한다 — "100% 확정"이 아니라 "공식 법령
+ * 원문으로 뒷받침된 판단"임을 명확히 한다.
  */
 
 export const metadata: Metadata = {
@@ -59,6 +65,25 @@ function Th({ children }: { children: React.ReactNode }) {
 }
 function Td({ children }: { children: React.ReactNode }) {
   return <td className="border border-bg px-3 py-2 align-top text-xs text-textSub">{children}</td>;
+}
+
+/**
+ * 좁은 화면(360~430px)용 표 대체 카드 — 가로 표는 열이 3~5개라 375px에서도
+ * 가로 스크롤이 생겼다(2026-09-08 검수에서 발견). 내용을 줄이는 대신,
+ * `sm`(640px) 미만에서는 표 대신 이 세로형 카드를 보여주고, `sm` 이상(PC 등
+ * 넓은 화면)에서는 기존 표를 그대로 보여준다 — 표/카드 둘 다 같은 내용을
+ * 담고 있고 화면 크기에 따라 하나만 보인다(내용 중복 표시 아님).
+ */
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="border-b border-bg/60 py-2 last:border-b-0">
+      <dt className="text-[11px] font-semibold text-textMain">{label}</dt>
+      <dd className="mt-0.5 text-xs text-textSub">{children}</dd>
+    </div>
+  );
+}
+function Card({ children }: { children: React.ReactNode }) {
+  return <dl className="rounded-lg border border-bg/60 px-3 py-1">{children}</dl>;
 }
 
 export default function PrivacyPolicyPage() {
@@ -108,7 +133,8 @@ export default function PrivacyPolicyPage() {
 
       <Section id="retention" title="제3조 (개인정보의 처리 및 보유기간)">
         <p>회사는 다음과 같이 개인정보를 보유·이용합니다.</p>
-        <div className="overflow-x-auto">
+
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr>
@@ -144,6 +170,33 @@ export default function PrivacyPolicyPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="space-y-2 sm:hidden">
+          <Card>
+            <Field label="구분">리포트 데이터(사주 계산에 사용된 정보, 재열람 서비스 제공용)</Field>
+            <Field label="보유기간">
+              리포트 제공 및 재열람 서비스에 필요한 기간 동안 보관하며,
+              이용자가 삭제를 요청하면 지체 없이 파기합니다.
+            </Field>
+            <Field label="근거">회사 운영정책</Field>
+          </Card>
+          <Card>
+            <Field label="구분">계약 또는 청약철회 등에 관한 기록</Field>
+            <Field label="보유기간">5년</Field>
+            <Field label="근거">전자상거래 등에서의 소비자보호에 관한 법률</Field>
+          </Card>
+          <Card>
+            <Field label="구분">대금결제 및 재화 등의 공급에 관한 기록</Field>
+            <Field label="보유기간">5년</Field>
+            <Field label="근거">전자상거래 등에서의 소비자보호에 관한 법률</Field>
+          </Card>
+          <Card>
+            <Field label="구분">소비자의 불만 또는 분쟁처리에 관한 기록</Field>
+            <Field label="보유기간">3년</Field>
+            <Field label="근거">전자상거래 등에서의 소비자보호에 관한 법률</Field>
+          </Card>
+        </div>
+
         <p className="text-xs">
           위 보유기간이 지난 개인정보는 제4조에 따라 지체 없이 파기합니다.
         </p>
@@ -169,7 +222,8 @@ export default function PrivacyPolicyPage() {
 
       <Section id="outsourcing" title="제5조 (개인정보 처리위탁)">
         <p>회사는 서비스 운영을 위해 다음과 같이 개인정보 처리업무를 위탁하고 있습니다.</p>
-        <div className="overflow-x-auto">
+
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr>
@@ -197,6 +251,28 @@ export default function PrivacyPolicyPage() {
             </tbody>
           </table>
         </div>
+
+        <div className="space-y-2 sm:hidden">
+          <Card>
+            <Field label="수탁자">Vercel Inc.</Field>
+            <Field label="위탁업무 내용">웹사이트 호스팅 및 서버 실행</Field>
+            <Field label="위탁기간">서비스 이용 기간</Field>
+          </Card>
+          <Card>
+            <Field label="수탁자">Neon, Inc.</Field>
+            <Field label="위탁업무 내용">리포트 데이터베이스(PostgreSQL) 저장 및 관리</Field>
+            <Field label="위탁기간">서비스 이용 기간</Field>
+          </Card>
+          <Card>
+            <Field label="수탁자">주식회사 토스페이먼츠</Field>
+            <Field label="위탁업무 내용">
+              유료 리포트 결제 처리(신용·체크카드 등 전자결제 수단을 통한
+              결제 진행 및 승인)
+            </Field>
+            <Field label="위탁기간">서비스 이용 기간</Field>
+          </Card>
+        </div>
+
         <p className="text-xs">
           회사는 위탁계약 체결 시 위탁업무 목적 외 개인정보 처리 금지, 안전성
           확보조치 등 관계 법령에 따른 사항을 명시하고, 수탁자가 개인정보를
@@ -205,8 +281,12 @@ export default function PrivacyPolicyPage() {
       </Section>
 
       <Section id="transfer" title="제6조 (개인정보의 국외 이전)">
-        <p>회사는 서비스 제공을 위해 다음과 같이 개인정보를 국외로 이전합니다.</p>
-        <div className="overflow-x-auto">
+        <p>
+          회사는 이용자가 구매한 리포트를 저장·제공하는 계약을 이행하기 위해
+          다음과 같이 개인정보를 국외로 이전(처리위탁·보관)합니다.
+        </p>
+
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr>
@@ -215,6 +295,7 @@ export default function PrivacyPolicyPage() {
                 <Th>이전 항목</Th>
                 <Th>이전 목적</Th>
                 <Th>보유기간</Th>
+                <Th>이전 거부 시</Th>
               </tr>
             </thead>
             <tbody>
@@ -224,17 +305,41 @@ export default function PrivacyPolicyPage() {
                 <Td>이름, 성별, 생년월일, 출생시간 등 제2조에 명시된 항목</Td>
                 <Td>클라우드 데이터베이스를 통한 리포트 데이터 저장</Td>
                 <Td>제3조와 동일</Td>
+                <Td>
+                  이 저장소는 리포트 생성·재열람 기능 자체에 사용되어,
+                  이전을 거부하시면 서비스 이용이 불가능합니다.
+                </Td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <div className="space-y-2 sm:hidden">
+          <Card>
+            <Field label="이전받는 자">Neon, Inc. (AWS 인프라 이용)</Field>
+            <Field label="이전 국가">싱가포르</Field>
+            <Field label="이전 항목">
+              이름, 성별, 생년월일, 출생시간 등 제2조에 명시된 항목
+            </Field>
+            <Field label="이전 목적">클라우드 데이터베이스를 통한 리포트 데이터 저장</Field>
+            <Field label="보유기간">제3조와 동일</Field>
+            <Field label="이전 거부 시">
+              이 저장소는 리포트 생성·재열람 기능 자체에 사용되어, 이전을
+              거부하시면 서비스 이용이 불가능합니다.
+            </Field>
+          </Card>
+        </div>
+
         <p className="text-xs">
-          리포트 또는 주문이 생성되는 즉시 암호화된 통신(HTTPS)을 통해
-          실시간으로 전송되어 저장됩니다.
+          이전 시기 및 방법: 리포트 또는 주문이 생성되는 즉시 암호화된 통신
+          (HTTPS)을 통해 실시간으로 전송되어 저장됩니다.
         </p>
         <p className="text-xs">
-          국외 이전과 관련하여 관계 법령상 별도의 동의 절차가 필요한 것으로
-          확인되는 경우, 해당 절차를 마련하여 본 방침에 반영하겠습니다.
+          위와 같은 국외 이전은 이용자와의 계약(유료 리포트 제공)을 이행하기
+          위해 처리위탁·보관이 필요한 경우로서, 「개인정보 보호법」 제28조의8
+          제1항제3호에 따라 본 조에 필요한 사항을 공개하는 방법으로 이루어지며,
+          이 경우에 해당하지 않는 별도의 국외이전이 필요해지면 그때 별도로
+          동의를 받겠습니다.
         </p>
         <p className="text-xs">관련 문의: 전화 010-8315-3338 · 이메일 jrina5632@naver.com</p>
       </Section>
