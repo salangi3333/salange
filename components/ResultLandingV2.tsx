@@ -5,7 +5,7 @@ import { ReportResult } from "@/lib/reportMapper";
 import { Element } from "@/lib/hanjaTables";
 import LifePhaseTimeline from "./LifePhaseTimeline";
 import Footer from "./Footer";
-import PaymentCTAButton from "./PaymentCTAButton";
+import TossInlineCheckout from "./TossInlineCheckout";
 
 /**
  * ResultLandingV2 — 기존 ResultLanding(scene 기반 스크롤텔링)과 완전히
@@ -1123,7 +1123,7 @@ export default function ResultLandingV2({
   /** DB reportId — 결제 CTA가 /api/orders에 주문을 붙일 대상을 알기 위해
    * 필요하다(승인된 작업, TossPayments 1차 구현). 개발용 쿼리스트링 진입
    * (app/result-v2/page.tsx) 등 DB reportId가 없는 경로에서는 undefined로
-   * 두면 PaymentCTAButton이 결제를 시도하지 않고 안내만 보여준다. */
+   * 두면 TossInlineCheckout이 결제를 시도하지 않고 안내만 보여준다. */
   reportId?: string;
   /** 서버(app/result-v2/[reportId]/page.tsx)가 orders 테이블을 조회해 이미
    * PAID 상태인지 판정한 결과. client가 query string/localStorage 등으로
@@ -1839,34 +1839,36 @@ export default function ResultLandingV2({
         </section>
       )}
 
-      {/* ── 결제 CTA — TossPayments 1차 구현(승인된 작업)으로 실제 결제에
-          연결했다. 이미 결제 완료(isPaid=true)한 사용자에게는 다시 살
-          필요가 없는 업셀 섹션이라 통째로 숨긴다. UI/문구/가격표시는
-          기존과 완전히 동일 — 버튼 안쪽만 PaymentCTAButton(client
-          컴포넌트)으로 교체했다. 이름은 data.userName(실제 계산 경로에서
-          넘어온 값)을 그대로 쓰고 하드코딩하지 않는다. ── */}
+      {/* ── 결제 CTA — [2026-09] 천기문/타이트사주 계열 인라인 결제 UX로
+          교체(승인된 작업). 기존 결제창(모달, PaymentCTAButton+
+          renderPaymentWindow)을 이 자리에서 걷어내고, 결제수단 선택→약관
+          동의→팔자문 정책 링크→금액→결제 버튼이 한 화면 안에서 이어지는
+          TossInlineCheckout(client 컴포넌트)으로 대체했다. 기존 CTA와
+          중복 노출되지 않도록 이 자리를 완전히 교체했다(추가 아님).
+          PaymentCTAButton.tsx 파일 자체는 삭제하지 않았다(성급한 삭제
+          금지 지침) — 어디서도 더 이상 import하지 않는다.
+          이미 결제 완료(isPaid=true)한 사용자에게는 통째로 숨긴다.
+          주문 생성/승인/PAID 파이프라인은 전혀 바뀌지 않았다 — 바뀐 건
+          결제수단 선택 UI가 모달이냐 인라인이냐 뿐이다. ── */}
       {!isPaid && (
       <section className="bg-sceneBg px-6 py-16">
         {/* [카드 배경 수정] 밝은 아이보리(sceneCard) 카드를 페이지 톤과
             이어지는 짙은 갈색(sceneBgAlt) 카드로 교체 — 라운드/여백/얇은
             금색 테두리는 그대로, 안의 문구 2줄만 밝은 배경 전용 어두운
             글자색(sceneCardText/sceneCardMuted)에서 어두운 배경용 밝은
-            글자색(sceneText)으로 맞춰 바꿨다. 배지·가격·버튼 색은 그대로. */}
+            글자색(sceneText)으로 맞춰 바꿨다. */}
         <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 rounded-card border border-sceneGold/40 bg-sceneBgAlt px-6 py-10 text-center">
           <p className="font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-[22px]">
             이제부터, 더 깊은 이야기가 시작됩니다.
           </p>
 
-          {/* [2026-09] Toss 심사 전 정비 — 근거 없는 "정상가 59,800원"(취소선)/
-              "OPEN SPECIAL·오픈 특가" 표시 제거. FULL_REPORT_PRICE(lib/orderStore.ts)
-              가 항상 29800이고 그 외 가격이 실제 판매된 적이 없어, 실제 판매가격
-              29,800원 하나만 명확히 표시한다. */}
-          <div className="mt-2 flex flex-col items-center gap-0.5">
-            <span className="font-serif-kr text-[30px] font-bold text-sceneGold">29,800원</span>
-          </div>
-
-          <PaymentCTAButton
+          {/* amount=29800은 lib/orderStore.ts의 FULL_REPORT_PRICE와 반드시
+              같아야 한다 — 실제 주문 생성 금액은 이 prop이 아니라 서버
+              (createOrGetPendingOrder)가 항상 결정하며, 이 값은 화면
+              표시(및 Toss 위젯 setAmount)에만 쓰인다. */}
+          <TossInlineCheckout
             reportId={reportId}
+            amount={29800}
             className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10 disabled:opacity-60"
           />
         </div>
