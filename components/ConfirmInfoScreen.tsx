@@ -69,7 +69,15 @@ export default function ConfirmInfoScreen({
       <p className="text-sm tracking-[0.3em] text-sceneGold/80">— 命理四柱 —</p>
 
       <div className="flex w-full max-w-content flex-col items-center gap-3">
-        <h1 className="font-serif-kr text-2xl font-bold text-sceneText">{displayName}님의 사주</h1>
+        {/* [2026-09 모바일 QA 수정] flex-col 부모(items-center) 안의 h1은
+            기본적으로 내용 너비만큼만 박스를 잡아 줄바꿈이 일어나지 않는다
+            (flex item의 기본 min-width:auto 특성) — 긴 이름(12자+)에서 제목이
+            화면 밖으로 밀려나 잘렸다. w-full로 부모 폭을 그대로 차지하게
+            하면 일반 텍스트(h2 등, ResultLandingV2.tsx 참고)와 동일하게
+            자연스러운 줄바꿈이 생긴다. 짧은 이름은 어차피 text-center라
+            시각적으로 기존과 동일하게 보인다 — 폰트 크기/글자수 제한/말줄임
+            없이 레이아웃만 수정. */}
+        <h1 className="w-full font-serif-kr text-2xl font-bold text-sceneText">{displayName}님의 사주</h1>
 
         <div className="mt-2 w-full rounded-card border border-sceneGold/30 bg-sceneCard px-6 py-6">
           <p className="font-serif-kr text-lg font-bold text-sceneCardText">
