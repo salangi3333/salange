@@ -1853,15 +1853,15 @@ export default function ResultLandingV2({
             글자색(sceneCardText/sceneCardMuted)에서 어두운 배경용 밝은
             글자색(sceneText)으로 맞춰 바꿨다. 배지·가격·버튼 색은 그대로. */}
         <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 rounded-card border border-sceneGold/40 bg-sceneBgAlt px-6 py-10 text-center">
-          <span className="text-[12px] font-bold tracking-wide text-[#B83A32]">
-            OPEN SPECIAL · 오픈 특가
-          </span>
           <p className="font-serif-kr text-[19px] font-bold leading-snug text-sceneText sm:text-[22px]">
             이제부터, 더 깊은 이야기가 시작됩니다.
           </p>
 
+          {/* [2026-09] Toss 심사 전 정비 — 근거 없는 "정상가 59,800원"(취소선)/
+              "OPEN SPECIAL·오픈 특가" 표시 제거. FULL_REPORT_PRICE(lib/orderStore.ts)
+              가 항상 29800이고 그 외 가격이 실제 판매된 적이 없어, 실제 판매가격
+              29,800원 하나만 명확히 표시한다. */}
           <div className="mt-2 flex flex-col items-center gap-0.5">
-            <span className="text-[13px] text-sceneTextSub line-through">정상가 59,800원</span>
             <span className="font-serif-kr text-[30px] font-bold text-sceneGold">29,800원</span>
           </div>
 
