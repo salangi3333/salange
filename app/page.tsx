@@ -1,107 +1,25 @@
-"use client";
+import ResultV2Flow from "@/components/ResultV2Flow";
 
-import { useLayoutEffect, useState } from "react";
-import OnboardingIntro from "@/components/OnboardingIntro";
-import { FortuneTopic, TOPIC_LABELS } from "@/components/CharacterGuide";
-import AnalyzingScreen from "@/components/AnalyzingScreen";
-import IntakeForm from "@/components/IntakeForm";
-import ResultLanding from "@/components/ResultLanding";
-import { IntakeFormData } from "@/lib/sajuEngine";
-import { buildAppData, AppData } from "@/lib/sajuContent";
-
-// 메인 진입 흐름은 항상 "전체 사주풀이"로 바로 이동한다.
-// 연애운/재물운/궁합 주제 선택 및 관련 화면(CharacterGuide, PartnerForm)은
-// 삭제하지 않고 보존하되, 메인 플로우에서는 더 이상 사용하지 않는다.
-const DEFAULT_TOPIC: FortuneTopic = "all";
-
-// "loading" 단계는 AnalyzingScreen이 선녀 대사 + 오행 분석 연출을 한 화면에서
-// 모두 처리하게 되면서 더 이상 쓰이지 않는다. LoadingScreen.tsx 파일은
-// 삭제하지 않고 보존하되, 현재 진입 흐름에서는 사용하지 않는다.
-type Stage = "gate" | "form" | "analyzing" | "result";
-
-function shouldPrewarmStoryFonts(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("scrollAB") === "font-prewarm"
-  );
-}
-
-async function prewarmStoryFonts(data: AppData): Promise<void> {
-  if (!shouldPrewarmStoryFonts() || typeof document === "undefined" || !document.fonts) return;
-
-  const family = getComputedStyle(document.documentElement)
-    .getPropertyValue("--font-serif-kr")
-    .trim();
-  const corpus = Array.from(new Set(JSON.stringify(data).replace(/[\x00-\x7F]/g, ""))).join("");
-  if (!family || !corpus) return;
-
-  const loads = ["500", "700", "900"].map((weight) =>
-    document.fonts.load(`${weight} 24px ${family}`, corpus)
-  );
-  await Promise.race([
-    Promise.all(loads),
-    new Promise<void>((resolve) => window.setTimeout(resolve, 6000)),
-  ]).catch(() => undefined);
-}
-
+/**
+ * [2026-09] Toss 가맹점 심사 준비 감사에서 발견 — 이 루트(`/`)가 예전
+ * 프로토타입(ResultLanding + data/sample.ts, 19,900원/89,000원 취소선/
+ * 77% 할인/누적 8,362건/샘플 결제후기/"약 100장" 문구, Footer·사업자정보
+ * 없음)을 그대로 서비스하고 있었다 — 실제 판매 가격(29,800원)·Footer·
+ * 법정 페이지 링크가 전부 갖춰진 정상 흐름은 `/result-v2`에 있었는데
+ * 루트가 거기로 연결되지 않아, 첫 방문자(심사자 포함)가 구버전만 보는
+ * 상태였다.
+ *
+ * 최소 수정: 이 파일 자체의 state machine과 ResultLanding 렌더링을 걷어내고,
+ * `/result-v2`가 쿼리 없이 접속됐을 때 쓰는 것과 완전히 동일한 컴포넌트
+ * (ResultV2Flow — intro→form→analyzing→confirm까지 자체 처리, 확정 시
+ * POST /api/reports로 reportId 발급 후 /result-v2/{reportId}로 이동)를
+ * 그대로 재사용한다. 새 로직 없음, 리다이렉트도 아님 — 이미 검증된
+ * 컴포넌트를 그대로 옮겨 쓰는 것뿐이다.
+ *
+ * 지시에 따라 ResultLanding.tsx/data/sample.ts/OnboardingIntro.tsx/
+ * AnalyzingScreen.tsx 등은 삭제하지 않는다 — 이 파일에서 참조만 없앤다
+ * (production 사용자 흐름에서 분리, 파일 자체는 보존).
+ */
 export default function Home() {
-  const [stage, setStage] = useState<Stage>("gate");
-  const [appData, setAppData] = useState<AppData | null>(null);
-  const [pendingFormData, setPendingFormData] = useState<IntakeFormData | null>(null);
-
-  // The SPA swaps the analyzing screen for the result in the same document.
-  // Reset the preserved window scroll position before the result is painted so
-  // its first scene is never skipped.
-  useLayoutEffect(() => {
-    if (stage === "result") {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    }
-  }, [stage]);
-
-  const handleEnter = () => setStage("form");
-
-  const handleFormSubmit = (formData: IntakeFormData) => {
-    setPendingFormData(formData);
-    setStage("analyzing");
-  };
-
-  const handleAnalyzingDone = async () => {
-    if (!pendingFormData) return;
-    const data = buildAppData(pendingFormData);
-    await prewarmStoryFonts(data);
-    setAppData(data);
-    setStage("result");
-  };
-
-  if (stage === "gate") {
-    return <OnboardingIntro onEnter={handleEnter} />;
-  }
-
-  if (stage === "form") {
-    return <IntakeForm onSubmit={handleFormSubmit} />;
-  }
-
-  if (stage === "analyzing") {
-    return <AnalyzingScreen onDone={handleAnalyzingDone} />;
-  }
-
-  if (!appData) {
-    return <IntakeForm onSubmit={handleFormSubmit} />;
-  }
-
-  return (
-    <ResultLanding
-      user={appData.user}
-      chars={appData.chars}
-      storyblocks={appData.storyblocks}
-      resultQuote={appData.resultQuote}
-      assetFlowPoints={appData.assetFlowPoints}
-      fortuneTimelineNodes={appData.fortuneTimelineNodes}
-      birthYear={appData.birthYear}
-      topic={DEFAULT_TOPIC}
-      topicLabel={TOPIC_LABELS[DEFAULT_TOPIC]}
-      compatibility={null}
-      partnerAppData={null}
-    />
-  );
+  return <ResultV2Flow />;
 }
