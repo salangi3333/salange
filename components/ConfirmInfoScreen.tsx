@@ -115,6 +115,18 @@ export default function ConfirmInfoScreen({
             </Link>
           </div>
         )}
+
+        {/* [2026-09] 청약철회 제한 사전고지 — 전자상거래법 제17조 제2항이
+            요구하는 "제공 개시 전 고지"를 결제 직전이 아닌 이 화면(리포트
+            생성 동의 시점)에 둔다. 리포트가 생성된 이후 결제로 이어지므로
+            사실상 이 시점이 "제공 개시 전"의 마지막 고지 지점이다. */}
+        <p className="mt-3 border-t border-sceneGold/20 pt-3 text-[12.5px] leading-relaxed text-sceneCardMuted">
+          유료 리포트는 결제 즉시 개인화되어 제공되는 디지털 콘텐츠로, 리포트가
+          제공된 이후에는 청약철회가 제한될 수 있습니다.{" "}
+          <Link href="/refund" className="inline-block underline underline-offset-2">
+            환불정책 자세히 보기
+          </Link>
+        </p>
       </div>
 
       <button
