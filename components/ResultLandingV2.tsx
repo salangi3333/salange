@@ -1170,7 +1170,7 @@ export default function ResultLandingV2({
               {data.pillars.stems.map((s) => (
                 <div
                   key={`head-${s.label}`}
-                  className={`border-b border-r border-sceneGold/15 py-2 text-center text-[11px] last:border-r-0 ${
+                  className={`border-b border-r border-sceneGold/15 py-2 text-center text-[12px] sm:text-[11px] last:border-r-0 ${
                     s.isDay ? "font-bold text-sceneGold" : "text-sceneCardText/60"
                   }`}
                 >
@@ -1178,7 +1178,7 @@ export default function ResultLandingV2({
                 </div>
               ))}
 
-              <div className="flex items-center justify-center border-r border-sceneGold/15 text-[11px] text-sceneCardText/50">
+              <div className="flex items-center justify-center border-r border-sceneGold/15 text-[12px] sm:text-[11px] text-sceneCardText/50">
                 천간
               </div>
               {data.pillars.stems.map((s) => (
@@ -1188,20 +1188,20 @@ export default function ResultLandingV2({
                     s.isDay ? "border-b-2 border-sceneGold" : ""
                   }`}
                 >
-                  {s.isDay && <span className="text-[10px] font-bold text-sceneGold">★ 일간</span>}
+                  {s.isDay && <span className="text-[11px] sm:text-[10px] font-bold text-sceneGold">★ 일간</span>}
                   <span
                     className="font-serif-kr text-[26px] font-bold"
                     style={{ color: elementTextColor(s.elementKey) }}
                   >
                     {s.hanja}
                   </span>
-                  <span className="text-[11px] text-sceneCardText/60">{s.hangul}</span>
-                  <span className="text-[10px] font-medium text-sceneGold/90">{s.element}</span>
-                  <span className="text-[10px] text-sceneCardText/60">{s.sipseong}</span>
+                  <span className="text-[12px] sm:text-[11px] text-sceneCardText/60">{s.hangul}</span>
+                  <span className="text-[11px] sm:text-[10px] font-medium text-sceneGold/90">{s.element}</span>
+                  <span className="text-[11px] sm:text-[10px] text-sceneCardText/60">{s.sipseong}</span>
                 </div>
               ))}
 
-              <div className="flex items-center justify-center border-r border-t border-sceneGold/15 text-[11px] text-sceneCardText/50">
+              <div className="flex items-center justify-center border-r border-t border-sceneGold/15 text-[12px] sm:text-[11px] text-sceneCardText/50">
                 지지
               </div>
               {data.pillars.branches.map((b, i) => (
@@ -1215,8 +1215,8 @@ export default function ResultLandingV2({
                   >
                     {b.hanja}
                   </span>
-                  <span className="text-[11px] text-sceneCardText/60">{b.hangul}</span>
-                  <span className="text-[10px] font-medium text-sceneGold/90">{b.element}</span>
+                  <span className="text-[12px] sm:text-[11px] text-sceneCardText/60">{b.hangul}</span>
+                  <span className="text-[11px] sm:text-[10px] font-medium text-sceneGold/90">{b.element}</span>
                 </div>
               ))}
             </div>
@@ -1226,7 +1226,7 @@ export default function ResultLandingV2({
             {data.sinsal.map((tag) => (
               <span
                 key={tag}
-                className="rounded-pill border border-sceneGold/40 bg-sceneCard px-3 py-1.5 text-xs font-medium text-sceneCardText shadow-sm"
+                className="rounded-pill border border-sceneGold/40 bg-sceneCard px-3 py-1.5 text-[13px] sm:text-xs font-medium text-sceneCardText shadow-sm"
               >
                 {tag}
               </span>
@@ -1238,7 +1238,7 @@ export default function ResultLandingV2({
               해설은 유료 제8장에서만 보여준다. 값이 없으면(이론상 발생하지
               않지만 방어적으로) 아무것도 렌더링하지 않는다. */}
           {data.gwiinSinsalSection?.freePreview && (
-            <p className="mt-4 text-[13.5px] leading-relaxed text-sceneTextSub">
+            <p className="mt-4 text-[15px] sm:text-[13.5px] leading-relaxed text-sceneTextSub">
               <span className="font-bold text-sceneGold">
                 {data.gwiinSinsalSection.freePreview.name}
               </span>
@@ -1605,7 +1605,7 @@ export default function ResultLandingV2({
           <div className="mt-4 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-5">
             <ul className="flex flex-col gap-3">
               {data.elementBalance.map((el) => (
-                <li key={el.key} className="flex items-center gap-3 text-[14px]">
+                <li key={el.key} className="flex items-center gap-3 text-[15px] sm:text-[14px]">
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: ELEMENT_COLORS[el.key] }}
@@ -1618,7 +1618,7 @@ export default function ResultLandingV2({
           </div>
 
           {/* 강한/약한 오행 요약 — 실제 계산값(elementStrongest/Weakest) 기반 */}
-          <p className="mt-6 text-center text-[15px] leading-[1.9] text-sceneBody">
+          <p className="mt-6 text-center text-[16px] sm:text-[15px] leading-[1.9] text-sceneBody">
             현재는{" "}
             <strong className="font-bold text-sceneGold">
               {ELEMENT_MEANING[data.elementStrongest]}
