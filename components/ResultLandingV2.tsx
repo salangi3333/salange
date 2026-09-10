@@ -317,7 +317,7 @@ function ChapterOneSubheading({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-10 mb-3 flex items-start justify-center gap-2 first:mt-0">
       <span aria-hidden className="mt-2.5 h-px w-4 shrink-0 bg-sceneGold/70" />
-      <h3 className="font-serif-kr text-[15px] font-bold tracking-wide text-sceneGold">{children}</h3>
+      <h3 className="font-serif-kr text-[17px] sm:text-[15px] font-bold tracking-wide text-sceneGold">{children}</h3>
     </div>
   );
 }
@@ -1273,7 +1273,7 @@ export default function ResultLandingV2({
           <ChapterOneSubheading>예리함은 어디서 오는가</ChapterOneSubheading>
           <div className="space-y-4">
             {data.chapterOne.body1.slice(0, 4).map((p, idx) => (
-              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {wrapHanjaTokens(p)}
               </p>
             ))}
@@ -1284,7 +1284,7 @@ export default function ResultLandingV2({
           <ChapterOneSubheading>이 사람 안에서 부딪히는 힘들</ChapterOneSubheading>
           <div className="space-y-4">
             {data.chapterOne.body1.slice(4).map((p, idx, arr) => (
-              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {idx === arr.length - 1 ? (
                   <GoldPhrases text={p} phrases={CHAPTER_ONE_FORCE_NOUNS} />
                 ) : (
@@ -1300,20 +1300,20 @@ export default function ResultLandingV2({
           {/* 천을귀인 보정 오프닝 — 일지가 실제로 천을귀인에 해당하는 사람에게만
               뜬다(cheoneulOpening이 undefined면 아무것도 렌더링하지 않는다). */}
           {data.chapterOne.cheoneulOpening && (
-            <p className="mb-4 text-[15px] leading-[1.95] text-sceneBody">
+            <p className="mb-4 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
               {wrapHanjaTokens(data.chapterOne.cheoneulOpening)}
             </p>
           )}
           <div className="space-y-4">
             {data.chapterOne.body2.map((p, idx) => (
-              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {idx === 1 ? <GoldLeadClause text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
           </div>
 
           {/* 타고난 잠재력 배지 — GAN_PROFILE 실제 수치, 일간마다 자동으로 달라진다 */}
-          <p className="mt-6 text-[15px] leading-[1.95] text-sceneBody">
+          <p className="mt-6 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
             타고난 잠재력을 수치로 옮기면 이렇습니다.
           </p>
           <BadgeRow items={data.chapterOne.badges} />
@@ -1328,7 +1328,7 @@ export default function ResultLandingV2({
           <ChapterOneSubheading>칼끝이 자신을 향하는 순간</ChapterOneSubheading>
           <div className="space-y-4">
             {data.chapterOne.body3.map((p, idx) => (
-              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {idx === 1 ? <GoldFirstLine text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
@@ -1339,7 +1339,7 @@ export default function ResultLandingV2({
           <ChapterOneSubheading>가까워질수록 달라지는 온도</ChapterOneSubheading>
           <div className="space-y-4">
             {data.chapterOne.body4.map((p, idx) => (
-              <p key={idx} className="whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {idx === 0 ? <GoldQuoted text={p} /> : wrapHanjaTokens(p)}
               </p>
             ))}
@@ -1379,7 +1379,7 @@ export default function ResultLandingV2({
                     )}
                     <div className="space-y-4">
                       {sec.body.map((p, pIdx) => (
-                        <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                        <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                           {wrapHanjaTokens(p)}
                         </p>
                       ))}
@@ -1406,14 +1406,14 @@ export default function ResultLandingV2({
             <>
               {/* 관살혼잡처럼 실제로 해당하는 사람에게만 뜨는 도입 단락 */}
               {data.chapters[1].richBody.intro && (
-                <p className="mt-6 text-[15px] leading-[1.95] text-sceneBody">
+                <p className="mt-6 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                   {wrapHanjaTokens(data.chapters[1].richBody.intro)}
                 </p>
               )}
               <ChapterOneSubheading>{data.chapters[1].richBody.subheadingA}</ChapterOneSubheading>
               <div className="space-y-4">
                 {data.chapters[1].richBody.bodyA.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(p)}
                   </p>
                 ))}
@@ -1428,7 +1428,7 @@ export default function ResultLandingV2({
               <ChapterOneSubheading>{data.chapters[1].richBody.subheadingB}</ChapterOneSubheading>
               <div className="space-y-4">
                 {data.chapters[1].richBody.bodyB.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(p)}
                   </p>
                 ))}
@@ -1450,7 +1450,7 @@ export default function ResultLandingV2({
                         <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
                         <div className="space-y-4">
                           {sec.body.map((p, pIdx) => (
-                            <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                            <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                               {wrapHanjaTokens(p)}
                             </p>
                           ))}
@@ -1475,7 +1475,7 @@ export default function ResultLandingV2({
             <>
               <div className="mt-6 space-y-4">
                 {data.chapters[1].body.map((p, idx) => (
-                  <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(p)}
                   </p>
                 ))}
@@ -1493,7 +1493,7 @@ export default function ResultLandingV2({
                         <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
                         <div className="space-y-4">
                           {sec.body.map((p, pIdx) => (
-                            <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                            <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                               {wrapHanjaTokens(p)}
                             </p>
                           ))}
@@ -1519,7 +1519,7 @@ export default function ResultLandingV2({
           <ChapterHead {...data.chapters[2]} />
           <div className="mt-6 space-y-4">
             {data.chapters[2].body.map((p, idx) => (
-              <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+              <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {wrapHanjaTokens(p)}
               </p>
             ))}
@@ -1545,7 +1545,7 @@ export default function ResultLandingV2({
                     <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
                     <div className="space-y-4">
                       {sec.body.map((p, pIdx) => (
-                        <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                        <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                           {wrapHanjaTokens(p)}
                         </p>
                       ))}
@@ -1682,7 +1682,7 @@ export default function ResultLandingV2({
               <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
                 내 인생의 큰 흐름
               </h2>
-              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p className="mt-4 whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 앞에 서는 힘이 달라질 때마다,
                 {"\n"}삶의 기준도 함께 바뀌었습니다.
               </p>
@@ -1706,18 +1706,18 @@ export default function ResultLandingV2({
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 {data.lifeFlow.daYunFlowPublic.past && (
                   <div className="flex-1 rounded-card border border-sceneGold/20 bg-sceneBgAlt px-5 py-5 text-left">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
+                    <p className="text-[12px] sm:text-[11px] font-bold uppercase tracking-wide text-sceneTextSub">
                       지나온 시간
                     </p>
-                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneBody">
+                    <p className="mt-2 text-[15px] sm:text-[14px] leading-[1.85] text-sceneBody">
                       {data.lifeFlow.daYunFlowPublic.past}
                     </p>
                   </div>
                 )}
                 {data.lifeFlow.daYunFlowPublic.current && (
                   <div className="flex-1 rounded-card border border-sceneGold/40 bg-sceneCard px-5 py-5 text-left">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
-                    <p className="mt-2 text-[14px] leading-[1.85] text-sceneCardText">
+                    <p className="text-[12px] sm:text-[11px] font-bold uppercase tracking-wide text-sceneGold">지금</p>
+                    <p className="mt-2 text-[15px] sm:text-[14px] leading-[1.85] text-sceneCardText">
                       {data.lifeFlow.daYunFlowPublic.current}
                     </p>
                   </div>
@@ -1740,7 +1740,7 @@ export default function ResultLandingV2({
                 <br />
                 다음 변화는 조금 다릅니다.
               </h2>
-              <p className="mt-4 whitespace-pre-line text-[15px] leading-[1.95] text-sceneBody">
+              <p className="mt-4 whitespace-pre-line text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {NEXT_FLOW_TRANSITION}
               </p>
             </div>
@@ -1912,7 +1912,7 @@ export default function ResultLandingV2({
                 <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
                 <div className="space-y-4">
                   {sec.body.map((p, pIdx) => (
-                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                       {wrapHanjaTokens(p)}
                     </p>
                   ))}
@@ -1974,7 +1974,7 @@ export default function ResultLandingV2({
             {wrapHanjaTokens(data.chapterWealthInsight.killpoint)}
           </p>
           <div className="mt-6 space-y-4">
-            <p className="text-[15px] leading-[1.95] text-sceneBody">
+            <p className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
               {wrapHanjaTokens(data.chapterWealthInsight.hook)}
             </p>
           </div>
@@ -1986,7 +1986,7 @@ export default function ResultLandingV2({
               <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
               <div className="space-y-4">
                 {sec.body.map((p, pIdx) => (
-                  <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                  <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(p)}
                   </p>
                 ))}
@@ -2023,7 +2023,7 @@ export default function ResultLandingV2({
                 <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
                 <div className="space-y-4">
                   {sec.body.map((p, pIdx) => (
-                    <p key={pIdx} className="text-[15px] leading-[1.95] text-sceneBody">
+                    <p key={pIdx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                       {wrapHanjaTokens(p)}
                     </p>
                   ))}
@@ -2054,7 +2054,7 @@ export default function ResultLandingV2({
 
             <div className="mt-6 space-y-4">
               {data.chapterTenYear.intro.split("\n\n").map((p, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                   {wrapHanjaTokens(p)}
                 </p>
               ))}
@@ -2072,7 +2072,7 @@ export default function ResultLandingV2({
             <ChapterOneSubheading>① 앞으로 10년의 큰 흐름</ChapterOneSubheading>
             <div className="space-y-4">
               {data.chapterTenYear.segments.map((seg, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                   <span className="font-bold text-sceneGold">{seg.range}</span>
                   {" — "}
                   {wrapHanjaTokens(seg.summary)}
@@ -2094,7 +2094,7 @@ export default function ResultLandingV2({
                   <p className="mt-1 text-[13.5px] italic leading-relaxed text-sceneTextSub">
                     {wrapHanjaTokens(it.coreSignal)}
                   </p>
-                  <p className="mt-2 text-[15px] leading-[1.95] text-sceneBody">
+                  <p className="mt-2 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(it.narrative)}
                   </p>
                 </div>
@@ -2104,7 +2104,7 @@ export default function ResultLandingV2({
             <ChapterOneSubheading>③ 특히 기억할 시기</ChapterOneSubheading>
             <div className="space-y-4 text-left">
               {data.chapterTenYear.highlights.map((h, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                   <span className="font-bold text-sceneGold">{h.year}년</span>
                   {" — "}
                   {wrapHanjaTokens(h.reason)}
@@ -2115,7 +2115,7 @@ export default function ResultLandingV2({
             <ChapterOneSubheading>④ 이 10년을 지나가는 방법</ChapterOneSubheading>
             <div className="space-y-4">
               {data.chapterTenYear.closing.split("\n\n").map((p, idx) => (
-                <p key={idx} className="text-[15px] leading-[1.95] text-sceneBody">
+                <p key={idx} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                   {wrapHanjaTokens(p)}
                 </p>
               ))}
@@ -2140,7 +2140,7 @@ export default function ResultLandingV2({
             <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
               {data.gwiinSinsalSection.title}
             </h2>
-            <p className="mt-4 text-[15px] leading-[1.95] text-sceneBody">
+            <p className="mt-4 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
               {wrapHanjaTokens(data.gwiinSinsalSection.intro)}
             </p>
 
@@ -2148,7 +2148,7 @@ export default function ResultLandingV2({
               {data.gwiinSinsalSection.detail.map((item, idx) => (
                 <div key={idx}>
                   <ChapterOneSubheading>{item.name}</ChapterOneSubheading>
-                  <p className="text-[15px] leading-[1.95] text-sceneBody">
+                  <p className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                     {wrapHanjaTokens(item.body)}
                   </p>
                 </div>
@@ -2173,7 +2173,7 @@ export default function ResultLandingV2({
             {/* 마무리 문단 — 신살 목록으로 갑자기 끝나지 않도록 짧게 닫는다.
                 gwiinSinsalNarrative.ts의 고정 문구 그대로, 새 문장 없음. */}
             {data.gwiinSinsalSection.closing && (
-              <p className="mt-8 text-[15px] leading-[1.95] text-sceneBody">
+              <p className="mt-8 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
                 {wrapHanjaTokens(data.gwiinSinsalSection.closing)}
               </p>
             )}
