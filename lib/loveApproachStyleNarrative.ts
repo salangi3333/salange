@@ -53,10 +53,14 @@ export interface LoveApproachStyleNarrativeResult {
 }
 
 type TopBranch = "본연" | "맥락" | "숨음";
-type SubtypeFocus = "subA" | "subB" | "balanced";
-type ExposureShape = "visible" | "rooted" | "hidden" | "none";
+/** [2026-09 사랑 장 문장 충돌 수정] subtypeFocusOf/exposureShapeOf를
+ * export한다 — loveHurtPointNarrative.ts(섹션⑤)가 이 파일(섹션①)과
+ * 정확히 같은 shape 계산을 재사용하기 위함이다(로직 복제로 인한
+ * 드리프트 방지). 계산 로직 자체는 한 글자도 바꾸지 않았다. */
+export type SubtypeFocus = "subA" | "subB" | "balanced";
+export type ExposureShape = "visible" | "rooted" | "hidden" | "none";
 
-function subtypeFocusOf(star: SpouseStarProfile): SubtypeFocus {
+export function subtypeFocusOf(star: SpouseStarProfile): SubtypeFocus {
   const [a, b] = star.subtypes;
   const countA = a.visible.length + a.rooted.length + a.hidden.length;
   const countB = b.visible.length + b.rooted.length + b.hidden.length;
@@ -65,7 +69,7 @@ function subtypeFocusOf(star: SpouseStarProfile): SubtypeFocus {
   return "balanced";
 }
 
-function exposureShapeOf(star: SpouseStarProfile, focus: SubtypeFocus): ExposureShape {
+export function exposureShapeOf(star: SpouseStarProfile, focus: SubtypeFocus): ExposureShape {
   const [a, b] = star.subtypes;
   const pick = focus === "subA" ? a : focus === "subB" ? b : null;
   const v = pick ? pick.visible.length : a.visible.length + b.visible.length;

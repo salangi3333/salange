@@ -12,3 +12,7 @@ tsconfig.tsbuildinfo
 
 .vercel
 .env*
+
+# 평생운명록 PDF 작업 산출물/무관 잔재 — 소스 아님, 실수로 git add . 되지 않도록 (2026-09-10)
+.pdf-proto-out/
+.codex-worktrees/

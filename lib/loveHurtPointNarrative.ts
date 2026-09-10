@@ -1,6 +1,7 @@
 import { AppData } from "./sajuContent";
 import { analyzeSpouseStar } from "./spouseStarAnalysis";
 import { analyzeRoot } from "./natalStructure";
+import { subtypeFocusOf, exposureShapeOf } from "./loveApproachStyleNarrative";
 
 /**
  * 사랑·인연 새 하위 섹션("내가 사랑에서 상처받는 지점") — 第四章 확장
@@ -93,9 +94,24 @@ export function generateLoveHurtPointNarrative(appData: AppData, gender: "male" 
     };
   }
 
-  const branchKey: BranchKey = `${root.hasRoot ? "기반있음" : "기반없음"}-${exposure === "뚜렷" ? "뚜렷" : "숨음"}`;
+  // [2026-09 문장 충돌 수정] ①(loveApproachStyleNarrative.ts)은 exposure
+  // (뚜렷/숨음/미미) 위에 더 세밀한 shape(visible/rooted/hidden/none)
+  // 신호까지 반영해 "속마음과 겉모습 사이 차이" 문장을 얹는데, 이
+  // 섹션은 그동안 exposure만 보고 있어서 — exposure=뚜렷이면서
+  // shape=hidden인 사람(예: 이서연)에게 ①은 "바로 안 드러난다"고
+  // 해놓고 이 섹션은 "표현에 거리낌이 없다"고 말해 서로 부딪혔다.
+  // 최소 수정: shape=hidden일 때만 뚜렷→숨음으로 넘긴다(반대 방향
+  // 오버라이드는 아직 확인된 충돌 사례가 없어 건드리지 않는다) — 같은
+  // star 객체에서 ①과 정확히 동일한 함수로 계산해 새 판정을 만들지
+  //않는다. exposure 자체(계산값)는 그대로 유지, 이 파일 안의 문장
+  // 선택 분기에만 쓴다.
+  const focus = subtypeFocusOf(star);
+  const shape = exposureShapeOf(star, focus);
+  const exposureSide = exposure === "뚜렷" ? "뚜렷" : "숨음";
+  const effectiveSide = shape === "hidden" ? "숨음" : exposureSide;
+  const branchKey: BranchKey = `${root.hasRoot ? "기반있음" : "기반없음"}-${effectiveSide}`;
   const t = BRANCH_TEXT[branchKey];
-  const noteHead = `hasRoot=${root.hasRoot}, exposure=${exposure}`;
+  const noteHead = `hasRoot=${root.hasRoot}, exposure=${exposure}, shape=${shape}(focus=${focus})`;
 
   return {
     paragraphs: [

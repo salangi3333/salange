@@ -3,6 +3,7 @@ import { analyzeSpouseStar, SpouseStarProfile, SpouseStarSubtype, SpouseStarSubt
 import { analyzeDayMasterBalance, BalanceVerdict } from "./dayMasterBalanceAnalysis";
 import { analyzeRoot, analyzeBranchRelations } from "./natalStructure";
 import { buildChapterThreeKey } from "./chapterThreeInterpretation";
+import { exposureShapeOf } from "./loveApproachStyleNarrative";
 
 /**
  * 第四章 3차 보강(승인된 작업, 2026-09) — "사랑을 움직이는 나의 십성".
@@ -87,12 +88,13 @@ function subtypeFocusOf(star: SpouseStarProfile): "subA" | "subB" | "balanced" {
   return "balanced";
 }
 
-function shapeOf(sub: SpouseStarSubtypeBreakdown): "visible" | "rooted" | "hidden" | "none" {
-  if (sub.visible.length > sub.rooted.length && sub.visible.length > sub.hidden.length) return "visible";
-  if (sub.hidden.length > sub.visible.length && sub.hidden.length > sub.rooted.length) return "hidden";
-  if (sub.rooted.length > sub.visible.length && sub.rooted.length > sub.hidden.length) return "rooted";
-  return "none";
-}
+// [2026-09 확정 버그 수정] 이 파일에 독립적으로 있던 shapeOf(primarySub 단독
+// 카운트)는 focus="balanced"일 때 subA만 보고 subB를 무시해, ①(loveApproachStyleNarrative.ts)의
+// exposureShapeOf(subA+subB 합산)와 같은 사람의 같은 개념을 서로 다른 신호로
+// 판정하는 문제가 있었다(스캔에서 21건의 visible↔hidden 정반대 충돌 확인).
+// ①이 이미 정상 동작을 검증받은 exposureShapeOf를 그대로 재사용해 focus=subA/subB
+// 케이스는 수치·분기 기준이 기존과 100% 동일하고, focus=balanced일 때만 subA+subB를
+// 합산하도록 바로잡는다(로직 창작 아님, ①⑤가 이미 쓰는 동일 함수 재사용).
 
 const POSITION_TEXT_BY_SHAPE: Record<"visible" | "rooted" | "hidden" | "none", string> = {
   visible: "이 힘은 천간이나 지지에 그대로 드러나 있습니다. 겉으로 보이는 모습과 실제 속마음이 크게 다르지 않은 구조입니다.",
@@ -241,7 +243,7 @@ export function generateLoveSipseongInsightNarrative(appData: AppData, gender: "
   const focus = subtypeFocusOf(star);
   const [subA, subB] = star.subtypes;
   const primarySub: SpouseStarSubtypeBreakdown = focus === "subB" ? subB : subA;
-  const primaryShape = shapeOf(primarySub);
+  const primaryShape = exposureShapeOf(star, focus);
   const favorable = star.strength.monthScore >= 2 || star.strength.touScore > 0;
 
   const picks: LoveSipseongPick[] = [];
