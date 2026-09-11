@@ -1,7 +1,6 @@
 import React from "react";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { renderToStaticMarkup } from "react-dom/server";
 import puppeteer from "puppeteer";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import ReportPdfDocument from "@/components/pdf/ReportPdfDocument";
@@ -9,6 +8,7 @@ import { ReportResult } from "./reportMapper";
 import { IntakeFormData } from "./sajuEngine";
 import { AppData } from "./sajuContent";
 import { FairyImageSlot } from "@/components/pdf/ReportPdfPrototype";
+import { buildNotoSerifKrFontFaceCss } from "./pdfBookFonts";
 
 /**
  * PDF 생성 — 서버 전용(lib/db.ts, lib/tossPayments.ts와 동일한 원칙: "use
@@ -894,11 +894,18 @@ const HANJI_BOOK_STYLE = `
  * 함수이며, 실제 상품 경로(generateReportPdfBuffer)에서는 절대 호출되지
  * 않는다(scripts/_pdf_book_v1_gen.ts 전용). */
 export function renderHanjiBookHtml(bodyHtml: string): string {
+  // [2026-09-11 추가] OS 시스템 폰트에 의존하지 않도록 "Noto Serif KR"
+  // 400/600/700을 @font-face(data URI)로 직접 임베딩한다 — Vercel
+  // 서버리스 Chromium 한글/한자 미표시 문제(실측 확인, arch 무관)의 최소
+  // 수정. PDF_STYLE의 font-family 선언 자체는 그대로 둔다(같은 이름을
+  // 그대로 씀 — 아래 @font-face 참고). renderReportPdfHtml(구 45p 경로)
+  // 등 다른 render*Html 함수는 건드리지 않았다 — 이 book 경로 전용.
   return `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8" />
-<style>${PDF_STYLE}${PROTOTYPE_STYLE}${HANJI_STYLE}${HANJI_V4_STYLE}${HANJI_BOOK_STYLE}
+<style>${buildNotoSerifKrFontFaceCss()}
+${PDF_STYLE}${PROTOTYPE_STYLE}${HANJI_STYLE}${HANJI_V4_STYLE}${HANJI_BOOK_STYLE}
   body {
     background:
       radial-gradient(ellipse 900px 500px at 12% 6%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%),
@@ -1005,12 +1012,18 @@ function loadImageSlot(baseName: string): FairyImageSlot {
  * HANJI_STYLE 결합으로 바꿨다 — ReportPdfDocument가 이제 표지/오프닝 등에서
  * 그 클래스들을 실제로 쓰기 때문이다(renderHanjiPrototypeHtml과 동일한
  * 스타일 조합, 별도 함수로 다시 정의하지 않고 그대로 재사용). */
-export function renderReportPdfHtml(
+export async function renderReportPdfHtml(
   report: ReportResult,
   intake: IntakeFormData,
   appData: AppData,
   generatedAt?: string
-): string {
+): Promise<string> {
+  // [2026-09-11 수정] 정적 `import ... from "react-dom/server"`가 있으면
+  // Next.js App Router 빌드가 이 파일을 참조하는 route(app/api/pdf-verify-temp)의
+  // 빌드 자체를 막는다(lib/pdfBookHtml.ts에서 실제 build로 확인된 것과 동일한
+  // 원인/동일한 최소 수정 — 아래 renderToStaticMarkup 호출부만 동적 import로
+  // 바꿨고, HTML/레이아웃/함수 동작은 그대로다).
+  const { renderToStaticMarkup } = await import("react-dom/server");
   // [2026-09 아트디렉션 3차 재구현] 사용자가 완전히 새로운 이미지 세트
   // 9장(표지 1 + 챕터 8, 파일명 자체가 역할을 가리킴)을 직접 제작해서
   // 넣었다 — 기존 13장 세트는 더 이상 쓰지 않는다. 프롤로그·엔딩 전용
@@ -1081,7 +1094,7 @@ export async function generateReportPdfBuffer(
   intake: IntakeFormData,
   appData: AppData
 ): Promise<Buffer> {
-  const html = renderReportPdfHtml(report, intake, appData);
+  const html = await renderReportPdfHtml(report, intake, appData);
   const browser = await puppeteer.launch({ headless: true });
   let raw: Buffer;
   try {
