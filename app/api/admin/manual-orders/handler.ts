@@ -3,7 +3,13 @@ import { timingSafeEqual } from "crypto";
 import { calculateSaju } from "@/lib/sajuEngine";
 import { parseIntakeInput } from "@/lib/reportStore";
 import { getSql } from "@/lib/db";
-import { createManualPaidOrder, CreateManualPaidOrderInput } from "@/lib/manualOrderStore";
+import { isValidOrderId } from "@/lib/orderStore";
+import {
+  createManualPaidOrder,
+  CreateManualPaidOrderInput,
+  findExistingManualPaidOrder,
+  IdempotencyKeyConflictError,
+} from "@/lib/manualOrderStore";
 
 /**
  * 당근 등 수동 주문 접수 전용 관리자 API의 실제 로직 — createManualPaidOrder
@@ -38,16 +44,24 @@ import { createManualPaidOrder, CreateManualPaidOrderInput } from "@/lib/manualO
  * channel: 요청 body에 channel이 와도 전부 무시하고 서버에서 'karrot'으로
  * 고정한다(지시 원칙 — client 입력을 신뢰하지 않음).
  *
- * 중복 제출 방어: DB schema 변경 없이, "같은 고객 정보(이름+생년월일시)로
- * 최근 2분 이내 karrot 채널 주문이 이미 있는지" SELECT로 확인 후 있으면
- * 409로 거부한다. 이건 관리자가 버튼을 실수로 두 번 누르는 흔한 케이스는
- * 막아주지만, "정확히 동시에 두 요청이 도착하는" 진짜 경쟁 상태(race
- * condition)까지 완전히 막는 하드 개런티는 아니다 — 진짜 개런티를 주려면
- * order_id를 고객 정보로부터 결정론적으로 만들어 orders.order_id의 기존
- * UNIQUE 제약에 기대는 방법이 있지만, 그러려면 createManualPaidOrder가
- * 외부에서 order_id를 주입받을 수 있어야 한다(현재 함수는 항상 내부에서
- * randomUUID() — 이번 단계에서 "유지"하기로 확정된 파일이라 여기서 고치지
- * 않았다). 이 잔여 리스크는 완료 보고에 그대로 남겨 보고한다.
+ * 중복 제출 방어: 두 단계로 방어한다.
+ *   1) hard idempotency(2026-09-11 추가): 관리자 UI가 제출 1회당 고정
+ *      idempotencyKey를 만들어 보내면(더블클릭/네트워크 재시도/응답유실
+ *      재시도에도 같은 값 재사용), lib/manualOrderStore.ts가 이 값을 그대로
+ *      orders.order_id로 저장한다. 기존 orders.order_id UNIQUE 제약
+ *      (orders_order_id_key) 덕분에, 같은 key로 온 두 번째 요청은(순차
+ *      재시도든 진짜 동시 요청이든) DB 레벨에서 새 주문을 또 만들지 못하고
+ *      기존 주문을 그대로 돌려받는다 — 애플리케이션 코드의 타이밍에
+ *      의존하지 않는 하드 개런티. 같은 key인데 주문 데이터가 다르면(오용)
+ *      409로 거부한다(IdempotencyKeyConflictError). 아래
+ *      findExistingManualPaidOrder 사전 조회에서 이미 처리된 주문을
+ *      찾으면 200으로 즉시 응답하고, 2)의 2분 체크·트랜잭션 시도 자체를
+ *      건너뛴다(정상 재시도를 2분 체크가 오탐 409로 막지 않기 위함).
+ *   2) 최근 2분 내 동일 고객정보(이름+생년월일시) SELECT(기존 그대로
+ *      유지, 삭제하지 않음): 서로 다른 idempotencyKey로 짧은 시간 내 같은
+ *      고객이 또 접수되는 경우를 막는 보조 안전장치 — 1)이 다루지 않는
+ *      시나리오(같은 요청 재전송이 아니라 "다른 제출인데 같은 고객으로
+ *      보이는 경우")를 담당한다.
  *
  * deps 기반 팩토리로 뺀 이유: 테스트에서 실제 DB(getSql())를 호출하지
  * 않고 createOrder/sql을 가짜로 주입할 수 있게 하기 위함 — route.ts의
@@ -134,7 +148,51 @@ export function createHandler(deps: ManualOrderRouteDeps) {
     // ── channel은 client 입력 무시, 서버 고정 ──
     const channel = "karrot" as const;
 
-    // ── 중복 제출 방어(최선 노력, 완전한 개런티 아님 — 위 주석 참고) ──
+    // ── idempotencyKey 검증(형식은 lib/orderStore.ts의 isValidOrderId
+    //     그대로 재사용, 복제하지 않음) ──
+    const idempotencyKey = typeof b.idempotencyKey === "string" ? b.idempotencyKey : "";
+    if (!idempotencyKey || !isValidOrderId(idempotencyKey)) {
+      return NextResponse.json({ error: "idempotencyKey가 올바르지 않습니다." }, { status: 400 });
+    }
+
+    // ── hard idempotency 사전 조회: 이미 이 key로 처리된 주문이 있으면
+    //     2분 중복체크·트랜잭션 시도 없이 바로 그 결과를 반환한다(정상
+    //     재시도/응답유실 후 재시도를 여기서 끝낸다) ──
+    try {
+      const existing = await findExistingManualPaidOrder(
+        idempotencyKey,
+        { intake, email, amount, channel },
+        deps.sql
+      );
+      if (existing) {
+        return NextResponse.json(
+          {
+            reportId: existing.reportId,
+            orderId: existing.orderId,
+            deliveryId: existing.deliveryId,
+            status: "PAID",
+          },
+          { status: 200 }
+        );
+      }
+    } catch (e) {
+      if (e instanceof IdempotencyKeyConflictError) {
+        return NextResponse.json(
+          { error: "이 idempotencyKey는 이미 다른 주문 정보로 사용되었습니다. 새로 시도해주세요." },
+          { status: 409 }
+        );
+      }
+      console.error(
+        "[api/admin/manual-orders] idempotencyKey 사전 조회 실패:",
+        e instanceof Error ? e.message : e
+      );
+      return NextResponse.json(
+        { error: "주문 처리 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요." },
+        { status: 500 }
+      );
+    }
+
+    // ── 중복 제출 방어(보조 안전장치, 위 주석 참고) ──
     try {
       const dup = await deps.sql`
         select o.id from orders o
@@ -163,14 +221,23 @@ export function createHandler(deps: ManualOrderRouteDeps) {
     }
 
     // ── 실제 생성 ──
-    const input: CreateManualPaidOrderInput = { intake, email, amount, channel };
+    const input: CreateManualPaidOrderInput = { intake, email, amount, channel, idempotencyKey };
     try {
       const result = await deps.createOrder(input);
       return NextResponse.json(
         { reportId: result.reportId, orderId: result.orderId, deliveryId: result.deliveryId, status: "PAID" },
-        { status: 201 }
+        { status: result.alreadyExisted ? 200 : 201 }
       );
     } catch (e) {
+      if (e instanceof IdempotencyKeyConflictError) {
+        // 위 사전 조회 직후~트랜잭션 사이의 극히 좁은 창구에서 동시에 다른
+        // 요청이 같은 key를 다른 주문 데이터로 먼저 커밋한 경우 — 조용히
+        // 넘어가지 않고 명확히 409로 알린다.
+        return NextResponse.json(
+          { error: "이 idempotencyKey는 이미 다른 주문 정보로 사용되었습니다. 새로 시도해주세요." },
+          { status: 409 }
+        );
+      }
       // DB 연결/쿼리 실패 세부 내용, secret, stack trace는 절대 클라이언트로
       // 내보내지 않는다(app/api/reports/route.ts와 동일 원칙) — 서버 로그에만.
       console.error("[api/admin/manual-orders] 주문 생성 실패:", e instanceof Error ? e.message : e);
