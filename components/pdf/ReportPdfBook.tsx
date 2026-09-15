@@ -116,7 +116,7 @@ export function BookCover({
         <div className="bcover-bottom-scrim">
           <div className="bcover-divider" />
           <p className="bcover-tagline">{tagline}</p>
-          <p className="bcover-name">{report.userName}님의 평생운명록</p>
+          <p className="bcover-name">{report.userName}님의 타고난 운명록</p>
         </div>
       </div>
     </section>
