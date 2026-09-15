@@ -5,6 +5,9 @@ import { analyzeHuisinCandidate } from "./huisinCandidateAnalysis";
 import { analyzeDaYunWealth, pickPastCurrentNext, DaYunWealthPeriod } from "./daYunWealthAnalysis";
 import { buildSeunRange, NatalBranchInput, NatalStemInput, SeunKey } from "./seunAnalysis";
 import { SipseongCategory } from "./strengthAnalysis";
+import { analyzeWealthCategoryStrength, WealthStrengthResult } from "./wealthStrengthAnalysis";
+import { compareCategories } from "./chapterFourInterpretation";
+import { analyzeWealthObstruction } from "./wealthObstructionAnalysis";
 
 /**
  * 6장("돈이 움직이는 시기") — 대운·세운 시기 판정 CALCULATION 레이어.
@@ -100,6 +103,28 @@ export const ATTACKS: Record<SipseongCategory, SipseongCategory> = {
   관성: "비겁",
 };
 
+/** [2026-09-15 D 과다판정 개선] 읽기 전용 audit(17명 136개 대운, 3라운드
+ * 시뮬레이션)으로 검증된 D 교차검증 근거 — 전부 이미 production에서
+ * 검증되어 쓰이는 계산 자산만 재사용한다(새 계산·새 점수·새 threshold
+ * 없음). dEvidence가 없으면(세운 판정 등 이번 검증 범위 밖 호출) 기존
+ * 동작을 그대로 유지한다 — 이번 수정은 "대운" 판정에만 적용한다. */
+export interface DClassificationEvidence {
+  /** 원국-대운 지지 육충 — natalStructure.ts/lifeFlowInterpretation.ts와
+   * 동일한 고정 6쌍표를 이 파일에도 독립적으로 둔다(기존 파일들이 이미
+   * 반복해온 패턴, 새 관계 아님). */
+  hasNatalChong: boolean;
+  /** ATTACKS[cat](공격당하는 카테고리)가 analyzeWealthObstruction(5장에서
+   * 이미 검증되어 쓰이는 기존 함수)의 structuralObstructions와 일치. */
+  obstructionMatch: boolean;
+  /** balance.structureFlags에 공격당하는 카테고리 쪽 경고 플래그 존재 —
+   * wealthObstructionAnalysis.ts의 WARN_SOURCE_FLAG 매핑을 그대로 재사용. */
+  warnFlagMatch: boolean;
+  /** compareCategories(chapterFourInterpretation.ts, "재사용 목적으로"
+   * 이미 export된 기존 함수)로 공격측이 방어측(용신·희신)보다 뚜렷/약간
+   * 우세한지 — gapTier 임계값도 그 함수 안의 기존 값을 그대로 쓴다. */
+  attackerStronger: boolean;
+}
+
 function classifyPeriod(
   hasWealth: boolean,
   cat: SipseongCategory | null,
@@ -107,19 +132,19 @@ function classifyPeriod(
   huisinCats: SipseongCategory[],
   structureFlags: string[],
   supportIntoHuisinCats: SipseongCategory[],
-  applyWealthOverlay: boolean
+  applyWealthOverlay: boolean,
+  dEvidence?: DClassificationEvidence
 ): TimingClassification {
   if (!cat) return { label: "신호없음형(E)", reasons: ["카테고리 불명"] };
 
   const attacked = ATTACKS[cat];
-  const attacksYongsinOrHuisin = [...yongsinCats, ...huisinCats].includes(attacked);
   const matchesYongsin = yongsinCats.includes(cat);
   const matchesHuisin = huisinCats.includes(cat);
 
-  if (attacksYongsinOrHuisin) {
-    return { label: "분산/흔들림형(D)", reasons: [`대운·세운 ${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`] };
-  }
-
+  // [2026-09-15 순서 수정 — 버그성 문제로 확인·승인됨] 카테고리 자신이
+  // 용신/희신이면, 다른 용신/희신을 공격한다는 사실보다 그 매치를 먼저
+  // 인정한다. 기존 코드는 공격 여부를 먼저 봐서, 희신 카테고리 자신도
+  // 다른 용신을 공격하면 매치 자격이 검토조차 안 되고 D로 확정됐다.
   if (matchesYongsin || matchesHuisin) {
     if (hasWealth) {
       // wealthExcess는 원국에 고정된 체질값이라 세운마다 재적용하지 않는다.
@@ -137,6 +162,29 @@ function classifyPeriod(
     return { label: "기반형(C)", reasons: [`${cat}=용신/희신 일치`, "재물신호는 약함"] };
   }
 
+  const attacksYongsinOrHuisin = [...yongsinCats, ...huisinCats].includes(attacked);
+  if (attacksYongsinOrHuisin) {
+    // [2026-09-15 교차검증 추가] "공격 관계가 존재한다"는 사실 하나만으로
+    // 즉시 D를 확정하지 않는다 — 아래 중 하나라도 실제로 확인될 때만 D를
+    // 확정한다. dEvidence가 없으면(세운 판정 등) 기존 동작 그대로 유지.
+    if (!dEvidence) {
+      return { label: "분산/흔들림형(D)", reasons: [`대운·세운 ${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`] };
+    }
+    if (dEvidence.hasNatalChong) {
+      return { label: "분산/흔들림형(D)", reasons: [`${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`, "원국-대운 지지 충 확인"] };
+    }
+    if (dEvidence.obstructionMatch) {
+      return { label: "분산/흔들림형(D)", reasons: [`${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`, "기존 재물 방해구조와 일치"] };
+    }
+    if (dEvidence.warnFlagMatch) {
+      return { label: "분산/흔들림형(D)", reasons: [`${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`, "원국 구조 경고 플래그 일치"] };
+    }
+    if (dEvidence.attackerStronger) {
+      return { label: "분산/흔들림형(D)", reasons: [`${cat}이 ${attacked}을(를) 극함(용신·희신 대상)`, "공격측 세력이 방어측(용신·희신)보다 우세"] };
+    }
+    // 공격 관계 자체는 있으나 교차검증 신호가 전부 없음 → 아래 신호없음형으로.
+  }
+
   // E(신호없음) 보정: 억지로 다른 등급에 넣지 않되, "정말 아무 관련 없음"과
   // "희신의 2차 지원축과는 겹침"을 구분해 reasons만 풍부하게 남긴다.
   if (supportIntoHuisinCats.includes(cat)) {
@@ -146,6 +194,49 @@ function classifyPeriod(
     };
   }
   return { label: "신호없음형(E)", reasons: ["재물 직접 신호 없음", "용신/희신 및 그 지원축과도 무관"] };
+}
+
+// [2026-09-15 D 교차검증 전용 헬퍼 — 새 명리 계산 아님, 기존 표/함수
+// 재사용] natalStructure.ts의 육합/육충 6쌍 고정표를 이 파일에도 독립적으로
+// 둔다(daYunWealthAnalysis.ts/seunAnalysis.ts가 지장간표를 이미 이렇게
+// 반복해온 것과 동일 패턴 — natalStructure.ts는 원국 내부 관계만 다뤄
+// 대운 지지를 못 받으므로 그대로 import할 수 없다).
+const D_LIU_CHONG_PAIRS: [string, string][] = [
+  ["子", "午"], ["丑", "未"], ["寅", "申"], ["卯", "酉"], ["辰", "戌"], ["巳", "亥"],
+];
+function dPairMatches(a: string, b: string): boolean {
+  return D_LIU_CHONG_PAIRS.some(([p, q]) => (p === a && q === b) || (p === b && q === a));
+}
+function hasNatalChongForD(natalZhis: string[], dayunZhi: string): boolean {
+  return natalZhis.some((z) => dPairMatches(dayunZhi, z));
+}
+
+// wealthObstructionAnalysis.ts의 고정 매핑을 그대로 재사용(그 파일은
+// 수정하지 않는다 — 값만 이 파일에도 독립적으로 옮겨온 것, 기존 패턴).
+type DExcessFlag = "wealthExcess" | "companionExcess" | "outputExcess" | "resourceExcess" | "officerExcess";
+const D_EXCESS_FLAG_CATEGORY: Record<DExcessFlag, SipseongCategory> = {
+  companionExcess: "비겁", outputExcess: "식상", wealthExcess: "재성", officerExcess: "관성", resourceExcess: "인성",
+};
+const D_WARN_SOURCE_FLAG: Record<SipseongCategory, DExcessFlag> = {
+  식상: "resourceExcess", 재성: "companionExcess", 관성: "outputExcess", 인성: "wealthExcess", 비겁: "officerExcess",
+};
+
+function buildDEvidence(
+  cat: SipseongCategory,
+  natalZhis: string[],
+  dayunZhi: string,
+  structureFlags: string[],
+  obstructedCats: SipseongCategory[],
+  wealthStrength: WealthStrengthResult
+): DClassificationEvidence {
+  const attacked = ATTACKS[cat];
+  const cmp = compareCategories(wealthStrength, cat, attacked);
+  return {
+    hasNatalChong: hasNatalChongForD(natalZhis, dayunZhi),
+    obstructionMatch: obstructedCats.includes(attacked),
+    warnFlagMatch: structureFlags.includes(D_WARN_SOURCE_FLAG[attacked]),
+    attackerStronger: cmp.leadCategory === cat && cmp.gapTier !== "비슷",
+  };
 }
 
 function computeCrossPattern(daYunLabel: TimingLabel, seunLabel: TimingLabel): CrossPattern | undefined {
@@ -184,11 +275,31 @@ export function analyzeWealthTiming(appData: AppData): WealthTimingResult {
   const huisinCats = huisin.applicable ? huisin.pairs.map((p) => p.category) : [];
   const supportIntoHuisinCats = huisin.applicable ? huisin.pairs.map((p) => p.supportIntoHuisin.category) : [];
 
+  // [2026-09-15 D 교차검증용 — 대운 판정에만 적용, 세운 판정은 이번 검증
+  // 범위 밖이라 그대로 둔다] 전부 이미 production에서 검증되어 쓰이는
+  // 계산 자산만 호출한다(analyzeWealthObstruction=5장, analyzeWealthCategoryStrength=4·5장).
+  const obstruction = analyzeWealthObstruction(appData);
+  const obstructedCats = obstruction.structuralObstructions.map(
+    (o) => D_EXCESS_FLAG_CATEGORY[o.sourceFlag as DExcessFlag]
+  );
+  const wealthStrength = analyzeWealthCategoryStrength(user);
+  const natalZhisForD: string[] = [
+    user.pillars.branches.year.hanja,
+    user.pillars.branches.month.hanja,
+    user.pillars.branches.day.hanja,
+    ...(user.pillars.branches.hour ? [user.pillars.branches.hour.hanja] : []),
+  ];
+
   const periods = analyzeDaYunWealth(dayGan, appData.fortuneTimelineNodes);
-  const daYunPeriods: DaYunTimingPeriod[] = periods.map((period) => ({
-    period,
-    classification: classifyPeriod(period.hasWealthSignal, period.ganCategory, yongsinCats, huisinCats, balance.structureFlags, supportIntoHuisinCats, true),
-  }));
+  const daYunPeriods: DaYunTimingPeriod[] = periods.map((period) => {
+    const dEvidence = period.ganCategory
+      ? buildDEvidence(period.ganCategory, natalZhisForD, period.ganZhi[1], balance.structureFlags, obstructedCats, wealthStrength)
+      : undefined;
+    return {
+      period,
+      classification: classifyPeriod(period.hasWealthSignal, period.ganCategory, yongsinCats, huisinCats, balance.structureFlags, supportIntoHuisinCats, true, dEvidence),
+    };
+  });
 
   const { current, next } = pickPastCurrentNext(periods);
   const currentDaYun = current ? daYunPeriods.find((d) => d.period === current) ?? null : null;
@@ -211,7 +322,11 @@ export function analyzeWealthTiming(appData: AppData): WealthTimingResult {
       ...(user.pillars.hour ? [{ stage: "hour" as const, gan: user.pillars.hour.hanja }] : []),
     ];
 
-    const daYunLabel = classifyPeriod(target.hasWealthSignal, target.ganCategory, yongsinCats, huisinCats, balance.structureFlags, supportIntoHuisinCats, true).label;
+    // [2026-09-15 수정] target(current ?? next)은 이미 daYunPeriods에서
+    // dEvidence까지 반영해 분류된 값이 있으므로, 그 결과를 그대로 가져다
+    // 쓴다(재계산 아님 — 세운 판정(classifyPeriod 아래 호출)은 이번 D
+    // 교차검증 범위 밖이라 dEvidence 없이 기존 동작 그대로 유지한다).
+    const daYunLabel = (currentDaYun ?? nextDaYun)!.classification.label;
 
     const thisYear = new Date().getFullYear();
     const seunRange = buildSeunRange(dayGan, thisYear, thisYear + 4, natalBranches, { ganZhi: target.ganZhi, ganSipseong: target.ganSipseong }, natalStems);
