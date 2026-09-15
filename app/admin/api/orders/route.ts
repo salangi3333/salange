@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSql } from "@/lib/db";
 import { createManualPaidOrder } from "@/lib/manualOrderStore";
+import { createEmailDeliverer } from "@/lib/reportDelivery";
 import { processManualOrderRequest } from "@/app/api/admin/manual-orders/handler";
 import { isTrustedOrigin, isRequestAuthenticated } from "@/lib/adminSession";
 
@@ -26,9 +27,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
   }
 
+  const sql = getSql();
   const result = await processManualOrderRequest(rawBody, {
     createOrder: createManualPaidOrder,
-    sql: getSql(),
+    sql,
+    // [2026-09-14 추가] 관리자 UI 경로도 공개 API 경로와 동일하게 주문
+    // 생성 직후 PDF+이메일 발송을 시도한다(lib/reportDelivery.ts).
+    deliverEmail: createEmailDeliverer(sql),
   });
   return NextResponse.json(result.body, { status: result.status });
 }

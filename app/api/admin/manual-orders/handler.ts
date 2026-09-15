@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
-import { calculateSaju } from "@/lib/sajuEngine";
+import { calculateSaju, IntakeFormData } from "@/lib/sajuEngine";
 import { parseIntakeInput } from "@/lib/reportStore";
 import { getSql } from "@/lib/db";
 import { isValidOrderId } from "@/lib/orderStore";
@@ -10,6 +10,7 @@ import {
   findExistingManualPaidOrder,
   IdempotencyKeyConflictError,
 } from "@/lib/manualOrderStore";
+import { DeliverEmailFn } from "@/lib/reportDelivery";
 
 /**
  * 당근 등 수동 주문 접수 전용 관리자 API의 실제 로직 — createManualPaidOrder
@@ -90,6 +91,14 @@ import {
 export interface ManualOrderRouteDeps {
   createOrder: typeof createManualPaidOrder;
   sql: ReturnType<typeof getSql>;
+  /** [2026-09-14 신규, 선택적] 주문 생성 성공 직후 PDF 생성+이메일 발송을
+   * 시도하는 함수(lib/reportDelivery.ts의 createEmailDeliverer가 만든
+   * 것). **제공하지 않으면 이 단계 자체를 완전히 건너뛴다** — 기존
+   * 자동테스트는 전부 이 필드를 넘기지 않으므로 응답 본문 형태(키 4개:
+   * reportId/orderId/deliveryId/status)를 포함해 기존 동작이 한 글자도
+   * 안 바뀐다. 실제 프로덕션 route.ts(app/api/admin/manual-orders,
+   * app/admin/api/orders) 두 곳만 이 필드를 채워 넣는다. */
+  deliverEmail?: DeliverEmailFn;
 }
 
 /** processManualOrderRequest의 반환 형태 — NextResponse가 아니라 평범한
@@ -98,6 +107,25 @@ export interface ManualOrderRouteDeps {
 export interface ManualOrderProcessResult {
   status: number;
   body: Record<string, unknown>;
+}
+
+/** deps.deliverEmail이 있을 때만 호출하고 결과를 { delivery: {...} } 형태로
+ * 돌려준다(없으면 undefined — 기존 응답 본문에 아무 필드도 추가되지
+ * 않음). deliverEmail 자체가 절대 예외를 던지지 않도록 설계했지만(항상
+ * {status,error?} 반환), 방어적으로 한 번 더 감싼다 — 이미 성공적으로
+ * 커밋된 주문 생성 자체를 이 부가 단계의 실패로 무너뜨리지 않는다. */
+async function maybeDeliverEmail(
+  deps: ManualOrderRouteDeps,
+  args: { deliveryId: string; reportId: string; email: string; name: string; intake: IntakeFormData }
+): Promise<Record<string, unknown> | undefined> {
+  if (!deps.deliverEmail) return undefined;
+  try {
+    const outcome = await deps.deliverEmail(args);
+    return { delivery: outcome };
+  } catch (e) {
+    console.error("[api/admin/manual-orders] 이메일 발송 단계 예외:", e instanceof Error ? e.message : e);
+    return { delivery: { status: "FAILED", error: "발송 처리 중 오류가 발생했습니다." } };
+  }
 }
 
 function isAuthorized(req: NextRequest): boolean {
@@ -190,6 +218,13 @@ export async function processManualOrderRequest(
       deps.sql
     );
     if (existing) {
+      const deliveryInfo = await maybeDeliverEmail(deps, {
+        deliveryId: existing.deliveryId,
+        reportId: existing.reportId,
+        email,
+        name: intake.name,
+        intake,
+      });
       return {
         status: 200,
         body: {
@@ -197,6 +232,7 @@ export async function processManualOrderRequest(
           orderId: existing.orderId,
           deliveryId: existing.deliveryId,
           status: "PAID",
+          ...deliveryInfo,
         },
       };
     }
@@ -249,9 +285,22 @@ export async function processManualOrderRequest(
   const input: CreateManualPaidOrderInput = { intake, email, amount, channel, idempotencyKey };
   try {
     const result = await deps.createOrder(input);
+    const deliveryInfo = await maybeDeliverEmail(deps, {
+      deliveryId: result.deliveryId,
+      reportId: result.reportId,
+      email,
+      name: intake.name,
+      intake,
+    });
     return {
       status: result.alreadyExisted ? 200 : 201,
-      body: { reportId: result.reportId, orderId: result.orderId, deliveryId: result.deliveryId, status: "PAID" },
+      body: {
+        reportId: result.reportId,
+        orderId: result.orderId,
+        deliveryId: result.deliveryId,
+        status: "PAID",
+        ...deliveryInfo,
+      },
     };
   } catch (e) {
     if (e instanceof IdempotencyKeyConflictError) {

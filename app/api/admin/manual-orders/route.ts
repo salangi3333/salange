@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSql } from "@/lib/db";
 import { createManualPaidOrder } from "@/lib/manualOrderStore";
+import { createEmailDeliverer } from "@/lib/reportDelivery";
 import { createHandler } from "./handler";
 
 /**
@@ -12,5 +13,9 @@ import { createHandler } from "./handler";
 export async function POST(req: NextRequest): Promise<NextResponse> {
   // getSql()을 모듈 top-level이 아니라 요청 처리 시점에 호출 — DATABASE_URL이
   // 빌드 환경에 없어도 `next build` 자체가 깨지지 않는다(기존 라우트들과 동일 원칙).
-  return createHandler({ createOrder: createManualPaidOrder, sql: getSql() })(req);
+  const sql = getSql();
+  // [2026-09-14 추가] deliverEmail은 선택적 필드라 안 넘기면 기존과 동일하게
+  // 동작하지만, 실제 프로덕션 경로는 여기서 채워 넣어 주문 생성 직후
+  // PDF+이메일 발송까지 자동으로 이어지게 한다(lib/reportDelivery.ts).
+  return createHandler({ createOrder: createManualPaidOrder, sql, deliverEmail: createEmailDeliverer(sql) })(req);
 }
