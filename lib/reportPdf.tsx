@@ -238,21 +238,24 @@ export const PROTOTYPE_STYLE = `
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     padding: 0 22mm; text-align: center;
   }
-  .hprologue-eyebrow { font-size: 9pt; letter-spacing: 3pt; color: #A9803D; margin: 0 0 20pt; }
-  .hprologue-text { font-size: 12pt; line-height: 2; color: #4A3E2F; max-width: 130mm; margin: 0 0 16pt; }
-  .hprologue-emph { font-weight: 700; color: #3A2E1C; }
+  /* [2026-09-15 가독성 확대 production 반영 — 검증된 scratch 값 그대로]
+     실제 휴대폰(갤럭시 S24 Ultra)에서 페이지 너비에 맞춰 무확대로 볼 때도
+     읽기 편하도록 앞부분(프롤로그/목차) 텍스트 계층을 확대. */
+  .hprologue-eyebrow { font-size: 16pt; letter-spacing: 3pt; color: #6B3A0C; margin: 0 0 22pt; }
+  .hprologue-text { font-size: 18pt; line-height: 1.85; color: #241B12; max-width: 130mm; margin: 0 0 20pt; }
+  .hprologue-emph { font-weight: 700; color: #17110A; }
 
   .ptoc { break-before: page; page-break-before: always; min-height: 220mm; }
-  .ptoc-eyebrow { text-align: center; font-size: 9pt; letter-spacing: 3pt; color: #8B7257; margin: 0 0 8pt; }
-  .ptoc-title { text-align: center; font-size: 16pt; margin: 0 0 22pt; color: #2B2622; }
+  .ptoc-eyebrow { text-align: center; font-size: 14pt; letter-spacing: 3pt; color: #6B3A0C; margin: 0 0 10pt; }
+  .ptoc-title { text-align: center; font-size: 28pt; margin: 0 0 26pt; color: #17110A; font-weight: 700; }
   .ptoc-list { list-style: none; margin: 0; padding: 0; }
   .ptoc-item {
-    display: flex; align-items: baseline; gap: 10pt;
-    padding: 9pt 0; border-bottom: 0.5pt solid #E4D9C4;
+    display: flex; align-items: baseline; gap: 12pt;
+    padding: 13pt 0; border-bottom: 0.5pt solid #E4D9C4;
   }
-  .ptoc-label { font-size: 10pt; font-weight: 700; color: #6B4A1F; white-space: nowrap; }
-  .ptoc-item-title { font-size: 10.5pt; color: #2B2622; }
-  .ptoc-note { margin-top: 16pt; font-size: 8.5pt; color: #A08A63; text-align: center; }
+  .ptoc-label { font-size: 15pt; font-weight: 700; color: #6B4A1F; white-space: nowrap; }
+  .ptoc-item-title { font-size: 16pt; color: #17110A; }
+  .ptoc-note { margin-top: 16pt; font-size: 13pt; color: #6B5636; text-align: center; }
 
   .pplate { break-before: page; page-break-before: always; break-after: page; page-break-after: always; }
   .pplate-img {
@@ -357,8 +360,8 @@ export const PROTOTYPE_STYLE = `
   }
   .dcard-label { display: block; font-size: 8pt; letter-spacing: 2pt; color: #B7A588; font-weight: 700; margin-bottom: 5pt; }
 
-  .dtag-row { display: flex; gap: 6pt; flex-wrap: wrap; margin: 6pt 0 16pt; }
-  .dtag { font-size: 8.5pt; padding: 3pt 9pt; border-radius: 9pt; border: 0.75pt solid; }
+  .dtag-row { display: flex; gap: 8pt; flex-wrap: wrap; margin: 8pt 0 22pt; }
+  .dtag { font-size: 16pt; padding: 7pt 16pt; border-radius: 13pt; border: 0.75pt solid; }
   .dtag-easy { color: #B7CBB0; border-color: #5C7355; background: rgba(124,140,116,0.14); }
   .dtag-effort { color: #E3A392; border-color: #8B4A3A; background: rgba(201,107,84,0.14); }
 
@@ -489,23 +492,25 @@ const HANJI_STYLE = `
    * 인쇄용 시각화 — 화면의 SipseongStrengthBars/DomainCards SVG를
    * 복제하지 않고, 같은 값(widthPercent 등 이미 계산된 상대값)을 단순
    * 막대/카드로만 옮긴다. ── */
-  .hdeep-bars { margin: 10pt 0 14pt; }
-  .hdeep-bar-row { display: flex; align-items: center; gap: 8pt; margin-bottom: 6pt; }
-  .hdeep-bar-name { width: 28mm; font-size: 9.5pt; font-weight: 700; color: #3A2E1C; flex-shrink: 0; }
-  .hdeep-bar-track { flex: 1; height: 7pt; background: rgba(58,46,28,0.08); border-radius: 4pt; overflow: hidden; }
+  /* [2026-09-15 가독성 확대 production 반영] 이름 열 폭(28mm)은 한글
+     2자 기준 14pt로도 여유 있어 그대로 두고 크기만 키움. */
+  .hdeep-bars { margin: 10pt 0 16pt; }
+  .hdeep-bar-row { display: flex; align-items: center; gap: 10pt; margin-bottom: 8pt; }
+  .hdeep-bar-name { width: 30mm; font-size: 14pt; font-weight: 700; color: #3A2E1C; flex-shrink: 0; }
+  .hdeep-bar-track { flex: 1; height: 9pt; background: rgba(58,46,28,0.08); border-radius: 4pt; overflow: hidden; }
   .hdeep-bar-fill { height: 100%; background: #A9803D; border-radius: 4pt; }
-  .hdeep-domain-grid { display: flex; flex-wrap: wrap; gap: 8pt; margin: 4pt 0 14pt; }
+  .hdeep-domain-grid { display: flex; flex-wrap: wrap; gap: 10pt; margin: 4pt 0 16pt; }
   .hdeep-domain-card {
     flex: 1 1 45%; min-width: 68mm; border: 0.5pt solid rgba(107,74,31,0.28); border-radius: 3pt;
-    padding: 8pt 10pt; break-inside: avoid; page-break-inside: avoid;
+    padding: 12pt 13pt; break-inside: avoid; page-break-inside: avoid;
   }
-  .hdeep-domain-area { font-size: 8pt; letter-spacing: 1pt; color: #A9803D; font-weight: 700; }
-  .hdeep-domain-lead { font-size: 9.5pt; font-weight: 700; color: #3A2E1C; margin: 4pt 0 2pt; }
-  .hdeep-domain-detail { font-size: 9pt; color: #55493B; margin: 0; }
-  .hdeep-pair-cols { display: flex; gap: 14pt; margin: 4pt 0 14pt; }
+  .hdeep-domain-area { font-size: 14pt; letter-spacing: 1pt; color: #6B3A0C; font-weight: 700; }
+  .hdeep-domain-lead { font-size: 14pt; font-weight: 700; color: #3A2E1C; margin: 6pt 0 3pt; }
+  .hdeep-domain-detail { font-size: 14pt; color: #55493B; margin: 0; line-height: 1.5; }
+  .hdeep-pair-cols { display: flex; gap: 16pt; margin: 4pt 0 16pt; }
   .hdeep-pair-col { flex: 1; }
-  .hdeep-pair-title { font-size: 9.5pt; font-weight: 700; color: #6B4A1F; margin: 0 0 6pt; }
-  .hdeep-pair-item { font-size: 9pt; color: #55493B; margin: 0 0 5pt; }
+  .hdeep-pair-title { font-size: 14pt; font-weight: 700; color: #6B4A1F; margin: 0 0 8pt; }
+  .hdeep-pair-item { font-size: 14pt; color: #55493B; margin: 0 0 7pt; line-height: 1.5; }
 
   /* ── [2026-09 PDF 디자인 마스터] 선녀 인물 이미지가 없는 장(第一·五·八章
    * 외 나머지)의 오프닝에 쓰는 모티프 패널(PdfMotifs.tsx의 원본 SVG) — 사진
@@ -693,8 +698,10 @@ export function renderHanjiV4SampleHtml(bodyHtml: string): string {
  *    바꾸지 않았다 — 색과 크기만 이 파일에서 새로 입힌다. */
 const HANJI_BOOK_STYLE = `
   :root {
-    --ink: #241B12;
-    --ink-strong: #17110A;
+    /* [2026-09-15 가독성 확대 production 반영] 본문 잉크색을 더 진하게.
+       브랜드 포인트 색(--label, --rule)은 승인된 값 그대로 유지한다. */
+    --ink: #1C140C;
+    --ink-strong: #100B06;
     --label: #6B3A0C;
     --rule: #C9B48A;
   }
@@ -736,32 +743,30 @@ const HANJI_BOOK_STYLE = `
     background: linear-gradient(to top, rgba(15,11,7,0.88) 0%, rgba(15,11,7,0.4) 60%, rgba(15,11,7,0) 100%);
   }
   .bcover-divider { width: 30mm; height: 0.75pt; background: #E8BE7C; margin: 0 auto 12pt; }
-  .bcover-tagline { font-size: 11.5pt; color: #E8DCC5; margin: 0 0 14pt; font-weight: 600; letter-spacing: 0.3pt; }
+  .bcover-tagline { font-size: 14pt; color: #E8DCC5; margin: 0 0 15pt; font-weight: 600; letter-spacing: 0.3pt; }
   .bcover-name { font-size: 23pt; font-weight: 700; color: #F5EFE1; margin: 0 0 10pt; letter-spacing: 0.5pt; text-shadow: 0 1pt 6pt rgba(0,0,0,0.5); }
-  .bcover-date { font-size: 10.5pt; color: #D9CBB0; margin: 0; font-weight: 600; letter-spacing: 0.5pt; }
+  .bcover-date { font-size: 14pt; color: #D9CBB0; margin: 0; font-weight: 600; letter-spacing: 0.5pt; }
 
   /* 라벨/소제목/본문 — 전면 명도·크기 상향 */
-  /* [2026-09 가독성 보강] 라벨 13→14pt, 색 소폭 진하게(#7A4310→#6B3A0C —
-     톤다운 유지하되 대비만 강화). 소제목 14→17pt로 확대해 본문과
-     확실히 구분되도록(챕터 제목 27pt/데이터 제목 20pt보다는 작게 유지
-     — "너무 큰 챕터 제목처럼 보이지 않게" 지시 반영). */
-  .b-label { display: block; font-size: 14pt; font-weight: 700; letter-spacing: 3pt; color: var(--label, #6B3A0C); margin: 0 0 10pt; }
-  .b-subheading { font-size: 17pt; font-weight: 700; color: var(--ink-strong); margin: 22pt 0 10pt; letter-spacing: 0.2pt; line-height: 1.35; }
-  /* [2026-09 추가 발견 — 사용자 지적] 1·2·3·6장 "심화/더 깊이" 안의
-     번호 매긴 하위 소제목(①②③...)이 예전 클래스(.year-heading, 10.5pt
-     — 본문 11.5pt보다도 작음)를 그대로 쓰고 있어 제목처럼 안 보이고
-     페이지가 빡빡해 보이던 문제. b-subheading(17pt, 장을 대표하는
-     제목)보다는 한 단계 낮은 하위 소제목 전용 클래스를 새로 둔다. */
-  .b-subsubheading { font-size: 13.5pt; font-weight: 700; color: var(--ink-strong); margin: 16pt 0 6pt; letter-spacing: 0.1pt; }
-  .bp { font-size: 11.5pt; line-height: 2.0; color: var(--ink); margin: 0 0 15pt; }
-  .bp.b-lead { font-size: 15pt; font-weight: 700; color: var(--ink-strong); line-height: 1.85; margin: 0 0 18pt; }
+  /* [2026-09-15 가독성 확대 production 반영] 실제 휴대폰(갤럭시 S24
+     Ultra)에서 페이지 너비에 맞춰 무확대로 볼 때도 읽기 편하도록
+     본문/제목/태그를 한 단계 더 키우고, 문단 간격·박스 padding도 함께
+     넓힌다. 계산값·문장 내용·브랜드 포인트색(--label/--rule)·8장 문체는
+     손대지 않는다(타이포그래피·색상·간격만 조정). */
+  .b-label { display: block; font-size: 17pt; font-weight: 700; letter-spacing: 3pt; color: var(--label, #6B3A0C); margin: 0 0 14pt; }
+  .b-subheading { font-size: 32pt; font-weight: 700; color: var(--ink-strong); margin: 34pt 0 18pt; letter-spacing: 0.2pt; line-height: 1.28; }
+  /* 번호 매긴 하위 소제목(①②③...) — b-subheading(장 대표 제목)보다는
+     한 단계 낮지만 본문보다 확실히 크고 진하게. */
+  .b-subsubheading { font-size: 26pt; font-weight: 700; color: var(--ink-strong); margin: 28pt 0 13pt; letter-spacing: 0.1pt; }
+  .bp { font-size: 21pt; line-height: 1.8; color: var(--ink); margin: 0 0 26pt; }
+  .bp.b-lead { font-size: 21pt; font-weight: 700; color: var(--ink-strong); line-height: 1.7; margin: 0 0 26pt; }
   .bp.b-quote {
-    font-size: 13pt; font-weight: 700; color: var(--ink-strong); text-align: center;
-    padding: 14pt 10mm; margin: 22pt 0; border-top: 0.75pt solid var(--rule); border-bottom: 0.75pt solid var(--rule);
+    font-size: 19pt; font-weight: 700; color: var(--ink-strong); text-align: center;
+    padding: 22pt 12mm; margin: 28pt 0; border-top: 0.75pt solid var(--rule); border-bottom: 0.75pt solid var(--rule);
   }
   .bp.b-card {
     border: 0.75pt solid #C9B48A; background: #F4EBD4; color: var(--ink-strong);
-    padding: 12pt 14pt; margin: 16pt 0; break-inside: avoid; page-break-inside: avoid; font-weight: 600;
+    padding: 24pt 22pt; margin: 22pt 0; break-inside: avoid; page-break-inside: avoid; font-weight: 600;
   }
   .b-rule { width: 26mm; height: 0.75pt; background: var(--rule); margin: 18pt auto; }
 
@@ -778,15 +783,15 @@ const HANJI_BOOK_STYLE = `
 
   /* ── 챕터 전환(Hero, 8장 공통 문법 — 사진 crop/여백/온도만 장마다 다름) ── */
   .bhero { break-before: page; page-break-before: always; break-after: page; page-break-after: always; min-height: 253mm; background: #FBF6EA; position: relative; }
-  .bhero-img-wrap { position: relative; width: 100%; height: 172mm; overflow: hidden; }
+  .bhero-img-wrap { position: relative; width: 100%; height: 140mm; overflow: hidden; }
   .bhero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .bhero-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 58mm; background: linear-gradient(to bottom, rgba(251,246,234,0) 0%, #FBF6EA 90%); }
   .bhero-scrim-top { position: absolute; top: 0; left: 0; right: 0; padding: 12mm 14mm; background: linear-gradient(to bottom, rgba(20,15,8,0.4) 0%, rgba(20,15,8,0) 100%); }
-  .bhero-eyebrow { font-size: 9.5pt; letter-spacing: 5pt; color: #F5EFE1; font-weight: 700; margin: 0; text-shadow: 0 1pt 3pt rgba(0,0,0,0.4); }
+  .bhero-eyebrow { font-size: 15pt; letter-spacing: 5pt; color: #F5EFE1; font-weight: 700; margin: 0; text-shadow: 0 1pt 3pt rgba(0,0,0,0.4); }
   .bhero-num { position: absolute; top: 12mm; right: 14mm; font-size: 34pt; font-weight: 700; color: rgba(245,239,225,0.88); text-shadow: 0 1pt 4pt rgba(0,0,0,0.45); }
   .bhero-body { padding: 8mm 20mm 16mm; text-align: center; }
-  .bhero-title { font-size: 27pt; color: var(--ink-strong); margin: 0 0 16pt; line-height: 1.28; font-weight: 700; }
-  .bhero-lead { font-size: 13.5pt; font-weight: 700; color: var(--ink); line-height: 1.85; max-width: 132mm; margin: 0 auto; }
+  .bhero-title { font-size: 34pt; color: var(--ink-strong); margin: 0 0 18pt; line-height: 1.28; font-weight: 700; }
+  .bhero-lead { font-size: 20pt; font-weight: 700; color: var(--ink); line-height: 1.7; max-width: 132mm; margin: 0 auto; }
 
   /* ── 이미지+핵심문장 인사이트 페이지 ── */
   .bquote-page { break-before: page; page-break-before: always; break-after: page; page-break-after: always; min-height: 253mm; background: #FBF6EA; }
@@ -800,8 +805,8 @@ const HANJI_BOOK_STYLE = `
   .bquote-plain { break-before: page; page-break-before: always; min-height: 253mm; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24mm; }
 
   /* ── 명식/오행/재물/10년 — 큰 데이터 페이지 ── */
-  .bdata-title { font-size: 20pt; color: var(--ink-strong); margin: 0 0 6pt; font-weight: 700; }
-  .bdata-sub { font-size: 11pt; color: var(--ink); margin: 0 0 20pt; }
+  .bdata-title { font-size: 26pt; color: var(--ink-strong); margin: 0 0 8pt; font-weight: 700; }
+  .bdata-sub { font-size: 16pt; color: var(--ink); margin: 0 0 22pt; line-height: 1.6; }
 
   /* [2026-09 사용자 피드백] "너무 밋밋하다" — 테두리를 원래 색(연한
      금색 #B99B5C)보다 진한 브론즈로, 한자는 오행별 색(BOOK_ELEMENT_COLORS,
@@ -812,29 +817,29 @@ const HANJI_BOOK_STYLE = `
   .bmyeongsik-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7pt; }
   .bmyeongsik-cell { text-align: center; padding: 13pt 3pt 10pt; border: 0.75pt solid rgba(107,74,31,0.55); }
   .bmyeongsik-cell.day-cell { background: rgba(169,128,61,0.14); }
-  .bmyeongsik-cell .blabel-top { display: block; font-size: 8.5pt; color: var(--label); font-weight: 700; letter-spacing: 1pt; margin-bottom: 5pt; }
-  .bmyeongsik-cell .bhanja { font-size: 26pt; font-weight: 700; }
-  .bmyeongsik-cell .bsub { display: block; font-size: 9.5pt; color: var(--ink); font-weight: 700; margin-top: 5pt; }
-  .bmyeongsik-cell .bsipseong { display: block; font-size: 10pt; color: var(--label); font-weight: 700; margin-top: 4pt; }
+  .bmyeongsik-cell .blabel-top { display: block; font-size: 14pt; color: var(--label); font-weight: 700; letter-spacing: 1pt; margin-bottom: 6pt; }
+  .bmyeongsik-cell .bhanja { font-size: 28pt; font-weight: 700; }
+  .bmyeongsik-cell .bsub { display: block; font-size: 14pt; color: var(--ink); font-weight: 700; margin-top: 6pt; }
+  .bmyeongsik-cell .bsipseong { display: block; font-size: 14pt; color: var(--label); font-weight: 700; margin-top: 5pt; }
 
   .bohang-wheel-svg { width: 72mm; height: 72mm; }
   .bohang-center-label { font-size: 21px; fill: var(--ink-strong); font-weight: 700; }
   .bohang-center-sub { font-size: 10.5px; fill: var(--label); letter-spacing: 1.5px; font-weight: 700; }
   .bohang-row { display: flex; align-items: center; gap: 9pt; padding: 9pt 11pt; border-radius: 5pt; margin-bottom: 7pt; }
   .bohang-chip { width: 13pt; height: 13pt; border-radius: 50%; flex-shrink: 0; }
-  .bohang-name { font-size: 13.5pt; font-weight: 700; color: var(--ink-strong); width: 27mm; flex-shrink: 0; }
+  .bohang-name { font-size: 14pt; font-weight: 700; color: var(--ink-strong); width: 27mm; flex-shrink: 0; }
   .bohang-track { flex: 1; height: 12pt; background: rgba(36,27,18,0.09); border-radius: 6pt; overflow: hidden; }
   .bohang-fill { height: 100%; border-radius: 6pt; }
   .bohang-value { font-size: 15.5pt; font-weight: 700; color: var(--ink-strong); width: 17mm; text-align: right; flex-shrink: 0; }
-  .bohang-note { font-size: 11pt; color: var(--ink); font-weight: 600; margin-top: 12pt; text-align: center; }
+  .bohang-note { font-size: 16pt; color: var(--ink); font-weight: 600; margin-top: 14pt; text-align: center; line-height: 1.6; }
 
-  .bwealth-track { display: flex; border: 1pt solid #B99B5C; border-radius: 4pt; overflow: hidden; margin: 6pt 0 14pt; }
-  .bwealth-seg { flex: 1; padding: 12pt 4pt; text-align: center; color: #FBF6EA; }
-  .bwealth-seg .seg-age { display: block; font-size: 8.5pt; font-weight: 700; opacity: 0.95; }
-  .bwealth-seg .seg-ganzhi { display: block; font-size: 14pt; font-weight: 700; margin: 3pt 0; }
-  .bwealth-seg .seg-label { display: block; font-size: 8.5pt; font-weight: 700; }
+  .bwealth-track { display: flex; border: 1pt solid #B99B5C; border-radius: 4pt; overflow: hidden; margin: 6pt 0 16pt; }
+  .bwealth-seg { flex: 1; padding: 14pt 5pt; text-align: center; color: #FBF6EA; }
+  .bwealth-seg .seg-age { display: block; font-size: 14pt; font-weight: 700; opacity: 0.95; }
+  .bwealth-seg .seg-ganzhi { display: block; font-size: 16pt; font-weight: 700; margin: 4pt 0; }
+  .bwealth-seg .seg-label { display: block; font-size: 14pt; font-weight: 700; }
   .bwealth-seg.seg-current { box-shadow: inset 0 0 0 2pt var(--ink-strong); }
-  .bwealth-legend { display: flex; gap: 10pt; flex-wrap: wrap; margin: 0 0 14pt; font-size: 9pt; color: var(--ink); font-weight: 600; justify-content: center; }
+  .bwealth-legend { display: flex; gap: 10pt; flex-wrap: wrap; margin: 0 0 16pt; font-size: 14pt; color: var(--ink); font-weight: 600; justify-content: center; }
   .bwealth-legend .legend-dot { display: inline-block; width: 8pt; height: 8pt; border-radius: 50%; margin-right: 4pt; vertical-align: middle; }
 
   /* ── 앞으로의 10년 — 아트 배경 데이터 페이지 ── */
@@ -842,19 +847,23 @@ const HANJI_BOOK_STYLE = `
   .btenyear-art-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .btenyear-art-bg-fallback { background: linear-gradient(160deg, #F1E6CB 0%, #E4D6B8 100%); }
   .btenyear-art-scrim { position: absolute; inset: 0; background: rgba(251,246,234,0.58); }
-  .btenyear-art-content { position: relative; padding: 16mm 16mm 14mm; }
+  /* [2026-09-15 가독성 확대 production 반영 — 그래프 내부 텍스트] 10칸
+     (10년) 막대그래프라 칸 폭이 좁다 — 텍스트를 14pt 이상으로 키우면서
+     겹치지 않도록, 좌우 content padding을 줄이고(16mm→6mm) 칸 사이 gap도
+     줄여 칸 폭 자체를 넓혔다. 연도/데이터 값은 그대로, 표현 크기만 조정. */
+  .btenyear-art-content { position: relative; padding: 14mm 6mm 14mm; }
   .btenyear-art-title { font-size: 24pt; color: var(--ink-strong); margin: 4pt 0 8pt; font-weight: 700; }
-  .btenyear-art-subtitle { font-size: 12.5pt; color: var(--ink); font-weight: 700; margin: 0 0 18pt; max-width: 150mm; line-height: 1.7; }
+  .btenyear-art-subtitle { font-size: 15pt; color: var(--ink); font-weight: 700; margin: 0 0 18pt; max-width: 150mm; line-height: 1.6; }
 
-  .btenyear-track { display: flex; align-items: flex-end; gap: 4pt; border-bottom: 1.5pt solid var(--ink-strong); padding: 0 2pt; }
-  .btenyear-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4pt; }
-  .btenyear-bar-wrap { width: 100%; height: 52mm; display: flex; align-items: flex-end; }
+  .btenyear-track { display: flex; align-items: flex-end; gap: 0; border-bottom: 1.5pt solid var(--ink-strong); padding: 0 1pt; }
+  .btenyear-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3pt; min-width: 0; }
+  .btenyear-bar-wrap { width: 88%; height: 52mm; display: flex; align-items: flex-end; }
   .btenyear-bar { width: 100%; background: linear-gradient(180deg, #C9A46A 0%, #93691E 100%); border-radius: 2pt 2pt 0 0; }
   .btenyear-bar.bar-transition { background: linear-gradient(180deg, #33505E 0%, #1E323C 100%); box-shadow: inset 0 0 0 1.75pt #D9BA7E; }
-  .btenyear-ganzhi { font-size: 12pt; font-weight: 700; color: var(--ink-strong); }
-  .btenyear-year { font-size: 10pt; font-weight: 700; color: var(--ink); }
-  .btenyear-age { font-size: 8pt; color: var(--label); font-weight: 600; }
-  .btenyear-legend { font-size: 8.5pt; color: var(--ink); font-weight: 600; text-align: center; margin: 10pt 0 0; }
+  .btenyear-ganzhi { font-size: 14.5pt; font-weight: 700; color: var(--ink-strong); }
+  .btenyear-year { font-size: 14pt; font-weight: 700; color: var(--ink); }
+  .btenyear-age { font-size: 14pt; color: var(--label); font-weight: 600; }
+  .btenyear-legend { font-size: 14pt; color: var(--ink); font-weight: 600; text-align: center; margin: 12pt 0 0; line-height: 1.5; }
 
   .btenyear-quote-box {
     margin: 18pt 0 0; padding: 14pt 14mm; text-align: center;
@@ -863,12 +872,12 @@ const HANJI_BOOK_STYLE = `
   .btenyear-quote-text { font-size: 13pt; font-weight: 700; color: var(--ink-strong); line-height: 1.8; margin: 0; }
 
   /* 주요 연도(전환년) 상세 페이지 — 10년 지도 다음 장 */
-  .byear-card { border: 0.75pt solid rgba(36,27,18,0.22); border-radius: 3pt; padding: 12pt 14pt; margin: 0 0 14pt; break-inside: avoid; page-break-inside: avoid; }
-  .byear-card-head { display: flex; align-items: baseline; gap: 10pt; margin-bottom: 6pt; }
-  .byear-card-year { font-size: 17pt; font-weight: 700; color: var(--ink-strong); }
-  .byear-card-ganzhi { font-size: 12pt; font-weight: 700; color: var(--label); }
-  .byear-card-age { font-size: 9.5pt; color: var(--ink); }
-  .byear-card-signal { font-size: 10.5pt; font-weight: 700; color: var(--label); margin: 0 0 6pt; }
+  .byear-card { border: 0.75pt solid rgba(36,27,18,0.22); border-radius: 3pt; padding: 14pt 16pt; margin: 0 0 16pt; break-inside: avoid; page-break-inside: avoid; }
+  .byear-card-head { display: flex; align-items: baseline; gap: 10pt; margin-bottom: 8pt; flex-wrap: wrap; }
+  .byear-card-year { font-size: 18pt; font-weight: 700; color: var(--ink-strong); }
+  .byear-card-ganzhi { font-size: 14pt; font-weight: 700; color: var(--label); }
+  .byear-card-age { font-size: 14pt; color: var(--ink); }
+  .byear-card-signal { font-size: 15pt; font-weight: 700; color: var(--label); margin: 0 0 8pt; }
 
   /* ── 마지막 한지 편지 — paljamun-ink-background-seal.png 배경 +
      붉은 낙관(이미지 안에 이미 있음) 버전. 배경 이미지가 없으면(폴백)
@@ -885,7 +894,7 @@ const HANJI_BOOK_STYLE = `
   }
   .bletter-mark { font-size: 14pt; letter-spacing: 6pt; color: var(--label); font-weight: 700; margin: 0 0 28pt; }
   .bletter-title { font-size: 19pt; color: var(--ink-strong); margin: 0 0 26pt; font-weight: 700; }
-  .bletter-line { font-size: 13.5pt; color: var(--ink); line-height: 2.15; margin: 0 0 15pt; font-weight: 600; }
+  .bletter-line { font-size: 15pt; color: var(--ink); line-height: 2.05; margin: 0 0 15pt; font-weight: 600; }
   .bletter-seal { margin-top: 28pt; }
 `;
 
