@@ -331,7 +331,17 @@ function buildCurrentPositionSection(key: LifeFlowKey, currentLocked: string, ba
 function buildNextTransitionSection(key: LifeFlowKey, nextLocked: string, yongsinWinners: SipseongCategory[]): LifeTransitionInsightSection {
   const { phases, currentPhaseIndex, natalAxis, daYun, nextPhaseTransitionAge } = key;
   const current = phases[currentPhaseIndex];
-  const body: string[] = [nextLocked];
+  // [중복 버그 수정] nextLocked(= lifeFlow.daYunFlowLocked.next)는 기본
+  // 챕터(第六章 ③ "다음 큰 흐름에서 달라지는 것", lifeTransitionNarrative.ts의
+  // buildNextShift가 이 값을 그대로 패스스루)에서 이미 문자 그대로 노출된
+  // 값이다. 이 章(insight ⑤)은 항상 기본 챕터 ①~④ 바로 뒤에 읽히므로,
+  // 같은 문단을 여기서 또 body[0]에 넣으면 고객이 방금 읽은 문장을 그대로
+  // 한 번 더 읽게 된다(18명 중 재현 확인). nextLocked 자체의 계산/의미는
+  // 손대지 않고, 이 章의 body에는 처음부터 넣지 않는다 — 이 함수가 원래도
+  // 만들어내는 새 문단(십성 전환 의미·구체 장면·오행 대비 등)은 전부 그대로
+  // 유지된다. 파라미터는 호출부(다른 파일)의 호출 규약을 안 바꾸기 위해
+  // 그대로 둔다.
+  const body: string[] = [];
 
   const next = daYun.next;
   if (next?.ganCategory && current?.category) {
@@ -386,6 +396,14 @@ function buildNextTransitionSection(key: LifeFlowKey, nextLocked: string, yongsi
       );
     }
   }
+
+  // [중복 버그 수정, 이어서] next?.ganCategory && current?.category가
+  // false인 극단 케이스(다음 대운 정보 자체가 없는 등)에는 위 if 블록이
+  // 전혀 실행되지 않아 body가 비어 있다 — 이때만 기존처럼 nextLocked를
+  // 자리 지킴용으로 넣는다(기존 동작 그대로 보존, 빈 섹션 방지). 새 문단이
+  // 실제로 만들어진 일반적인 경우는 이 분기를 타지 않으므로 중복이 생기지
+  // 않는다.
+  if (body.length === 0) body.push(nextLocked);
 
   return { heading: "⑤ 다음 전환점", body };
 }

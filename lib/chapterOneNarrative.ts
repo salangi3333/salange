@@ -22,10 +22,9 @@ type SipseongCategory = "비겁" | "식상" | "재성" | "관성" | "인성";
 
 interface SipseongTrait {
   category: SipseongCategory;
-  /** 일간·일지 설명(2번)에서 "이 자리는 ~입니다" 형태로 쓰는 정의 */
-  seat: string;
-  /** 일간·일지 설명에서 정의 다음 문장 — 실생활로 잇는 한 문장 */
-  effect: string;
+  /** 일간·일지 설명(2번)에서 그대로 쓰는 완성된 장면 — 위치·구조 설명 없이
+   * 행동/반응으로 시작해서 용어는 맨 끝 괄호로만 붙인다. */
+  scene: string;
   /** 다른 글자와의 상호작용(3번)에서 쓰는 짧은 수식 어구 */
   clause: string;
 }
@@ -33,72 +32,83 @@ interface SipseongTrait {
 const SIPSEONG_TRAIT: Record<string, SipseongTrait> = {
   비견: {
     category: "비겁",
-    seat: "일간과 힘을 나란히 하는 자리",
-    effect: "그래서 누구보다 자기 중심이 뚜렷하고, 남의 속도에 쉽게 휩쓸리지 않습니다.",
+    scene:
+      "자기 기준이 뚜렷해서, 여러 사람의 말을 충분히 들어도 마지막 판단은 결국 스스로 내려야 마음이 놓입니다. 남들이 다 같은 방향으로 갈 때도, 내 생각이 다르면 쉽게 따라가지 않습니다(비견).",
     clause: "나란히 힘을 보태는",
   },
   겁재: {
     category: "비겁",
-    seat: "일간과 같은 색이지만 한 걸음 더 나아가는 자리",
-    effect: "그래서 지지 않으려는 마음이 은근히 강하고, 손에 쥔 것을 쉽게 내주지 않습니다.",
+    scene:
+      "지지 않으려는 마음이 은근히 강해서, 한번 손에 쥔 건 쉽게 내주지 않습니다. 남들이 적당히 양보하고 넘어가는 상황에서도, 끝까지 자기 몫을 챙기고 나서야 물러섭니다(겁재).",
     clause: "같은 색으로 힘을 더하는",
   },
   식신: {
     category: "식상",
-    seat: "일간이 여유롭게 풀어내는 자리",
-    effect: "그래서 생각과 감정이 서두르지 않고 차분히 흘러나오며, 스스로도 그 흐름을 편안하게 받아들입니다.",
+    scene:
+      "생각과 감정을 서두르지 않고 차분히 풀어내는 편입니다. 급한 순간에도 일단 여유를 찾고 나서야 움직이고, 그 흐름을 스스로도 편안하게 받아들입니다(식신).",
     clause: "여유롭게 풀어내는",
   },
   상관: {
     category: "식상",
-    seat: "일간이 스스로 뿜어내는 재능과 표현력의 자리",
-    effect: "그래서 관찰하고 판단하는 눈이 안에만 머물지 않고, 말과 행동으로 그대로 새어 나옵니다.",
+    scene:
+      "속에 있는 걸 오래 담아두지 못하는 편이라, 관찰하고 판단한 걸 결국 말이나 행동으로 드러내고야 맙니다. 남들이 눈치껏 넘어가는 순간에도, 하고 싶은 말은 결국 하고 넘어갑니다(상관).",
     clause: "예리하게 드러내는",
   },
   편재: {
     category: "재성",
-    seat: "일간이 크게 벌려보는 자리",
-    effect: "그래서 기회다 싶으면 몸이 먼저 움직이고, 손에 쥔 것을 불리는 데 거침이 없습니다.",
+    scene:
+      "기회가 보이면 오래 재기보다 일단 움직이는 편입니다. 남들이 '조금 더 생각해보자'고 할 때도, 가능성이 있다고 판단하면 먼저 부딪혀봅니다. 돈을 벌 때도 마찬가지입니다. 하나를 오래 붙잡고 기다리는 것보다 새로운 기회를 찾고, 판을 넓히고, 직접 움직일 때 힘이 살아납니다(편재).",
     clause: "기회를 좇아 크게 불리는",
   },
   정재: {
     category: "재성",
-    seat: "일간이 성실하게 챙기는 자리",
-    effect: "그래서 눈앞의 것을 꼼꼼히 관리하는 습관이 몸에 배어 있고, 무리한 선택은 잘 하지 않습니다.",
+    scene:
+      "눈앞의 것부터 꼼꼼히 챙기는 습관이 몸에 배어 있습니다. 남들이 한 방을 노리는 선택을 할 때도, 무리한 쪽보다는 확실한 걸 하나씩 쌓아가는 쪽을 택합니다(정재).",
     clause: "성실하게 쌓는",
   },
   편관: {
     category: "관성",
-    seat: "일간을 예고 없이 밀어붙이는 자리",
-    effect: "그래서 위기 앞에서 오히려 순발력이 살아나고, 압박을 정면으로 받아내는 힘이 있습니다.",
+    scene:
+      "예고 없이 밀려오는 위기 앞에서 오히려 순발력이 살아나는 편입니다. 남들이 당황해서 얼어붙는 순간에도, 압박을 정면으로 받아내고 몸이 먼저 움직입니다(편관).",
     clause: "예고 없이 밀어붙이는 압박의",
   },
   정관: {
     category: "관성",
-    seat: "일간에게 지켜야 할 책임을 지우는 자리",
-    effect: "그래서 스스로 정한 규칙을 잘 벗어나지 않고, 맡은 몫은 끝까지 해내려 합니다.",
+    scene:
+      "스스로 정한 규칙을 잘 벗어나지 않고, 맡은 몫은 끝까지 해내야 마음이 놓입니다. 남들이 적당히 넘어가는 상황에서도, 책임질 일이라고 판단하면 끝까지 붙들고 있습니다(정관).",
     clause: "지켜야 할 책임과 질서의",
   },
   편인: {
     category: "인성",
-    seat: "일간에게 남다른 직관을 주는 자리",
-    effect: "그래서 남들이 보지 못하는 것을 먼저 알아채고, 혼자만의 방식으로 생각을 정리하는 시간이 필요합니다.",
+    scene:
+      "남들이 보지 못하는 걸 먼저 알아채는 편입니다. 다만 그 생각을 바로 꺼내지 않고, 혼자만의 방식으로 정리하는 시간이 꼭 필요합니다(편인).",
     clause: "남다른 직관을 주는",
   },
   정인: {
     category: "인성",
-    seat: "일간을 든든하게 지켜주는 자리",
-    effect: "그래서 웬만한 일에는 쉽게 흔들리지 않고, 위태로운 순간에도 돌아갈 자리가 있다는 안정감이 있습니다.",
+    scene:
+      "웬만한 일에는 쉽게 흔들리지 않습니다. 위태로운 순간에도 결국 돌아갈 자리가 있다는 감각이 있어서, 남들보다 덜 불안해하는 편입니다(정인).",
     clause: "든든하게 지켜주는",
   },
 };
 
 const CATEGORY_META: Record<SipseongCategory, { intro: string; noun: string; order: number }> = {
-  비겁: { intro: "먼저 거들어주는 힘입니다.", noun: "거드는 힘", order: 0 },
-  관성: { intro: "동시에, 그 힘을 가만두지 않는 자리도 있습니다.", noun: "짓누르는 힘", order: 1 },
-  식상: { intro: "안에 있는 것을 풀어내는 자리도 있습니다.", noun: "풀어내는 힘", order: 2 },
-  재성: { intro: "성실하게 쌓아가는 자리도 있습니다.", noun: "쌓는 힘", order: 3 },
-  인성: { intro: "그리고 뒤에서 받쳐주는 자리도 있습니다.", noun: "받쳐주는 힘", order: 4 },
+  비겁: { intro: "먼저,", noun: "거드는 힘", order: 0 },
+  관성: { intro: "동시에,", noun: "짓누르는 힘", order: 1 },
+  식상: { intro: "안에서는,", noun: "풀어내는 힘", order: 2 },
+  재성: { intro: "여기에,", noun: "쌓는 힘", order: 3 },
+  인성: { intro: "그리고,", noun: "받쳐주는 힘", order: 4 },
+};
+
+/** 3번(다른 글자와의 상호작용) 전용 — 카테고리별 행동 서술. "~자리에
+ * ~기운이 놓여 있습니다" 같은 위치 설명 없이, 곧바로 행동/반응으로
+ * 말한다. 용어는 맨 끝 괄호로만 붙인다(호출부에서 결합). */
+const CATEGORY_BEHAVIOR: Record<SipseongCategory, string> = {
+  비겁: "연애 초반에도 남들이 다 좋다고 밀어줘도, 내가 아니다 싶으면 마음이 잘 안 갑니다. 반대로 다들 말려도 내 느낌이 오면 일단 만나보는 편이라, 소개해준 사람이 오히려 머쓱해질 때도 있습니다",
+  관성: "갑자기 일이 터졌을 때 제일 먼저 나서서 수습하는 쪽도 본인입니다. '누가 좀 해줬으면' 싶은 순간에도 결국 손을 걷어붙이고 마는 편이라, 정작 본인이 힘들 땐 누구한테 기대야 할지 몰라 혼자 끙끙댈 때가 많습니다",
+  식상: "속으로만 삭이려 해도 결국 말이나 표정으로 새어 나오고 맙니다. 참으려고 애쓸수록 오히려 더 티가 나는 편입니다",
+  재성: "눈앞에 기회가 보이면 계획부터 세우기보다 일단 손에 쥘 수 있는 것부터 챙기는 편입니다",
+  인성: "아무리 힘든 일이 있어도 마지막 순간엔 스스로를 다독여 일으켜 세우는 쪽입니다. 완전히 무너지기 전에, 어떻게든 다시 중심을 잡아내는 편입니다",
 };
 
 type Stage = "year" | "month" | "hour";
@@ -124,20 +134,16 @@ function joinStages(stages: string[]): string {
 function buildCategorySentence(category: SipseongCategory, members: OtherChar[]): string {
   const meta = CATEGORY_META[category];
   const distinctLabels = Array.from(new Set(members.map((m) => m.sipseong)));
-
-  if (distinctLabels.length >= 2) {
-    const [labelA, labelB] = distinctLabels;
-    const stageA = STAGE_LABEL[members.find((m) => m.sipseong === labelA)!.stage];
-    const stageB = STAGE_LABEL[members.find((m) => m.sipseong === labelB)!.stage];
-    const clauseA = SIPSEONG_TRAIT[labelA].clause;
-    const clauseB = SIPSEONG_TRAIT[labelB].clause;
-    return `${meta.intro} ${stageA}에는 ${clauseA} 기운이, ${stageB}에는 ${clauseB} 기운이 나란히 놓여 있습니다(${labelA}·${labelB}).`;
-  }
-
-  const label = distinctLabels[0];
-  const stages = joinStages(members.map((m) => STAGE_LABEL[m.stage]));
-  const clause = SIPSEONG_TRAIT[label].clause;
-  return `${meta.intro} ${stages}에 ${clause} 기운이 자리합니다(${label}).`;
+  const labelTag = distinctLabels.length >= 2 ? distinctLabels.join("·") : distinctLabels[0];
+  const behavior = CATEGORY_BEHAVIOR[category];
+  // 위치(초년/말년 등)를 근거로 대지 않는다 — 같은 힘이 2군데 이상에서
+  // 반복되면 "살아오면서 여러 번 되풀이됐을 가능성"이라는 시간 서술로만
+  // 언급한다(어느 기둥인지는 말하지 않음).
+  const repeated =
+    members.length >= 2
+      ? " 그것도 어쩌다 한 번이 아니라, 살아오면서 여러 번 되풀이해서 나타났을 가능성이 큽니다."
+      : "";
+  return `${meta.intro} ${behavior}(${labelTag}).${repeated}`;
 }
 
 function buildSynthesis(categories: SipseongCategory[]): string {
@@ -147,11 +153,9 @@ function buildSynthesis(categories: SipseongCategory[]): string {
     .map((c) => CATEGORY_META[c].noun);
 
   if (nouns.length === 1) {
-    return `${nouns[0]}이 이 사람 안에 뚜렷하게 자리하고 있다는 뜻입니다.`;
+    return `이 힘 하나가 유독 또렷하게 남아 있다는 뜻입니다.`;
   }
-  const joined =
-    nouns.length === 2 ? nouns.join("과 ") : `${nouns.slice(0, -1).join(", ")}, ${nouns[nouns.length - 1]}`;
-  return `${joined}이 한 사람 안에 동시에 있다는 것 — 이건 스스로도 자신을 다 파악하지 못할 만큼, 여러 결이 겹겹이 쌓여 있다는 뜻입니다.`;
+  return `그래서 정작 본인도 '방금 내가 왜 이렇게 반응했지' 싶을 때가 있습니다. 상황에 따라 이 모습, 저 모습이 번갈아 나오다 보니, 주변 사람들도 은근히 종잡을 수 없다고 느끼기 쉽습니다.`;
 }
 
 const COUNT_WORD: Record<number, string> = { 4: "네", 6: "여섯" };
@@ -180,6 +184,43 @@ function joinElementLabels(labels: string[]): string {
   return `${labels.slice(0, -1).join("·")}과 ${labels[labels.length - 1]}`;
 }
 
+// 오프닝 확장 은유 — 일간의 오행을 기준으로, 그 사람의 가장 강한 힘(관성/
+// 인성/식상/재성)이 어떤 이미지로 나타나는지. 비겁(같은 오행)은 이미지가
+// 아니라 "자기 자신과 같은 결"로 별도 처리한다. 계산(오행·카테고리 존재
+// 여부)은 그대로 두고, 그 결과를 하나의 은유로 엮는 문장만 새로 만든다.
+const RELATION_IMAGE: Record<Element, Partial<Record<SipseongCategory, string>>> = {
+  fire: {
+    관성: "그 불을 억누르려는 물줄기",
+    인성: "불씨를 꺼지지 않게 지펴주는 장작",
+    식상: "이 불이 만들어낸 따뜻한 재",
+    재성: "이 불로 녹여내려는 쇳덩이",
+  },
+  wood: {
+    관성: "뿌리를 잘라내려는 도끼날",
+    인성: "뿌리를 적셔주는 빗물",
+    식상: "가지 끝까지 태우며 뻗어나가는 불꽃",
+    재성: "뿌리내려 차지하려는 땅",
+  },
+  earth: {
+    관성: "속을 파고드는 나무뿌리",
+    인성: "차가운 흙을 데워주는 불",
+    식상: "흙 속에서 빚어져 나오는 광물",
+    재성: "가두고 다스리려는 물길",
+  },
+  metal: {
+    관성: "쇠를 녹이려는 불꽃",
+    인성: "쇠를 품어 키워낸 광맥",
+    식상: "쇠끝에 맺혀 흘러내리는 이슬",
+    재성: "베어 다듬으려는 나무",
+  },
+  water: {
+    관성: "물줄기를 막아서는 둑",
+    인성: "맺혀서 물을 흘려보내는 바위",
+    식상: "물을 머금고 자라나는 물풀",
+    재성: "물을 끓여 다스리려는 불",
+  },
+};
+
 export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative {
   const { user, chars } = appData;
   const name = user.name;
@@ -190,10 +231,35 @@ export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative 
   const zhi = ZHI_PROFILE[dayZhi];
   const elementAnalysis = buildElementAnalysis(chars);
 
+  // 오프닝 확장 은유(아래)에서 "가장 앞서는 카테고리"가 필요해서, 다른
+  // 글자 그룹핑(원래 3번 섹션)을 여기로 앞당겨 계산만 먼저 한다 — 계산
+  // 로직 자체는 한 글자도 바꾸지 않았다.
+  const otherChars: OtherChar[] = [];
+  (["year", "month", "hour"] as const).forEach((stage) => {
+    const stemCell = user.pillars[stage];
+    const branchCell = user.pillars.branches[stage];
+    if (stemCell) otherChars.push({ stage, sipseong: stemCell.sipseong });
+    if (branchCell) otherChars.push({ stage, sipseong: branchCell.sipseong });
+  });
+
+  const grouped = new Map<SipseongCategory, OtherChar[]>();
+  otherChars.forEach((c) => {
+    const trait = SIPSEONG_TRAIT[c.sipseong];
+    if (!trait) return;
+    const list = grouped.get(trait.category) ?? [];
+    list.push(c);
+    grouped.set(trait.category, list);
+  });
+
+  const orderedCategories = Array.from(grouped.keys()).sort(
+    (a, b) => CATEGORY_META[a].order - CATEGORY_META[b].order
+  );
+
   // ── 1. 타고난 본질 ──────────────────────────────────────────────
   const identity: string[] = [];
+  const dayElementReading = ELEMENT_LABEL[dayElement].split("(")[0];
   identity.push(
-    `${name}님의 사주를 여는 글자는 ${user.pillars.day.hangul}(${dayGan})입니다. ${gan.image}처럼, ${gan.coreTrait}입니다.`
+    `${name}님의 사주를 나타내는 글자는 ${user.pillars.day.hangul}(${dayGan})입니다. ${user.pillars.day.hangul}${dayElementReading}는 흔히 ${gan.image}에 비유합니다. ${gan.coreTrait}입니다.`
   );
 
   const dayLabel = ELEMENT_LABEL[dayElement];
@@ -218,72 +284,46 @@ export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative 
   const dayIsStrongest = !isFullyEven && dayCount === maxCount;
   const dayIsWeakest = !isFullyEven && dayCount === minCount;
 
+  // 오행 개수·비율을 그대로 보고하지 않고("화 기운이 몇 개"), 그 결과가
+  // 실제로 어떻게 드러나는지(일관됨/희소해서 눈에 띔/여러 결이 번갈아
+  // 나옴)만 말한다. 판정 조건(dayIsStrongest/dayIsWeakest/minCount===0
+  // 등)은 그대로 두고 문장만 바꿨다.
   if (dayIsStrongest) {
-    const weakestLabelClause = joinElementLabels(weakestElements.map((el) => ELEMENT_LABEL[el]));
-    const weakestClause =
+    const intensity =
       minCount === 0
-        ? `${weakestLabelClause} 기운은 한 글자도 없습니다`
-        : `${weakestLabelClause} 기운은 상대적으로 옅게 자리합니다`;
+        ? `다른 모습이 거의 안 보일 만큼, 어디서든 이 색 하나로 뚜렷하게 나옵니다.`
+        : `사는 환경이나 상황이 달라져도, 이 사람의 색깔만큼은 잘 안 바뀝니다.`;
     identity.push(
-      `그런데 이 기운은 혼자 놓여 있지 않습니다. 사주 전체에 ${dayLabel} 기운이 유독 짙게 깔려 있고, ${weakestClause}. 그래서 타고난 기운이 옅어지지 않고 오히려 뚜렷하게 드러나는 편입니다.`
+      `오랜만에 만난 사람도 '너 하나도 안 변했다'는 말을 자연스럽게 하게 되는 편입니다. ${intensity} 오히려 흔들릴 법한 순간에도, 원래 하던 방식 그대로 움직이는 쪽입니다.`
     );
   } else if (dayIsWeakest) {
-    if (weakestElements.length === 1) {
-      identity.push(
-        `그런데 사주 전체를 보면 오히려 ${dayLabel} 기운이 가장 적습니다. 흔치 않은 만큼, 이 기운이 있는 자리마다 존재감이 또렷하게 남는 편입니다.`
-      );
-    } else {
-      const tiedLabel = joinElementLabels(weakestElements.map((el) => ELEMENT_LABEL[el]));
-      identity.push(
-        `그런데 사주 전체를 보면 오히려 ${tiedLabel} 기운이 함께 가장 적은 편입니다. 흔치 않은 만큼, 이 기운들이 있는 자리마다 존재감이 또렷하게 남는 편입니다.`
-      );
-    }
+    identity.push(
+      `그런데 사주 전체를 보면 오히려 이 성질이 가장 드뭅니다. 흔한 색이 아니다 보니, 이 모습이 나올 때마다 오히려 더 도드라져 보이는 편입니다.`
+    );
   } else {
     identity.push(
-      `여덟 글자 중 ${dayLabel} 기운은 ${dayCount}개로, 아주 많지도 적지도 않게 자리하고 있습니다. 그만큼 다른 기운들과 비교적 균형 있게 섞여 있는 구조입니다.`
+      `그런데 이 성질만 유독 튀지는 않습니다. 다른 모습들과 비교적 고르게 섞여 있어서, 상황에 따라 여러 결이 번갈아 나오는 사람입니다.`
     );
   }
+
+  // 짧은 전환 — 은유(1번)에서 곧장 구체적 행동 언어로 내려간다. 특정
+  // 형용사("부드러운" 등)에 기대지 않는 범용 문장이라 어떤 일간·오행
+  // 조합이 와도 어색하지 않다.
+  identity.push(`${name}님에게는 이 모습만 있는 게 아닙니다.`);
 
   // ── 2. 핵심 명리 요소 — 일간·일지 ──────────────────────────────
   const dayZhiSipseong = user.pillars.branches.day.sipseong;
   const dayZhiTrait = SIPSEONG_TRAIT[dayZhiSipseong];
   if (dayZhiTrait) {
-    const dayZhiHangul = user.pillars.branches.day.hangul;
-    identity.push(
-      `이 기운이 실제로 어떻게 쓰이는지는 일지를 보면 드러납니다. 일간이 딛고 선 자리에는 ${dayZhiHangul}(${dayZhi})${josaEuiGa(
-        dayZhiHangul
-      )} 놓여 있는데, 이 자리는 ${dayZhiTrait.seat}입니다(${dayZhiSipseong}).`
-    );
-    identity.push(dayZhiTrait.effect);
+    // "일지를 보면 드러납니다... 자리는 ~입니다" 같은 위치 설명 없이,
+    // 완성된 장면(scene)을 그대로 붙인다 — 용어는 scene 안 괄호로 이미
+    // 붙어 있다.
+    identity.push(dayZhiTrait.scene);
   }
 
   // ── 3. 사주 안의 다른 글자와 기운 ──────────────────────────────
-  const otherChars: OtherChar[] = [];
-  (["year", "month", "hour"] as const).forEach((stage) => {
-    const stemCell = user.pillars[stage];
-    const branchCell = user.pillars.branches[stage];
-    if (stemCell) otherChars.push({ stage, sipseong: stemCell.sipseong });
-    if (branchCell) otherChars.push({ stage, sipseong: branchCell.sipseong });
-  });
-
-  const grouped = new Map<SipseongCategory, OtherChar[]>();
-  otherChars.forEach((c) => {
-    const trait = SIPSEONG_TRAIT[c.sipseong];
-    if (!trait) return;
-    const list = grouped.get(trait.category) ?? [];
-    list.push(c);
-    grouped.set(trait.category, list);
-  });
-
-  const orderedCategories = Array.from(grouped.keys()).sort(
-    (a, b) => CATEGORY_META[a].order - CATEGORY_META[b].order
-  );
-
   if (orderedCategories.length > 0) {
-    const countWord = COUNT_WORD[otherChars.length] ?? `${otherChars.length}`;
-    identity.push(
-      `나머지 ${countWord} 글자는 이 ${user.pillars.day.hangul}(${dayGan}) 일간을 둘러싸고 각자의 역할을 맡습니다.`
-    );
+    identity.push(`그리고 이런 모습들도 있습니다.`);
     orderedCategories.forEach((cat) => {
       identity.push(buildCategorySentence(cat, grouped.get(cat)!));
     });
@@ -292,10 +332,10 @@ export function buildChapterOneNarrative(appData: AppData): ChapterOneNarrative 
 
   // ── 4. 이 조합으로 만들어지는 기질 ──────────────────────────────
   const temperament: string[] = [
-    "이렇게 여러 기운이 겹친 결과, 타고난 기질은 한 가지 색으로만 정리되지 않습니다.",
+    `${gan.image} 같은 이 기질에는, 이런 면도 있습니다.`,
   ];
   if (gan.potential.paragraphs[1]?.text) temperament.push(gan.potential.paragraphs[1].text);
-  if (zhi.potentialNote) temperament.push(`그리고 일지의 기운이 여기에 더해집니다. ${zhi.potentialNote}`);
+  if (zhi.potentialNote) temperament.push(`여기에 하나 더 있다면, ${zhi.potentialNote}`);
 
   return { identity, temperament };
 }
@@ -395,9 +435,8 @@ export function buildGwansalHonjapNote(appData: AppData): string | null {
 }
 
 // ────────────────────────────────────────────────────────────────
-// 2장(타고난 기질) 오프닝 — buildGwansalHonjapNote(기존, 손대지 않음)는
-// 그대로 둔 채, 검증 전용 buildChapterTwoOpening()을 아래 원칙으로
-// 다시 짰다(1차 구현 이후 지적받은 2개 오류 수정):
+// 2장(타고난 기질) 오프닝 — 아래 원칙으로 조립한다(1차 구현 이후
+// 지적받은 2개 오류 수정, 승인·반영 완료):
 //
 //  ① "가장 많습니다"처럼 개수를 단정하는 표현 금지 — analyzeCategoryStrength의
 //     top은 개수가 아니라 개수+월령+통근+투간을 합친 총점으로 정해지므로,
@@ -411,8 +450,7 @@ export function buildGwansalHonjapNote(appData: AppData): string | null {
 //     전부(첫 매치만이 아니라) 모아 정확히 서술한다.
 //
 // 새 명리 계산은 없다 — analyzeCategoryStrength(3장이 이미 쓰는 값)와
-// 8글자의 실제 sipseong/stage만 읽는다. reportMapper.ts에는 아직 연결하지
-// 않았다 — 검증 전용 함수다.
+// 8글자의 실제 sipseong/stage만 읽는다.
 // ────────────────────────────────────────────────────────────────
 
 const GWANSAL_CLAUSE: Record<"편관" | "정관", string> = {
@@ -436,26 +474,25 @@ function findAllGwansalPositions(appData: AppData): { pyeongwanStages: Stage[]; 
   return { pyeongwanStages, jeonggwanStages };
 }
 
-/** 편관·정관의 실제 위치를 전부 반영한 서술. 하나도 없으면 null. */
+/** [문장만 수정] "~에 자리해, ~힘으로 계속/따로 작동합니다" → 결과 중심 서술. */
 function buildGwansalPositionDetail(pyeongwanStages: Stage[], jeonggwanStages: Stage[]): string | null {
   const hasPyeon = pyeongwanStages.length > 0;
   const hasJeong = jeonggwanStages.length > 0;
   if (!hasPyeon && !hasJeong) return null;
 
   if (hasPyeon && !hasJeong) {
-    return `편관이 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}에 자리해, ${GWANSAL_CLAUSE.편관} 힘으로 계속 작동합니다.`;
+    return `"지금 안 하면 큰일 나"는 압박을 늘 느끼며 살아왔습니다 — ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}부터 계속 그래왔습니다.`;
   }
   if (!hasPyeon && hasJeong) {
-    return `정관이 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}에 자리해, ${GWANSAL_CLAUSE.정관} 힘으로 계속 작동합니다.`;
+    return `"원래 네가 해야 할 일"이라는 기준을 늘 마음에 두고 살아왔습니다 — ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}부터 계속 그래왔습니다.`;
   }
-  // 둘 다 있음 = 관살혼잡
   if (pyeongwanStages.length === 1 && jeonggwanStages.length === 1 && pyeongwanStages[0] === jeonggwanStages[0]) {
-    return `명리학에서는 이를 관살혼잡이라 부르는데, ${STAGE_LABEL[pyeongwanStages[0]]} 하나에 ${GWANSAL_CLAUSE.편관} 편관과 ${GWANSAL_CLAUSE.정관} 정관이 함께 있습니다.`;
+    return `"지금 안 하면 큰일 나"는 압박과 "원래 네가 해야 할 일"이라는 기준을 동시에 느끼며 살아왔습니다 — ${STAGE_LABEL[pyeongwanStages[0]]}부터 그래왔습니다.`;
   }
-  return `명리학에서는 이를 관살혼잡이라 부르는데, 정관은 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.정관} 힘으로, 편관은 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}에서 ${GWANSAL_CLAUSE.편관} 힘으로 따로 작동합니다.`;
+  return `정관 쪽 기준은 ${joinStages(jeonggwanStages.map((s) => STAGE_LABEL[s]))}부터, 편관 쪽 압박은 ${joinStages(pyeongwanStages.map((s) => STAGE_LABEL[s]))}부터 — 시기마다 다른 얼굴로 따라붙습니다.`;
 }
 
-/** 카테고리별 소제목 / 쉬운 뜻 / 현실 모습 — 개수를 단정하지 않는 문구로만 구성.
+/** 카테고리별 소제목 — 개수를 단정하지 않는 문구로만 구성.
  * 식상·인성은 "표현/행동으로 만들어내는 힘", "관찰·흡수해서 판단하는 힘" 방향으로
  * 더 또렷하게 다듬었다(승인된 설계 반영). 비겁·재성·관성은 이전 검증 통과 문구 유지. */
 const AXIS_TITLE: Record<StrengthCategory, string> = {
@@ -465,13 +502,7 @@ const AXIS_TITLE: Record<StrengthCategory, string> = {
   관성: "맡은 일은 끝까지 해내야 마음이 놓이는 사람입니다.",
   인성: "서두르지 않고, 관찰하고 흡수한 뒤에 판단하는 사람입니다.",
 };
-const AXIS_MEANING: Record<StrengthCategory, string> = {
-  비겁: "자기 자신과 같은 색의 기운이 강하다는 뜻입니다",
-  식상: "생각한 것을 행동이나 결과물로 풀어내려는 기운이 강하다는 뜻입니다",
-  재성: "손에 잡히는 결실을 쌓으려는 기운이 강하다는 뜻입니다",
-  관성: "스스로 책임과 규칙을 지우는 기운이 강하다는 뜻입니다",
-  인성: "관찰하고 흡수해서 스스로 판단을 세우려는 기운이 강하다는 뜻입니다",
-};
+// [기존 유지] 이미 구체적 행동 문장이라 1장 기준을 그대로 통과함.
 const AXIS_REAL_LIFE: Record<StrengthCategory, string> = {
   비겁: "그래서 남의 말이나 분위기에 잘 흔들리지 않고, 한번 정한 방향은 끝까지 밀고 나가는 편입니다.",
   식상: "그래서 생각에 머물지 않고, 말이나 행동·결과물로 직접 만들어내야 직성이 풀리는 편입니다.",
@@ -480,17 +511,22 @@ const AXIS_REAL_LIFE: Record<StrengthCategory, string> = {
   인성: "그래서 판단을 서두르기보다, 충분히 관찰하고 흡수한 뒤에야 움직이는 편입니다.",
 };
 
-/** tier를 그대로 어조로 옮긴다 — A=단독 우세, B=근소 우세, 그 외(C·정보없음)=공동 우세.
- * "가장 많다"류 개수 단정은 어디에도 쓰지 않는다. 2장 첫 문장이라 이름을
- * 한 번만 자연스럽게 넣는다(그 외 문장에는 이름을 추가하지 않는다). */
-function buildAxisStrengthClause(name: string, topCat: StrengthCategory, tier: "A" | "B" | "C" | null, secondCat: StrengthCategory | null): string {
-  if (tier === "A" || !secondCat) {
-    return `${name}님의 다른 글자를 종합해보면, ${topCat}의 기운이 가장 강하게 자리잡고 있습니다.`;
-  }
-  if (tier === "B") {
-    return `${name}님의 다른 글자를 종합해보면, ${topCat}의 기운이 ${secondCat}보다 한 걸음 앞서 있습니다.`;
-  }
-  return `${name}님의 다른 글자를 종합해보면, ${topCat}과 ${secondCat}이 함께 강하게 자리합니다.`;
+/** [문장만 수정] "기운이 앞서 있다/자리잡고 있다" → 결과(그래서 실제로 어떻게
+ * 행동하는지)로 바로 잇는다. AXIS_MEANING("기운이 강하다는 뜻입니다")은
+ * 삭제하고 AXIS_REAL_LIFE로 곧장 연결한다. tier 판정 로직은 그대로. */
+function buildAxisStrengthClause(
+  name: string,
+  topCat: StrengthCategory,
+  tier: "A" | "B" | "C" | null,
+  secondCat: StrengthCategory | null
+): string {
+  const intro =
+    tier === "A" || !secondCat
+      ? `${name}님에게는 상황이 달라져도 좀처럼 안 변하는 결 하나가 유독 뚜렷합니다.`
+      : tier === "B"
+      ? `${name}님에게는 유난히 강하게 작용하는 기준 하나에, 그에 못지않은 결 하나가 함께 있습니다.`
+      : `${name}님에게는 어느 한쪽이 아니라, 비슷한 무게로 나란히 선 두 가지 결이 있습니다.`;
+  return `${intro} ${AXIS_REAL_LIFE[topCat]}`;
 }
 
 const STAGE_ORDER_LIST: Stage[] = ["year", "month", "hour"];
@@ -523,21 +559,20 @@ function gwansalRelevance(
   });
 }
 
-/** "supporting" 전용 — 중심축을 밀어내지 않는 보조 문장 한 줄. 실제 두
- * 위치(첫 매치만이 아니라 전부)를 그대로 반영한다. */
+/** [문장만 수정] "~걸쳐 있어, 책임감이 한 겹 더 얹히는" — 이미 구체적 느낌이라
+ * 큰 틀은 유지하고, 앞부분만 결과 중심으로 다듬었다. */
 function buildGwansalSupportingNote(pyeongwanStages: Stage[], jeonggwanStages: Stage[]): string {
   const stages = STAGE_ORDER_LIST.filter((s) => pyeongwanStages.includes(s) || jeonggwanStages.includes(s));
-  return `여기에 편관과 정관(관살혼잡)도 ${joinStages(stages.map((s) => STAGE_LABEL[s]))}에 걸쳐 있어, 그 중심 위에 책임감이 한 겹 더 얹히는 편입니다.`;
+  return `여기에 더해, 약속이나 부탁받은 일을 어기는 걸 유독 못 견디는 마음도 있습니다 — ${joinStages(stages.map((s) => STAGE_LABEL[s]))}부터 계속 그래왔습니다. 사소한 약속도 못 지키면 상대가 서운해할까 봐, 먼저 나서서 챙기는 편입니다.`;
 }
 
 /**
- * 2장 오프닝 전체 진입점(테스트/검증용). 순서: 실제 최상위 축 확인(①) →
+ * 2장 오프닝 전체 진입점. 순서: 실제 최상위 축 확인(①) →
  * tier에 맞는 어조로 세력 서술(②) → 관성의 위상을 center/supporting/none
- * 3단으로 판정해 그만큼만 반영(③) → 현실 모습으로 번역(④).
+ * 3단으로 판정해 그만큼만 반영(③).
  * "특수 구조 하나로 사람 전체를 설명"하지 않도록, 관살혼잡이 실존해도
  * 중심축보다 명확히 약하면 2장 전체를 관성 이야기로 바꾸지 않는다 —
  * 그렇다고 존재 자체를 지우지도 않는다(supporting 단계).
- * 아직 reportMapper.ts에는 연결하지 않았다 — 검증 전용 함수다.
  */
 export function buildChapterTwoOpening(appData: AppData): { title: string; body: string } | null {
   const strength = analyzeCategoryStrength(appData.user);
@@ -549,19 +584,15 @@ export function buildChapterTwoOpening(appData: AppData): { title: string; body:
   const { pyeongwanStages, jeonggwanStages } = findAllGwansalPositions(appData);
   const relevance = gwansalRelevance(topCat, secondCat, tier, pyeongwanStages, jeonggwanStages);
 
-  const axisClause = buildAxisStrengthClause(appData.user.name, topCat, tier, secondCat);
-  const meaningClause = `쉽게 말해 ${AXIS_MEANING[topCat]}.`;
-  const bodyParts = [axisClause, meaningClause];
+  const bodyParts = [buildAxisStrengthClause(appData.user.name, topCat, tier, secondCat)];
   let title = AXIS_TITLE[topCat];
 
   if (relevance === "center") {
     const gwansalDetail = buildGwansalPositionDetail(pyeongwanStages, jeonggwanStages);
     if (gwansalDetail) bodyParts.push(gwansalDetail);
-    // 이 축이 "실제 삶에서 어떻게 나타나는지"(예전 AXIS_REAL_LIFE 문장)는
-    // 3장(chapterThreeNarrative.ts의 AXIS_PROFILE.pressureVerb/relationalConsequence)
-    // 이 같은 축을 훨씬 구체적으로 다룬다 — 2장은 "이 축이 무엇인지"까지만
-    // 소개하고, "그래서 실제로 어떻게 행동하는지"는 3장에 맡긴다(중복 정리,
-    // 문구 삭제 없이 이 자리에서만 뺐다 — 3장 문장은 그대로).
+    // 이 축이 "실제 삶에서 어떻게 나타나는지"는 3장(chapterThreeNarrative.ts의
+    // AXIS_PROFILE.pressureVerb/relationalConsequence)이 같은 축을 훨씬
+    // 구체적으로 다룬다 — 2장은 "이 축이 무엇인지"까지만 소개한다(중복 방지).
     // 편관·정관이 실제로 둘 다 있을 때만 "두 기준" 이원구도 제목을 쓴다 —
     // 하나만 있으면(관살혼잡 아님) 위에서 이미 정한 일반 관성 제목(title)을
     // 그대로 둔다.

@@ -12,6 +12,10 @@ import { analyzeDayMasterBalance, BalanceVerdict } from "./dayMasterBalanceAnaly
 import { analyzeWealthObstruction, WealthObstructionResult } from "./wealthObstructionAnalysis";
 import { computeSipseong } from "./aiLifeReport";
 import { ChapterFourContent } from "./chapterFourNarrative";
+// [6장 조사·최소수정 전용 추가] 이미 승인된 6장 계산(analyzeWealthTiming)을
+// 다시 읽기만 한다 — 이 파일의 다른 재호출 패턴(analyzeDayMasterBalance 등)과
+// 동일. 새 계산이 아니다.
+import { analyzeWealthTiming, TimingLabel } from "./wealthTimingAnalysis";
 
 /**
  * 第五章("재물운") 확장 — 3차 승인 완료된 第四章(사랑과 인연)에서 확립한
@@ -873,7 +877,13 @@ function buildFinalSynthesisClause(key: ChapterFourKey, obstruction: WealthObstr
       ? "정해진 구조 안에 있는지"
       : gwanVsBi.leadCategory === "비겁" && gapTierActive(gwanVsBi.gapTier)
         ? "스스로 판단할 여지가 있는지"
-        : "지금 환경이 이 결에 맞는지";
+        // [수정] 기존 "지금 환경이 이 결에 맞는지"를 그대로 두면, 바로 앞
+        // "지금 있는 환경이 "와 이어 붙을 때 "지금 있는 환경이 지금
+        // 환경이 이 결에 맞는지"로 "환경이"가 토씨까지 겹쳐 중복 출력된다
+        // (18명 검증 중 최유나·T51에서 재현). 다른 두 분기와 같은 방식으로
+        // "지금 있는 환경이 " 뒤에 자연스럽게 이어지는 짧은 구절만 남긴다
+        // — 뜻은 동일("지금 환경이 이 결에 맞는지 점검"), 중복 어구만 제거.
+        : "이 결에 맞는지";
   const shakeNote =
     obstruction.severityLabel === "복합/중첩 방해축"
       ? "여러 결이 겹쳐 흔들리기 쉬운 구조인 만큼"
@@ -906,6 +916,29 @@ export interface AssembledWealthChapter {
   /** ①~⑩ 단일 연속 번호 체계의 전체 본문 */
   sections: WealthInsightSection[];
 }
+
+// [6장 조사·최소수정 전용 추가 — 새 계산/새 판정 아님] 실제 조립 순서에서
+// ⑧(4장 대운 흐름)이 ⑨(6장 시기 판정) 바로 앞에 오는데, 두 섹션이 "같은
+// 대운"을 서로 다른 기준(④는 원국 최대 세력축 일치 여부, ⑥은 용신·희신
+// 기준 유불리)으로 평가해 문장이 서로 반대로 읽히는 경우가 실제로
+// 발견됐다(최유나: ⑧ "재물을 직접 다루는 힘이 커지는 시기" ↔ ⑨ "여러
+// 방향으로 갈라지기 쉬운 흐름"). 이미 계산된 값(daYunWealthAnalysis의
+// ganCategory, wealthTimingAnalysis의 label)만 비교해 "두 설명이 같은
+// 질문에 대한 답이 아니다"를 짧게 짚어주는 연결문 1개만 추가한다. 새 명리
+// 판정이 아니라, 이미 wealthChapterBridge.ts가 쓰는 것과 같은 "관점이
+// 다를 뿐 모순이 아니다"라는 설명 방식을 여기 한 지점에 그대로 적용한
+// 것뿐이다.
+const WEALTH_DIRECTION_CONNECTOR: Partial<Record<TimingLabel, string>> = {
+  "분산/흔들림형(D)":
+    "다만 방금 본 ‘재물을 직접 다루는 힘이 커지는 시기’라는 설명과, 지금부터 볼 이야기는 서로 다른 질문에 대한 답입니다. 앞서는 그 힘 자체의 크기를 봤다면, 지금부터는 그 힘이 실제로 한곳에 모이는지 아니면 여러 갈래로 갈라지는지를 봅니다.",
+  "부담형(B)":
+    "다만 방금 본 ‘재물을 직접 다루는 힘이 커지는 시기’라는 설명과, 지금부터 볼 이야기는 서로 다른 질문에 대한 답입니다. 앞서는 그 힘 자체의 크기를 봤다면, 지금부터는 그 힘을 다루는 데 마음이 얼마나 쓰이는지를 봅니다.",
+};
+
+// wealthChapterBridge.ts의 DISPERSING_LABELS와 정확히 같은 값(그 파일은
+// export하지 않아 값만 동일하게 다시 둔다 — 이 파일의 다른 상수들(예:
+// SIPSEONG_HANJA)도 이미 같은 방식으로 값을 재선언해왔다, 새 관계 아님).
+const DISPERSING_LABELS_FOR_BRIDGE: TimingLabel[] = ["분산/흔들림형(D)", "부담형(B)"];
 
 export function assembleWealthChapterSections(
   appData: AppData,
@@ -977,9 +1010,48 @@ export function assembleWealthChapterSections(
 
   // ⑨ 지금부터 달라지는 재물의 시기 — 기존 6장(대운·세운 A~E 분류)
   if (chapterSixContent) {
+    // [6장 조사·최소수정 전용] 이미 승인된 계산(analyzeWealthTiming)을
+    // 다시 읽어, 이 섹션을 "어떻게 조립할지"만 결정한다 — 6장 자체의
+    // 계산(wealthTimingAnalysis.ts)도 문장(wealthTimingNarrative.ts)도
+    // 전혀 건드리지 않는다.
+    const timing = analyzeWealthTiming(appData);
+    const currentLabel = timing.applicable && timing.currentDaYun ? timing.currentDaYun.classification.label : null;
+    const currentGanCategory = timing.applicable && timing.currentDaYun ? timing.currentDaYun.period.ganCategory : null;
+
     const timingBody: string[] = [];
+
+    // (2) 4장↔6장 모순처럼 읽히는 경우 — ⑧의 마지막 문단(현재 대운)이
+    // "재물을 직접 다루는 힘이 커지는 시기"라는 재성 전용 문구를 쓰는
+    // 건 daYunFlowParas가 있고 currentGanCategory==="재성"일 때뿐이다
+    // (chapterFourNarrative.ts의 describePeriodFunction). 그 재성이
+    // 지금 용신·희신을 공격해 6장에서 D/B로 판정된 경우에만 연결문을
+    // 넣는다 — 재성이 그의 용신·희신과 일치해 6장도 A/C로 읽히는
+    // 사람(예: 이도윤)은 애초에 두 섹션이 같은 방향이라 연결문이
+    // 필요 없다.
+    if (daYunFlowParas.length > 0 && currentGanCategory === "재성" && currentLabel && DISPERSING_LABELS_FOR_BRIDGE.includes(currentLabel)) {
+      const connector = WEALTH_DIRECTION_CONNECTOR[currentLabel];
+      if (connector) timingBody.push(connector);
+    }
+
+    // (3) bridgeIntro↔6장 첫 문장 중복 — wealthChapterBridge.ts의
+    // buildDisperseBridge와 정확히 같은 발동 조건(구조적 방해축 없음 +
+    // D/B라벨)일 때만 발생한다. 이 조건일 때 bridgeIntro(ATTACKER_BRIDGE_D
+    // 또는 BRIDGE_B)와 6장 첫 문단(buildOpeningParagraph의 D/B 분기)은
+    // 같은 "공격측 카테고리가 겹친다"는 사실을 두 번 말하도록 설계돼
+    // 있다(wealthChapterBridge.ts 자체 주석: "6장 ATTACK_FLAVOR와 같은
+    // 5개 관계를... 다시 쓴 것"). 이 조건에서만 6장 첫 문단(body[0])을
+    // 생략하고, 나머지(대표 세운·다음 대운·종결)는 그대로 둔다 — 문장을
+    // 새로 쓰지 않고, 이미 중복으로 설계된 문단 하나만 건너뛴다.
+    const isDisperseBridge = Boolean(
+      chapterSixContent.bridgeIntro &&
+        currentLabel &&
+        DISPERSING_LABELS_FOR_BRIDGE.includes(currentLabel) &&
+        obstruction.structuralObstructions.length === 0
+    );
+
     if (chapterSixContent.bridgeIntro) timingBody.push(chapterSixContent.bridgeIntro);
-    timingBody.push(...chapterSixContent.body);
+    timingBody.push(...(isDisperseBridge ? chapterSixContent.body.slice(1) : chapterSixContent.body));
+
     sections.push({ heading: "⑨ 지금부터 달라지는 재물의 시기", body: timingBody });
   }
 

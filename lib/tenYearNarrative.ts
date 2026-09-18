@@ -241,7 +241,12 @@ function buildYearItem(
   period: DaYunWealthPeriod,
   prevPeriod: DaYunWealthPeriod | null,
   sk: SeunKey,
-  natalAxis: SipseongCategory | null
+  natalAxis: SipseongCategory | null,
+  // [7장 조사·최소수정 전용 추가] 직전 해의 dayunTier(이미 계산된 값,
+  // computeDayunTier 재계산 아님 — buildTenYearNarrative에서 한 번 계산해
+  // 전달만 한다). "같은 대운 관계가 바로 앞 해와 똑같이 이어지는지"만
+  // 판단하는 데 쓴다 — 새 명리 판정이 아니라 이미 있는 값들의 순서 비교.
+  prevDayunTier: "같음" | "충돌" | null
 ): TenYearItem {
   const entry = SEUN_SIGNAL[sk.seunGanSipseong];
   const isTransitionYear = Boolean(prevPeriod && prevPeriod.ganZhi !== period.ganZhi);
@@ -271,9 +276,22 @@ function buildYearItem(
 
   parts.push(entry.core);
 
-  if (dayunTier === "같음") {
+  // [7장 조사·최소수정 전용] dayunTier(같음/충돌) 자체는 "그 해의 세운이
+  // 지금 대운과 같은/부딪히는 성질인가"라는 매년 새로 계산되는 사실이지만,
+  // 같은 대운이 보통 여러 해에 걸쳐 이어지다 보니 이 관계값 자체가 여러
+  // 해 연속으로 같은 값이 되는 경우가 실제로 있다(12명 전원 확인, 충돌은
+  // 4/10년까지 연속). 그때마다 완전히 같은 문장을 반복하면 "복사된
+  // 문장처럼" 읽힌다 — 그래서 "바로 앞 해와 똑같은 관계가 끊기지 않고
+  // 이어지는 경우"에만, 이미 설명한 사실을 다시 전체 문장으로 반복하지
+  // 않는다. 대운이 바뀌었거나(isTransitionYear) 관계가 달라졌으면 항상
+  // 전체 문장을 그대로 쓴다 — 그 해에 꼭 필요한 의미이기 때문이다. 이
+  // 조건이 꺼졌을 때 나머지 문장(entry.core/action, axisMatch, selfPunish,
+  // dayBranchRelation)은 전혀 건드리지 않으므로, 해마다 실제로 달라지는
+  // SEUN_SIGNAL 등 다른 계산값이 그 해의 개인화를 그대로 이어간다.
+  const isRepeatDayunTier = dayunTier !== null && dayunTier === prevDayunTier && !isTransitionYear;
+  if (dayunTier === "같음" && !isRepeatDayunTier) {
     parts.push("지금 지나는 대운 자체도 같은 성질이라, 이 흐름이 한 해로 끝나지 않고 당분간 이어질 가능성이 큽니다.");
-  } else if (dayunTier === "충돌") {
+  } else if (dayunTier === "충돌" && !isRepeatDayunTier) {
     parts.push("다만 지금 지나는 대운은 오히려 이와 부딪히는 성질이라, 마음은 이렇게 움직이고 싶은데 상황이 자꾸 제동을 거는 듯한 답답함을 함께 느낄 수 있습니다.");
   }
   if (dayBranchRelation) {
@@ -568,11 +586,19 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
     return buildSeunKey(dayGan, y, natalBranches, { ganZhi: period.ganZhi, ganSipseong: period.ganSipseong }, natalStems);
   });
 
+  // [7장 조사·최소수정 전용] scoreYear()/dayunTier 판정 자체는 그대로
+  // buildYearItem 안에서 다시 계산한다(값 변경 없음) — 여기서는 "바로 앞
+  // 해의 dayunTier가 무엇이었는지"만 순서대로 미리 뽑아 각 항목에 넘겨
+  // 준다. computeDayunTier는 이미 있는 순수함수를 그대로 재호출하는
+  // 것뿐이다.
+  const dayunTiers = sks.map((sk) => computeDayunTier(sk));
+
   const items = years.map((y, i) => {
     const age = y - birthYear + 1;
     const period = periodsByYear[i]!;
     const prevPeriod = i > 0 ? periodsByYear[i - 1] : null;
-    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis);
+    const prevDayunTier = i > 0 ? dayunTiers[i - 1] : null;
+    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis, prevDayunTier);
   });
 
   const scores = items.map((item, i) => scoreYear(item, sks[i]));

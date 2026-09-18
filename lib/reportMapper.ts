@@ -888,7 +888,7 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
   // 범위에서 화면에 노출하지 않는다(5→6 연결·6장 UI는 다음 단계).
   const chapterFourKeyForBridge = buildChapterFourKey(appData);
   const wealthObstructionResult = analyzeWealthObstruction(appData);
-  const wealthObstructionNarrative = generateWealthObstructionNarrative(wealthObstructionResult);
+  const wealthObstructionNarrative = generateWealthObstructionNarrative(wealthObstructionResult, chapterFourKeyForBridge);
   const wealthTimingResultForBridge = analyzeWealthTiming(appData);
   const bridge = buildWealthChapterBridge(chapterFourKeyForBridge, wealthObstructionResult, wealthTimingResultForBridge);
 

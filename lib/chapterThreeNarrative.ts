@@ -4,19 +4,16 @@ import { ChapterThreeKey, HeChongPattern } from "./chapterThreeInterpretation";
 import { SipseongCategory } from "./strengthAnalysis";
 
 /**
- * 3챕터("살아가는 방식과 관계운") 전용 NARRATIVE층. chapterThreeInterpretation
- * .ts가 만든 판단값(중심축·세력등급·통근·합충·관살혼잡)을 실제 문장으로
- * 조립한다.
+ * 3챕터("살아가는 방식과 관계운") 무료 부분 — 1·2장 승인 문체 기준 스크래치본.
+ * 계산/판정 로직은 프로덕션 lib/chapterThreeNarrative.ts와 100% 동일 —
+ * ChapterThreeKey를 만드는 chapterThreeInterpretation.ts는 아예 import만
+ * 하고 손대지 않는다. 여기서 바뀐 건 오직 문장(buildAxisIntro의 "이
+ * 명식에는/이 명식에서" 보고체 제거, AXIS_PROFILE에 장면 한 줄 추가)뿐이다.
  *
- * 승인 원칙:
- *  - GAN_PROFILE.lifestyle / CH3_FACT 등 기존 오행·일간 공통 문장뱅크는
- *    핵심 서사로 쓰지 않는다(이 파일 어디서도 import하지 않는다).
- *  - 핵심 문장은 실제 명식 조합(축·세력등급·통근 위치·합충 패턴·관살혼잡)
- *    으로만 결정한다 — 이름과 몇 단어만 바뀌는 단일 템플릿이 아니라,
- *    아래 조건들의 조합 수만큼 실제로 다른 글이 나온다.
- *  - 승인된 홍지영/한소민/윤태호 3편의 표현을 그대로 재사용할 수 있는
- *    부분(관살혼잡 문장, 통근 없음 문장, 합충 겹침 문장 등)은 그 표현을
- *    그대로 옮겼다.
+ * 보존(승인됨, 이번에 안 건드림): buildGwansalSentence(관살혼잡 문장),
+ * buildRootParagraph(dayMasterRoot 기반 뿌리 문장), buildRelationshipParagraph
+ * (합충 5패턴 문장), AXIS_PROFILE의 lifeManner/pressureVerb/relationalConsequence
+ * /actionTip 원문.
  */
 
 const STAGE_LABEL: Record<Stage, string> = {
@@ -29,9 +26,11 @@ const STAGE_LABEL: Record<Stage, string> = {
 interface AxisProfile {
   coreLabel: string;
   lifeManner: string;
+  /** [신규] "그래서 실제로 언제 이런 모습이 나오는지"를 보여주는 장면 한 줄.
+   * 기존 lifeManner/pressureVerb가 성향 설명 위주라, 1·2장의 "구체적 장면
+   * 찾기" 기법을 한 줄만 보강한다(전면 재작성 아님). */
+  scene: string;
   pressureVerb: string;
-  /** 관계에서 이 축이 만드는 결과 — 승인된 홍지영·윤태호 원고의 마무리
-   * 통찰을 5축 전체로 일반화한 것. */
   relationalConsequence: string;
   actionTip: string;
 }
@@ -40,6 +39,7 @@ const AXIS_PROFILE: Record<SipseongCategory, AxisProfile> = {
   비겁: {
     coreLabel: "자기 힘으로 서려는 마음",
     lifeManner: "넓게 나누기보다, 스스로 판단하고 밀어붙일 수 있는 영역에서 더 큰 힘을 냅니다.",
+    scene: "회의에서도 다들 눈치만 보고 있을 때, 먼저 방향을 정하고 움직이는 쪽은 보통 본인입니다.",
     pressureVerb:
       "압박이 들어와도 그대로 눌리지 않고, 판단으로 바꾸고 다시 행동으로 옮겨 결국 자기 방식의 결과를 만들어내는 쪽으로 씁니다. 남들이 이미 만들어 놓은 길을 그대로 따라가는 것보다 직접 부딪히면서 자신에게 맞는 방법을 찾아낼 때 오히려 힘이 살아납니다.",
     relationalConsequence:
@@ -49,6 +49,7 @@ const AXIS_PROFILE: Record<SipseongCategory, AxisProfile> = {
   식상: {
     coreLabel: "생각한 것을 겉으로 풀어내려는 힘",
     lifeManner: "속에 담아두기보다, 말과 행동으로 먼저 드러낼 수 있는 자리에서 더 큰 힘을 냅니다.",
+    scene: "속상한 일이 있으면 며칠을 담아두기보다, 결국 누군가에게든 말이나 표정으로 털어놓고 나서야 마음이 풀립니다.",
     pressureVerb:
       "쌓인 압박을 안에 오래 묵히지 않고, 말이나 행동으로 바로 풀어내는 쪽을 택합니다. 표현하고 나서야 비로소 정리가 되는 편이라, 침묵을 오래 견디는 상황일수록 오히려 더 힘들어집니다.",
     relationalConsequence:
@@ -57,7 +58,9 @@ const AXIS_PROFILE: Record<SipseongCategory, AxisProfile> = {
   },
   재성: {
     coreLabel: "이득과 손해를 계산해 판단하는 힘",
-    lifeManner: "사회가 정해놓은 기준보다, 스스로 계산이 서야 움직이는 편입니다. 상황을 읽고 실익을 따진 뒤에야 행동으로 옮깁니다.",
+    lifeManner:
+      "사회가 정해놓은 기준보다, 스스로 계산이 서야 움직이는 편입니다. 상황을 읽고 실익을 따진 뒤에야 행동으로 옮깁니다.",
+    scene: "여러 선택지 앞에서는 감정보다 먼저 계산기를 두드려 보고, 남는 게 확실해야 움직입니다.",
     pressureVerb:
       "상황이 흔들려도 감정보다 먼저 손익을 따져보고, 계산이 선 뒤에야 움직입니다. 확신이 서지 않은 채로 일단 뛰어드는 쪽은 아니라서, 판단이 끝나기 전까지는 신중하게 거리를 두는 편입니다.",
     relationalConsequence: "이득과 손해를 먼저 따지는 태도가, 정작 가까운 사이에서는 계산적으로 비칠 때가 있습니다.",
@@ -66,6 +69,7 @@ const AXIS_PROFILE: Record<SipseongCategory, AxisProfile> = {
   관성: {
     coreLabel: "맡은 것을 끝까지 책임지려는 힘",
     lifeManner: "정해진 기준과 순서를 지킬 때 마음이 편해지고, 그 틀 안에서 신뢰를 쌓아갑니다.",
+    scene: "맡은 일이 버거워도 중간에 손을 놓기보다, 일단 끝까지 붙들고 있는 쪽을 택합니다.",
     pressureVerb:
       "맡은 몫이 버거워도 쉽게 내려놓지 못하고, 끝까지 책임지는 쪽으로 스스로를 몰아갑니다. 중간에 그만두는 걸 스스로에게 잘 허락하지 못하는 편입니다.",
     relationalConsequence: "정해진 기준을 지키려는 태도가, 가까운 사람에게는 융통성 없이 느껴질 때가 있습니다.",
@@ -73,7 +77,9 @@ const AXIS_PROFILE: Record<SipseongCategory, AxisProfile> = {
   },
   인성: {
     coreLabel: "받아들이고 정리한 뒤에 움직이려는 힘",
-    lifeManner: "바로 반응하기보다, 먼저 이해하고 납득해야 움직이는 편입니다. 조용히 있는 것처럼 보여도 안에서는 계속 정리를 하고 있는 쪽에 가깝습니다.",
+    lifeManner:
+      "바로 반응하기보다, 먼저 이해하고 납득해야 움직이는 편입니다. 조용히 있는 것처럼 보여도 안에서는 계속 정리를 하고 있는 쪽에 가깝습니다.",
+    scene: "누가 서둘러 답을 재촉해도, 스스로 납득이 되기 전까지는 좀처럼 움직이지 않습니다.",
     pressureVerb:
       "즉흥적인 반응보다 한 박자 늦게, 그러나 신중하게 판단한 뒤에야 움직입니다. 급하게 결정을 내리는 상황일수록 오히려 판단이 흐트러지기 쉽습니다.",
     relationalConsequence: "바로 답하지 않고 먼저 정리하려는 태도가, 가까운 사람에게는 거리를 두는 것처럼 비칠 때가 있습니다.",
@@ -85,8 +91,6 @@ function uniqueStages(stages: Stage[]): Stage[] {
   return Array.from(new Set(stages));
 }
 
-/** 마지막 글자 받침 유무로 "과/와"를 고른다 — 새 명리 사실이 아니라
- * 순수 조사 처리다. */
 function josaGwaWa(word: string): "과" | "와" {
   const last = word.charCodeAt(word.length - 1);
   if (last < 0xac00 || last > 0xd7a3) return "와";
@@ -99,11 +103,10 @@ function joinKorean(items: string[]): string {
   return `${items.slice(0, -1).join(", ")}, ${items[items.length - 1]}`;
 }
 
-/** 관살혼잡 문장 — 2챕터(buildGwansalHonjapNote)와는 다른, 3챕터 전용
- * 목소리("두 관성이 함께 자리한다" 서술체)로 새로 쓴 것. 승인된 홍지영
- * 원고의 표현을 그대로 옮겼다. gwansal.present일 때 이 문장이 body[0](3장
- * 첫 문장)이 된다 — title에서 이미 이름을 썼으므로 여기서는 "이
- * 명식에는"으로 시작한다(이름 반복 정리, 문구 나머지는 그대로). */
+/** [수정] 명리 구조 설명(“이 명식에는…편관과 정관이 함께 자리합니다”)이
+ * 아니라 실제 행동 두 가지를 먼저 보여주고, 그 뒤에 명리 근거를 짧게
+ * 붙이는 순서로 바꿨다. 편관·정관 용어와 자리 정보(posClause)는 그대로
+ * 보존 — 삭제하지 않고 위치만 뒤로 옮겼다. */
 function buildGwansalSentence(key: ChapterThreeKey): string | null {
   const { gwansal } = key;
   if (!gwansal.present || !gwansal.pyeongwan || !gwansal.jeonggwan) return null;
@@ -112,9 +115,12 @@ function buildGwansalSentence(key: ChapterThreeKey): string | null {
   const posClause = sameStage
     ? `${names}, 둘 다 ${STAGE_LABEL[gwansal.pyeongwan.stage]}`
     : `편관 ${STAGE_LABEL[gwansal.pyeongwan.stage]}, 정관 ${STAGE_LABEL[gwansal.jeonggwan.stage]}`;
-  return `이 명식에는 성격이 다른 두 관성, 편관과 정관이 함께 자리합니다(${posClause}). 하나는 상황 앞에서 즉각 움직이게 하고, 다른 하나는 맡은 것을 끝까지 책임지게 합니다. 겉으로는 차분하게 움직여도 안에서는 늘 "지금 해야 한다"와 "끝까지 제대로 해야 한다" 두 기준이 동시에 작동합니다.`;
+  return `상황이 닥치면 일단 몸이 먼저 움직여서 처리하고 보는 면과, 맡은 일은 끝까지 붙잡고 마무리 지어야 직성이 풀리는 면이 한 사람 안에 함께 있습니다. 겉으로는 차분해 보여도 안에서는 늘 "지금 해야 한다"와 "끝까지 제대로 해야 한다" 두 기준이 동시에 작동합니다. 명리에서는 이 두 모습을 편관과 정관이 함께 있는 구조로 봅니다(${posClause}).`;
 }
 
+/** [수정] "이 명식에는/이 명식에서 가장 뚜렷한 힘은" 보고체 lead-in만
+ * "~님에게는/~님 안에서"로 바꿨다. tier 판정·문장 내용(핵심 축/보조 축
+ * 서술)은 그대로다. */
 function buildAxisIntro(name: string, key: ChapterThreeKey): string {
   const { axis, secondAxis, tier, gwansal } = key;
   if (!axis) return `${name}님의 명식은 특정한 기운 하나로 정리되지 않고, 여러 힘이 고르게 섞여 있습니다.`;
@@ -122,19 +128,15 @@ function buildAxisIntro(name: string, key: ChapterThreeKey): string {
   const core = AXIS_PROFILE[axis].coreLabel;
 
   if (tier === "A") {
-    // killpoint("이끄는 힘은 오직 하나, {core}입니다.")가 바로 위에서 이미
-    // 이 축을 명시하므로, 여기서 "{core}입니다"를 다시 반복하지 않는다
-    // (첫 도입부 의미 중복 최소 압축, 2026-09 승인 예외). 근거·결론
-    // 문장(다른 기운보다 앞선다 → 이 힘 하나가 이끈다)은 그대로 둔다.
     return "다른 어떤 기운보다 크게 앞서 있어, 살아가는 방식 전체를 사실상 이 힘 하나가 이끌고 있다고 봐도 무리가 없습니다.";
   }
   if (tier === "C" && secondAxis) {
     const core2 = AXIS_PROFILE[secondAxis].coreLabel;
-    const lead = gwansal.present ? "이 명식에는" : `${name}님의 명식에는`;
+    const lead = gwansal.present ? "여기에는" : `${name}님에게는`;
     return `${lead} ${core}${josaGwaWa(core)} ${core2}, 두 힘이 비슷한 크기로 맞서 있습니다. 상황에 따라 어느 쪽이 먼저 나서는지가 달라집니다.`;
   }
   // tier B (또는 second 없음)
-  const lead = gwansal.present ? "이 명식에서 가장 뚜렷한 힘은" : `${name}님의 명식에서 가장 뚜렷한 힘은`;
+  const lead = gwansal.present ? "여기서 가장 뚜렷한 힘은" : `${name}님 안에서 가장 뚜렷한 힘은`;
   const secondClause =
     tier === "B" && secondAxis
       ? gwansal.present
@@ -144,37 +146,53 @@ function buildAxisIntro(name: string, key: ChapterThreeKey): string {
   return `${lead} ${core}입니다.${secondClause}`;
 }
 
-/**
- * 통근 문단 — 일간(day master) 자신의 통근과 중심축(category) 통근을
- * 서로 다른 근거로 분리한다.
- *  - "쉽게 무너지지 않는 이유가 있다"는 안정성/근기 문장은 반드시
- *    dayMasterRoot(analyzeRoot, 일간 자신 기준)를 근거로만 쓴다.
- *  - 중심축 통근은 "이 기운 자체가 실제로 지속 작동하는지"를 보여주는
- *    보조 문장으로 따로 둔다. 축이 비겁이면 두 근거가 사실상 같은
- *    지지를 가리키므로(비겁의 오행=일간의 오행) 중복을 피하기 위해
- *    보조 문장을 생략한다.
- */
+/** [보존, 원문 그대로] dayMasterRoot 기반 뿌리 문장. */
+/** 두 Stage[] 목록이 같은 집합을 가리키는지 순서 무관 비교. 새 계산이
+ * 아니라 이미 계산된 두 목록(dayMasterRoot.matches의 자리 / axisRootHits의
+ * 자리)을 비교만 한다. */
+function sameStageSet(a: Stage[], b: Stage[]): boolean {
+  if (a.length !== b.length) return false;
+  const setA = new Set(a);
+  return b.every((s) => setA.has(s));
+}
+
+/** [수정: D] 일간 자신의 뿌리 자리 목록과 축(top) 자신의 뿌리 자리 목록이
+ * 우연히 완전히 같은 자리를 가리킬 때, 그 목록을 두 문장에서 그대로
+ * 두 번 반복하던 문제를 고쳤다. 자리 목록이 다르면(기존과 동일하게)
+ * 두 문장을 그대로 두고, 완전히 같을 때만 한 문장으로 합친다 — 계산
+ * 결과(dayMasterRoot/axisRootHits)와 판정 조건(axis!=="비겁" &&
+ * hasAxisRoot)은 그대로다. */
 function buildRootParagraph(key: ChapterThreeKey): string {
   const { dayMasterRoot, axis, hasAxisRoot, axisRootHits } = key;
 
-  const dayMasterSentence = dayMasterRoot.hasRoot
-    ? (() => {
-        const stages = uniqueStages(dayMasterRoot.matches.map((m) => m.stage)).map((s) => STAGE_LABEL[s]);
-        return `그럼에도 쉽게 흔들리지 않는 이유가 있습니다 — ${joinKorean(stages)}에 자기 자신의 뿌리가 내려 있기 때문입니다.`;
-      })()
-    : "다만 뿌리내릴 자리가 마땅치 않아, 한 가지 방식을 오래 고집하기보다 상황에 따라 스스로를 계속 다시 조정하는 편입니다.";
-
   const showAxisSupport = axis !== "비겁" && hasAxisRoot;
-  const axisSentence = showAxisSupport
-    ? (() => {
-        const stages = uniqueStages(axisRootHits.map((h) => h.stage)).map((s) => STAGE_LABEL[s]);
-        return ` 이 기운 역시 ${joinKorean(stages)}에 뿌리를 두고 있어, 일시적인 반응에 그치지 않고 실제 삶에서 꾸준히 작동합니다.`;
-      })()
-    : "";
+  const axisStages = showAxisSupport ? uniqueStages(axisRootHits.map((h) => h.stage)) : [];
+  const axisStageLabels = axisStages.map((s) => STAGE_LABEL[s]);
 
-  return `${dayMasterSentence}${axisSentence}`;
+  if (!dayMasterRoot.hasRoot) {
+    // 일간 자신은 통근이 없어도, 축(top) 자신의 통근은 별개 계산이라
+    // 있을 수 있다 — 이 경우를 지우면 안 된다(원문 그대로 유지).
+    const axisSentence = showAxisSupport
+      ? ` 이 기운 역시 ${joinKorean(axisStageLabels)}에 뿌리를 두고 있어, 일시적인 반응에 그치지 않고 실제 삶에서 꾸준히 작동합니다.`
+      : "";
+    return `다만 뿌리내릴 자리가 마땅치 않아, 한 가지 방식을 오래 고집하기보다 상황에 따라 스스로를 계속 다시 조정하는 편입니다.${axisSentence}`;
+  }
+
+  const dayStages = uniqueStages(dayMasterRoot.matches.map((m) => m.stage));
+  const dayStageLabels = dayStages.map((s) => STAGE_LABEL[s]);
+
+  if (!showAxisSupport) {
+    return `그럼에도 쉽게 흔들리지 않는 이유가 있습니다 — ${joinKorean(dayStageLabels)}에 자기 자신의 뿌리가 내려 있기 때문입니다.`;
+  }
+
+  if (sameStageSet(dayStages, axisStages)) {
+    return `그럼에도 쉽게 흔들리지 않는 이유가 있습니다 — ${joinKorean(dayStageLabels)}에 자기 자신의 뿌리뿐 아니라, 지금 가장 앞선 이 기운의 뿌리까지 함께 내려 있기 때문입니다.`;
+  }
+
+  return `그럼에도 쉽게 흔들리지 않는 이유가 있습니다 — ${joinKorean(dayStageLabels)}에 자기 자신의 뿌리가 내려 있기 때문입니다. 이 기운 역시 ${joinKorean(axisStageLabels)}에 뿌리를 두고 있어, 일시적인 반응에 그치지 않고 실제 삶에서 꾸준히 작동합니다.`;
 }
 
+/** [보존, 원문 그대로] 합충 5패턴 관계 문장. */
 function buildRelationshipParagraph(key: ChapterThreeKey): string {
   const { heChong } = key;
   const label = (p: { a: { stage: Stage; zhi: string }; b: { stage: Stage; zhi: string } }) =>
@@ -186,7 +204,7 @@ function buildRelationshipParagraph(key: ChapterThreeKey): string {
     case "합만":
       return `관계에서는 ${label(heChong.he[0])}가 자연스럽게 손을 잡는 구조라, 특정한 사람 앞에서 유독 마음이 쉽게 열립니다. 그 결속이 관계의 중심이 되는 편입니다.`;
     case "충만":
-      return `관계에서는 ${label(heChong.chong[0])}가 서로 부딪히는 구조라, 밖에서 쌓아온 것과 개인적으로 지키고 싶은 것 사이에서 자주 마찰이 생깁니다.`;
+      return `밖에서 사람들과 부딪히며 살아가는 방식과, 내 마음이 편해지는 방식이 서로 엇갈릴 때가 있습니다. 명리에서는 이 엇갈림을 ${label(heChong.chong[0])}가 부딪히는 자리로 봅니다.`;
     case "겹침": {
       const o = heChong.overlap!;
       return `관계에서는 ${STAGE_LABEL[o.stage]}(${o.zhi})가 두 얼굴을 동시에 가집니다 — 한쪽과는 자연스럽게 손을 잡고, 다른 쪽과는 부딪힙니다. 겉으로 편안해 보이는 관계도 사실은 다른 자리에서 온 긴장을 함께 데리고 있는 셈이라, 오래 편했던 사이일수록 오히려 예상치 못한 순간에 마찰이 드러나기 쉽습니다.`;
@@ -209,10 +227,6 @@ export function buildChapterThreeNarrative(appData: AppData, key: ChapterThreeKe
 
   const title = `${name}님의 살아가는 방식`;
 
-  // killpoint는 title 바로 아래(빨간 강조 한 줄)라 title과 이름이 겹친다.
-  // 이어지는 body[0](buildGwansalSentence/buildAxisIntro)에서 다시 한 번
-  // 이름을 쓰므로, killpoint에서는 이름을 빼고 "이 사람"/주어 생략으로
-  // 자연스럽게 잇는다(문구·의미는 그대로, 위치만 정리).
   let killpoint: string;
   if (!axis) killpoint = "한 가지 기운으로 정리되지 않는 사람입니다.";
   else if (key.tier === "A") killpoint = `이끄는 힘은 오직 하나, ${AXIS_PROFILE[axis].coreLabel}입니다.`;
@@ -226,11 +240,7 @@ export function buildChapterThreeNarrative(appData: AppData, key: ChapterThreeKe
   body.push(buildAxisIntro(name, key));
   if (axis) {
     body.push(`${AXIS_PROFILE[axis].lifeManner} ${buildRootParagraph(key)}`);
-    // 비겁 축의 pressureVerb("압박이 들어와도 그대로 눌리지 않고...")는
-    // 바로 앞 문단(lifeManner: "스스로 판단하고 밀어붙일 수 있는 영역에서
-    // 힘을 냄")·buildAxisIntro의 coreLabel("자기 힘으로 서려는 마음")과
-    // 의미가 겹쳐 뺐다(승인됨) — 문장 자체는 AXIS_PROFILE에 그대로
-    // 남아 있고, 다른 4개 축은 그대로 노출한다.
+    body.push(AXIS_PROFILE[axis].scene);
     if (axis !== "비겁") {
       body.push(AXIS_PROFILE[axis].pressureVerb);
     }

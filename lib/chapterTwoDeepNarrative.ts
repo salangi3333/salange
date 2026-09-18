@@ -52,6 +52,15 @@ function josaEunNeun(word: string): "은" | "는" {
   if (last < 0xac00 || last > 0xd7a3) return "는";
   return (last - 0xac00) % 28 === 0 ? "는" : "은";
 }
+/** [조사 버그 수정용 추가] 주어 자리에 쓰는 이/가 — 기존 josaGwaWa(과/와,
+ * "A와 B" 나열용)와 josaEunNeun(은/는)은 있었는데 이/가 함수가 아예 없어서,
+ * ①번(tier==="A") 분기가 실수로 josaGwaWa를 대신 쓰고 있었다. 로직은
+ * josaGwaWa/josaEunNeun과 동일한 받침 판정 방식, 반환 조사만 다르다. */
+function josaIGa(word: string): "이" | "가" {
+  const last = word.charCodeAt(word.length - 1);
+  if (last < 0xac00 || last > 0xd7a3) return "가";
+  return (last - 0xac00) % 28 === 0 ? "가" : "이";
+}
 
 export interface CategoryBarItem {
   category: SipseongCategory;
@@ -144,10 +153,10 @@ const DOMAIN_LEAD: Record<SipseongCategory, Record<DomainArea, string>> = {
 };
 
 const DOMAIN_DETAIL: Record<DomainArea, string> = {
-  일: "이 결은 원국에 실제로 자리 잡은 힘이라, 애써 꾸미지 않아도 일하는 방식에 자연스럽게 묻어납니다.",
+  일: "애써 꾸미지 않아도 일하는 방식에 자연스럽게 묻어나는 결입니다.",
   돈: "이 판단도 별다른 고민 없이 먼저 튀어나오는 편이라, 돈 앞에서 유독 망설임이 적습니다.",
   관계: "그래서 관계 안에서도 이 태도가 다른 모습보다 먼저 눈에 띄는 편입니다.",
-  선택: "결국 중요한 선택일수록 이 기준이 가장 먼저 작동합니다.",
+  선택: "결국 중요한 선택일수록 이 기준부터 먼저 떠오릅니다.",
 };
 
 /** 각 영역과 전통적으로 가장 밀접한 카테고리 우선순위 — 새 계산이 아니라
@@ -231,29 +240,27 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
     const listClause = active.map((a) => a.category).join("·");
     const shapeClause =
       strength.tier === "A"
-        ? `그중 ${top}${top ? josaGwaWa(top) : ""} 확실히 앞서 있어, 이 사람을 이끄는 힘은 비교적 또렷한 편입니다.`
-        : `그중 하나가 압도적으로 앞서기보다, 몇 개의 힘이 비슷한 무게로 함께 자리하고 있습니다.`;
+        ? `그중 ${top}${top ? josaIGa(top) : ""} 확실히 앞서 있어, 이 사람을 이끄는 결은 비교적 또렷한 편입니다.`
+        : `그중 하나가 압도적이기보다, 몇 가지 결이 비슷한 무게로 번갈아 나섭니다.`;
     sections.push({
-      heading: "당신 안에는 한 가지 힘만 있는 것이 아닙니다",
+      heading: "",
       body: [
-        `${name}님의 명식에는 ${listClause}, 이렇게 ${active.length}개의 힘이 실제로 함께 자리하고 있습니다.`,
-        `${shapeClause} 문제는 "무엇이 가장 강한가"가 아니라, 이 여러 힘이 상황에 따라 어떤 순서로 앞에 나서는가입니다.`,
+        `${name}님 안에는 ${listClause}, 이렇게 ${active.length}가지 결이 실제로 함께 움직입니다.`,
+        `${shapeClause} 중요한 건 "무엇이 제일 센가"가 아니라, 이 여러 결이 상황마다 어떤 순서로 먼저 튀어나오는가입니다.`,
       ],
     });
   } else {
     sections.push({
-      heading: "당신 안에는 한 가지 힘만 있는 것이 아닙니다",
-      body: [`${name}님은 다섯 가지 힘이 어느 하나 두드러지지 않고 고르게 섞여 있습니다. 그만큼 상황 자체가 어떤 힘을 불러내는지가 더 크게 작동합니다.`],
+      heading: "",
+      body: [`${name}님은 다섯 가지 결이 어느 하나 두드러지지 않고 고르게 섞여 있습니다. 그만큼 어떤 결이 먼저 나오는지는 그때그때 상황이 정합니다.`],
     });
   }
 
   // ② 내 안에서 먼저 움직이는 힘 ────────────────────────────────
   if (top) {
     sections.push({
-      heading: "내 안에서 먼저 움직이는 힘",
-      body: [
-        `이 사람 안에서 가장 먼저 앞에 나서는 힘은 ${top}(${CATEGORY_HANJA[top]})입니다. ${TRIGGER_TEXT[top]}`,
-      ],
+      heading: "",
+      body: [`그중에서도 가장 먼저 튀어나오는 건 ${top}입니다. ${TRIGGER_TEXT[top]}`],
     });
   }
 
@@ -265,15 +272,15 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
         ? `두 힘의 크기가 비슷해서, 상황에 따라 어느 쪽이 먼저 나설지가 그때그때 갈립니다.`
         : `다만 ${top}보다는 한 걸음 물러선 자리에서, 필요할 때만 존재감을 드러냅니다.`;
     sections.push({
-      heading: "그 다음에 움직이는 힘",
+      heading: "",
       body: [
-        `${top} 다음으로는 ${second}이 자리하고 있습니다. ${SECOND_ROLE_TEXT[second]}`,
+        `${top} 다음으로는 ${second}이 뒤를 받칩니다. ${SECOND_ROLE_TEXT[second]}`,
         relateClause,
       ],
     });
   } else if (top) {
     sections.push({
-      heading: "그 다음에 움직이는 힘",
+      heading: "",
       body: [`이 사람에게는 ${top}에 견줄 만한 두 번째 축이 뚜렷하지 않습니다. 그만큼 ${top} 하나의 색이 여러 상황에 걸쳐 비교적 일관되게 이어집니다.`],
     });
   }
@@ -283,7 +290,7 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
   if (domains.length > 0) {
     const distinctInDomains = new Set(domains.map((d) => d.category)).size;
     sections.push({
-      heading: "상황에 따라 달라지는 나",
+      heading: "",
       body: [
         distinctInDomains >= 2
           ? `일할 때, 돈을 다룰 때, 사람을 대할 때, 선택할 때 — 네 상황에서 항상 같은 힘만 나서는 건 아닙니다. 아래 네 장면을 보면, 그때그때 앞에 나서는 힘이 조금씩 다릅니다.`
@@ -298,17 +305,17 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
     if (helps) {
       const donor = CATEGORY_HELPS[top] === second ? top : second;
       sections.push({
-        heading: "두 힘이 잘 맞을 때",
+        heading: "",
         body: [
-          `${top}${josaGwaWa(top)} ${second}은 원래 서로를 밀어주는 관계입니다. ${HELPS_FLAVOR[donor]}`,
-          `이 두 힘이 함께 있다는 것이 꽤 중요합니다 — 한쪽만으로는 멈출 수 있는 흐름이, 다른 쪽 덕분에 계속 이어질 수 있기 때문입니다.`,
+          `이 두 결은 서로 어떻게 맞물릴까요? ${top}${josaGwaWa(top)} ${second}, 이 둘을 같이 쓰면 한쪽이 다른 쪽을 밀어줍니다. ${HELPS_FLAVOR[donor]}`,
+          `이 두 결이 함께 있다는 게 꽤 중요합니다 — 한쪽만으로는 멈출 수 있는 흐름이, 다른 쪽 덕분에 계속 이어질 수 있기 때문입니다.`,
         ],
       });
     } else {
       sections.push({
-        heading: "두 힘이 잘 맞을 때",
+        heading: "",
         body: [
-          `${top}${josaGwaWa(top)} ${second}은 서로를 직접 밀어주는 관계는 아니지만, 서로의 영역을 침범하지 않고 각자 다른 자리에서 독립적으로 작동합니다 — 그래서 한쪽이 바쁠 때 다른 쪽이 조용히 제 몫을 지킵니다.`,
+          `이 두 결은 서로 어떻게 맞물릴까요? ${top} 쓸 때는 ${top}대로, ${second} 쓸 때는 ${second}대로 — 한쪽을 쓴다고 다른 쪽이 약해지지 않고, 한쪽이 바쁠 때 다른 쪽이 조용히 제 몫을 지킵니다.`,
         ],
       });
     }
@@ -320,9 +327,9 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
     if (attacks) {
       const attacker = CATEGORY_ATTACKS[top] === second ? top : second;
       sections.push({
-        heading: "두 힘이 서로 당길 때",
+        heading: "",
         body: [
-          `${top}${josaGwaWa(top)} ${second}은 원래 서로 부딪히는 관계입니다. 같은 상황에서도 마음이 두 갈래로 갈릴 때가 있습니다.`,
+          `${top}${josaGwaWa(top)} ${second}, 이 둘을 같이 쓰려다 보면 부딪힐 때가 있습니다. 같은 상황에서도 마음이 두 갈래로 갈릴 때가 있습니다.`,
           TENSION_FLAVOR[attacker],
         ],
       });
@@ -335,7 +342,7 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
     const order = active.slice(0, 3).map((a) => a.category);
     const flow = order.map((cat, idx) => `${RANK_LEAD[idx]}${CHECK_CLAUSE[cat]}.`).join(" ");
     sections.push({
-      heading: "내가 결정을 내리는 순서",
+      heading: "",
       body: [
         order.length > 1
           ? `${name}님이 무언가를 판단할 때는 대체로 이런 순서를 밟습니다. ${flow}`
@@ -351,9 +358,9 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
       const helps = CATEGORY_HELPS[top] === second || CATEGORY_HELPS[second] === top;
       const attacks = CATEGORY_ATTACKS[top] === second || CATEGORY_ATTACKS[second] === top;
       if (helps) {
-        parts.push(`${top}${josaGwaWa(top)} ${second}이 서로 밀어주는 관계라는 것이, 이 사람이 한 가지 방향을 오래 밀고 나갈 수 있는 이유입니다.`);
+        parts.push(`${top}${josaGwaWa(top)} ${second}을 같이 쓸 때 한쪽이 다른 쪽을 밀어주기 때문에, 이 사람은 한 가지 방향을 오래 밀고 나갈 수 있습니다.`);
       } else if (attacks) {
-        parts.push(`${top}${josaGwaWa(top)} ${second}이 서로 부딪히는 관계라는 것이, 이 사람 안에서 마음이 두 갈래로 갈리는 순간이 실제로 있는 이유입니다.`);
+        parts.push(`${top}${josaGwaWa(top)} ${second}을 같이 쓰려다 보면 부딪히는 순간이 있어서, 이 사람 안에서 마음이 두 갈래로 갈리는 순간이 실제로 있습니다.`);
       } else {
         parts.push(`${top}${josaEunNeun(top)} 앞장서고 ${second}이 그 뒤를 받치는 구조라, 이 사람은 한 가지 색으로만 설명되지 않습니다.`);
       }
@@ -364,7 +371,7 @@ export function buildChapterTwoDeepNarrative(appData: AppData): ChapterTwoDeepRe
     if (distinctInDomains >= 2) {
       parts.push(`그리고 일·돈·관계·선택에서 매번 같은 힘만 나서지 않는다는 것도, 겉으로 보이는 모습만으로는 이 사람을 다 설명할 수 없는 이유 중 하나입니다.`);
     }
-    sections.push({ heading: "第二章의 발견", body: [parts.join(" ")] });
+    sections.push({ heading: "", body: [`정리하면, ${parts.join(" ")}`] });
   }
 
   return { sections, visual: { bars: buildBars(active), domains } };

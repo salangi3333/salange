@@ -208,8 +208,13 @@ export function buildGwiinSinsalSection(user: SajuUser): GwiinSinsalSection | un
   return {
     chapterLabel: "第八章",
     title: `${user.name}님의 귀인과 신살`,
+    // [수정] "그중 실제로 계산에서 확인된 것만 골라, 중복 없이 정리했습니다"는
+    // 내부 QA/검수 보고서 문구("확인/정리")라 고객 언어로 들리지 않았다. 뜻
+    // 자체(여러 기운 중 이 사람에게 실제로 있는 것만 다룬다)는 그대로 두고,
+    // "~살펴보겠습니다"로 다른 章의 오프닝과 같은 톤으로 바꿨다. name은
+    // title/closing이 이미 쓰는 값을 여기도 쓴 것뿐, 새 개인화 축이 아니다.
     intro:
-      "사주 여덟 글자 안에는 여러 기운이 함께 들어 있습니다. 그중 실제로 계산에서 확인된 것만 골라, 중복 없이 정리했습니다.",
+      `사주 여덟 글자 안에는 여러 기운이 함께 들어 있습니다. 그 가운데 ${user.name}님 안에서 드러나는 귀인과 신살의 의미를 하나씩 살펴보겠습니다.`,
     freePreview: slots[0] ? { name: slots[0].name, body: slots[0].short } : undefined,
     detail: detailSlots.map((s) => ({ name: s.name, body: s.long })),
     brief: briefSlots.map((s) => ({ name: s.name, body: s.short })),

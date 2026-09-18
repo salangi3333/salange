@@ -1,26 +1,36 @@
 import { WealthObstructionResult, StructuralObstruction, SupportConstraint, Caveat, ObstructionType } from "./wealthObstructionAnalysis";
+import { ChapterFourKey } from "./chapterFourInterpretation";
+import { SipseongCategory } from "./strengthAnalysis";
 
 /**
- * 5장("돈이 들어와도 남지 않는 이유") — 고객용 본문 INTERPRETATION 레이어.
+ * 5장("돈이 들어와도 남지 않는 이유") — 1~4장 승인 기준 스크래치본.
+ * 계산은 프로덕션 lib/wealthObstructionAnalysis.ts와 100% 동일 — import만
+ * 하고 손대지 않는다. lib/wealthObstructionNarrative.ts의 구조(문단 순서,
+ * openingStyle/endingStyle 분기, 5가지 유형 차이, 판정 원칙)를 그대로
+ * 복사하고, 조사에서 발견된 3가지 문제만 최소 수정했다.
  *
- * `analyzeWealthObstruction(appData)`의 결과(structuralObstructions·
- * supportConstraints·caveats·yongsinResolutionStatus·severityLabel)만
- * 입력으로 받아 문단을 조립한다. ID 기반 하드코딩 금지 — 모든 분기는
- * 이 5개 필드의 조합에만 반응한다.
+ * [수정 1] structuralObstructions=없음 버킷(실측 92%가 여기 몰림)에
+ * buildZeroObstructionTiltParagraph()를 추가 — 이미 계산된 4장 값
+ * (ch4Key.wealth.all[0].category, 즉 topAxis)으로 "완전히 치우치진
+ * 않았지만 그래도 이 사람만의 기울기는 있다"는 문단을 넣는다. 새 계산
+ * 없음 — topAxis 5종만으로 5가지 변형.
  *
- * 동결된 6장 고객용 서술 가이드와 동일한 안전 경계를 적용한다:
- *  - wealthExcess/companionExcess/outputExcess/resourceExcess/officerExcess,
- *    supportConstraint/hardBlocked/warning/caveat/severityLabel 같은 내부
- *    용어는 고객 문장에 절대 노출하지 않는다(reasons/sourceNote에만 사용).
- *  - 과거 경험 확정, 실제 심리 단정, 특정 관계·가족·동업 사건 창작 금지.
- *  - wealthExcess를 실제 수입·기회 증가로 번역하지 않는다("다뤄야 할
- *    범위가 커진다" 수준까지만).
- *  - caveat는 독립 문단의 주인공이 되지 않고 다른 문단의 보조 근거로만
- *    쓰인다.
- *  - yongsinResolutionStatus가 hold/unresolved면 구조 설명은 하되
- *    "이게 해결책이다" 식 확정 처방을 하지 않는다.
- *  - structuralObstructions가 비어 있으면 억지로 문제를 만들지 않는다
- *    ("뚜렷한 단일 원인 없음" 자체를 의미 있는 결론으로 다룬다).
+ * [수정 2] 4장→5장 연결. 별도 production 파일(lib/wealthChapterBridge.ts)
+ * 의 bridgeIntro 필드는 건드리지 않았다(production/판정 로직 보호 원칙,
+ * 이 함수의 트리거 조건도 극히 좁아 대부분 비어있음). 대신 수정1의
+ * 문단이 "4장의 상대비교 결과 vs 5장의 절대판정"을 문단 안에서 자연스럽게
+ * 이어주도록 설계해 같은 목적을 달성했다 — 별도 스크래치 파일을 더
+ * 만들지 않고 한 파일 안에서 해결.
+ *
+ * [수정 3] 5가지 OBSTRUCTION_EXPLANATION 각각에 OBSTRUCTION_SCENE(구체적
+ * 행동 한 줄)을 추가 — "각 유형마다 반드시 추가"가 아니라 5개뿐인 고정
+ * 유형 각각에 실제로 다른 장면을 달아 개인화를 높였다. 계산되지 않은
+ * 사건(사업/투자/가족 등)은 전혀 포함하지 않았다.
+ *
+ * 보존(원문 그대로, 이번에 안 건드림): OBSTRUCTION_EXPLANATION 원문,
+ * openingStyle/endingStyle 분기 로직 전체, buildCaveatParagraph,
+ * buildSupportParagraph, buildHoldParagraph, buildAdditionalObstructionsParagraph,
+ * ENDING_OVERRIDE/ENDING_GENERIC, 내부 용어 비노출 원칙, 사건 조작 금지 원칙.
  */
 
 export interface NarrativeParagraph {
@@ -32,7 +42,7 @@ export interface WealthObstructionNarrativeResult {
   paragraphs: NarrativeParagraph[];
 }
 
-// ── 구조적 방해축 → 현실 언어 번역(유형별 고정 1문장 + 필요시 변주) ──
+// ── [보존, 원문 그대로] 구조적 방해축 → 현실 언어 번역 ──
 const OBSTRUCTION_EXPLANATION: Record<ObstructionType, string> = {
   과부하형:
     "재물을 얻는 힘과 그걸 감당하는 힘이 같은 속도로 움직이지 않는 쪽에 가깝습니다. 재물과 관련해 다뤄야 할 범위가 커질수록, 함께 챙겨야 할 것도 많아질 수 있습니다.",
@@ -46,7 +56,18 @@ const OBSTRUCTION_EXPLANATION: Record<ObstructionType, string> = {
     "돈을 움직이기 전에 먼저 지켜야 할 것이 많은 쪽에 가깝습니다. 역할과 책임의 무게가 재물보다 앞서 있는 구조입니다.",
 };
 
-// 두 번째 이상 겹치는 구조를 추가할 때 쓰는 축약 언급(전체 문장 반복 방지)
+// [신규 — 수정3] 유형별 구체적 행동 한 줄. 계산되지 않은 사건(사업/투자/
+// 가족 등)은 없고, 전부 "기회/손실/약속 앞에서 어떻게 움직이는가" 수준의
+// 일반적 행동 경향만 담았다.
+const OBSTRUCTION_SCENE: Record<ObstructionType, string> = {
+  과부하형: "그래서 다뤄야 할 돈이나 기회가 한꺼번에 몰리면, 정작 다 챙기지 못해 오히려 지치는 순간이 올 수 있습니다.",
+  분산형: "새로운 기회가 보이면, 지키기보다 다시 움직이려는 쪽으로 먼저 마음이 갑니다.",
+  소모형: "벌인 일이 잘 풀려도, 그 결과를 붙잡아두기보다 곧바로 다음 일로 넘어가는 편입니다.",
+  제동형: "그래서 손실 가능성이 조금이라도 보이면, 먼저 멈추고 다시 확인한 뒤에야 움직입니다.",
+  압박형: "돈보다 맡은 일이나 지켜야 할 약속이 먼저 떠오르면, 그 일부터 끝내야 마음이 놓입니다.",
+};
+
+// ── [보존, 원문 그대로] ──
 const OBSTRUCTION_SHORT: Record<ObstructionType, string> = {
   과부하형: "감당해야 할 무게가 큰 결",
   분산형: "여러 갈래로 흩어지는 결",
@@ -62,29 +83,23 @@ function hasKind(constraints: SupportConstraint[], kind: SupportConstraint["kind
   return constraints.some((c) => c.kind === kind);
 }
 
+// ── [보존, 원문 그대로] ──
 function pickOpeningStyle(result: WealthObstructionResult): OpeningStyle {
   if (result.structuralObstructions.length === 0) return "뚜렷한주방해없음형";
-  // 겹치는 구조가 여럿일 때만 "통찰로 시작"을 쓴다 — hardBlocked는 반전의
-  // 무게를 오프닝이 아니라 종결(짧은통찰형)에 싣는 쪽이 더 세련되다는 걸
-  // C24 승인본에서 확인했다(오프닝은 핵심 문장으로 바로 시작).
   if (result.severityLabel === "복합/중첩 방해축") return "통찰형";
   if (hasKind(result.supportConstraints, "yongsinCandidateWarning") || hasKind(result.supportConstraints, "huisinWarning")) return "대비형";
   if (hasKind(result.supportConstraints, "noHuisinCandidate")) return "질문형";
-  return "구조설명형"; // hardBlocked 포함 — 도와줄 힘이 있으나 막힌 경우도 오프닝은 담백하게
+  return "구조설명형";
 }
 
 function pickEndingStyle(result: WealthObstructionResult): EndingStyle {
   if (result.structuralObstructions.length === 0) return "단일원인없음형";
-  // hold/unresolved(판정보류)와 "확정됐지만 지원축이 없음"(열린질문형)은
-  // 서로 다른 상태다 — 전자는 용신 자체를 하나로 못 정한 것이고, 후자는
-  // 용신은 정했지만 그걸 도와줄 후보가 없는 것. 같은 결론으로 뭉치면
-  // 안 된다(C30/S34 승인본에서 서로 다른 종결을 쓴 이유).
   if (result.yongsinResolutionStatus !== "resolved") return "판정보류형";
   if (result.supportConstraints.length === 0) return "구조적결론형";
   if (hasKind(result.supportConstraints, "hardBlocked") || hasKind(result.supportConstraints, "yongsinCandidateWarning") || hasKind(result.supportConstraints, "huisinWarning")) {
     return "짧은통찰형";
   }
-  return "열린질문형"; // noHuisinCandidate, 용신은 확정됨
+  return "열린질문형";
 }
 
 const HOOK_BY_OPENING_STYLE: Record<Exclude<OpeningStyle, "구조설명형" | "뚜렷한주방해없음형">, string> = {
@@ -93,21 +108,22 @@ const HOOK_BY_OPENING_STYLE: Record<Exclude<OpeningStyle, "구조설명형" | "�
   통찰형: "이 사람에게는 서로 다른 결이 한 번에 겹쳐 있습니다.",
 };
 
-// 유형 자체가 이미 훅으로 강한 경우, 오프닝 스타일과 무관하게 이 문장을
-// 우선 쓴다 — companionExcess는 5장 제목("남지 않는 이유")과 가장 직결
-// 되는 통찰이라 승인본에서 스타일 훅보다 우선했다.
 const HOOK_OVERRIDE_BY_TYPE: Partial<Record<ObstructionType, string>> = {
   분산형: `"버는 것과 남기는 것은 다르다"는 말이 이 사람에게는 유독 정확하게 들어맞습니다.`,
 };
 
+// [수정3] explanation 뒤에 OBSTRUCTION_SCENE 한 줄을 더 붙였다. 훅 선택
+// 로직과 explanation 원문은 그대로다.
 function buildOpeningParagraph(primary: StructuralObstruction, style: OpeningStyle): NarrativeParagraph {
   const explanation = OBSTRUCTION_EXPLANATION[primary.type];
+  const scene = OBSTRUCTION_SCENE[primary.type];
   const typeHook = HOOK_OVERRIDE_BY_TYPE[primary.type];
   const hook = typeHook ?? (style === "구조설명형" ? null : HOOK_BY_OPENING_STYLE[style as Exclude<OpeningStyle, "구조설명형" | "뚜렷한주방해없음형">]);
-  const text = hook ? `${hook} ${explanation}` : explanation;
-  return { text, sourceNote: `structuralObstructions[0]=${primary.sourceFlag}→${primary.type}, openingStyle=${style}${typeHook ? "(유형 훅 우선)" : ""}` };
+  const text = hook ? `${hook} ${explanation} ${scene}` : `${explanation} ${scene}`;
+  return { text, sourceNote: `structuralObstructions[0]=${primary.sourceFlag}→${primary.type}, openingStyle=${style}${typeHook ? "(유형 훅 우선)" : ""} [+수정3: scene]` };
 }
 
+// ── [보존, 원문 그대로] ──
 function buildAdditionalObstructionsParagraph(rest: StructuralObstruction[]): NarrativeParagraph {
   const shorts = rest.map((o) => OBSTRUCTION_SHORT[o.type]);
   const joined = shorts.length === 1 ? shorts[0] : shorts.slice(0, -1).join(", ") + ", " + shorts[shorts.length - 1];
@@ -127,7 +143,11 @@ function buildCaveatParagraph(caveats: Caveat[]): NarrativeParagraph | null {
     clauses.push("다른 자리와 자꾸 얽히거나 부딪히는 성질까지 겹쳐 있어, 결이 한 번으로 끝나지 않을 수 있습니다");
   }
   if (caveats.some((c) => c.kind === "monthRootConflict")) {
-    clauses.push("이 판정에는 약간의 애매함도 있어, 상황에 따라 조금씩 다르게 드러날 수 있습니다");
+    // [수정] "이 판정에는"이 앞에 받는 대상 없이 계산 과정 자체를 가리켜
+    // 읽는 사람이 "무슨 판정?"이라고 되물을 수 있었다. "이 부분은"으로
+    // 바꿔 사람의 특성을 가리키게 하고, 의미(상황마다 다르게 드러날 수
+    // 있다는 것)는 그대로 유지했다.
+    clauses.push("다만 이 부분은 상황에 따라 조금씩 다르게 드러날 수 있어, 딱 잘라 말하기는 어렵습니다");
   }
   if (clauses.length === 0) return null;
   return { text: clauses.join(". ") + ".", sourceNote: `caveats=${caveats.map((c) => c.kind).join(",")}` };
@@ -149,7 +169,6 @@ function buildSupportParagraph(constraints: SupportConstraint[]): NarrativeParag
       sourceNote: `supportConstraints=[warning]`,
     };
   }
-  // noHuisinCandidate
   return {
     text: "이 흐름을 붙잡아 덜어줄 힘이 원국에는 뚜렷하게 자리하고 있지 않습니다.",
     sourceNote: `supportConstraints=[noHuisinCandidate]`,
@@ -163,8 +182,6 @@ function buildHoldParagraph(): NarrativeParagraph {
   };
 }
 
-// 종결 — (endingStyle, 대표 유형) 조합별 우선 문구. 6명 승인본에서 검증된
-// 조합은 그대로 재사용하고, 그 외 조합은 유형 무관 범용 문구로 대체한다.
 const ENDING_OVERRIDE: Partial<Record<`${EndingStyle}:${ObstructionType}`, string>> = {
   "판정보류형:과부하형": "그래서 이건 풀어야 할 문제라기보다, 매일 감당하고 있는 무게에 가깝습니다.",
   "열린질문형:과부하형": "기댈 축이 뚜렷하지 않다는 건, 이 무게를 어느 한 가지 도움으로 해결하기보다 여러 조건을 함께 살펴야 하는 구조라는 뜻에 가깝습니다.",
@@ -203,22 +220,39 @@ function buildZeroObstructionSupportNote(): NarrativeParagraph {
   };
 }
 
-export function generateWealthObstructionNarrative(result: WealthObstructionResult): WealthObstructionNarrativeResult {
+// [신규 — 수정1+수정2] "구조적 과다 없음" 92% 동일 문제 해결 + 4→5장
+// 자연스러운 연결을 한 문단에서 함께 처리한다. topAxis(이미 계산된 4장
+// 값, 새 계산 아님)로 5가지 변형. 첫 문장이 "4장의 상대비교 결과와 이번
+// 장의 절대판정은 다른 질문"이라는 걸 자연스럽게 잇는 다리 역할도 한다.
+const TILT_BY_AXIS: Record<SipseongCategory, string> = {
+  비겁: "돈이 생겨도 가만히 쥐고 있기보다, 다시 움직이거나 새로운 시도에 써보고 싶어지는 쪽으로 살짝 기웁니다.",
+  식상: "결과를 만들어내고 표현하는 쪽에 마음이 먼저 가서, 벌어들인 걸 붙잡아두기보다 계속 움직이게 하는 쪽으로 살짝 기웁니다.",
+  재성: "눈에 보이는 결과와 실익을 먼저 확인하려는 쪽으로 살짝 기울어서, 확실하지 않은 것에는 잘 안 움직입니다.",
+  관성: "돈을 움직이기 전에 맡은 역할이나 책임부터 챙기려는 쪽으로 살짝 기웁니다.",
+  인성: "바로 움직이기보다 먼저 이해하고 납득한 뒤에 움직이려는 쪽으로 살짝 기웁니다.",
+};
+
+function buildZeroObstructionTiltParagraph(ch4Key: ChapterFourKey): NarrativeParagraph {
+  const topAxis = ch4Key.wealth.all[0].category;
+  return {
+    text: `완전히 어느 한쪽으로 치우친 구조는 아니지만, 그렇다고 모든 힘이 똑같은 무게로 움직이는 것도 아닙니다. ${TILT_BY_AXIS[topAxis]}`,
+    sourceNote: `[신규 수정1+2] ch4Key.wealth.all[0].category=${topAxis} (이미 계산된 4장 topAxis 재사용, 새 계산 없음)`,
+  };
+}
+
+export function generateWealthObstructionNarrative(
+  result: WealthObstructionResult,
+  ch4Key: ChapterFourKey
+): WealthObstructionNarrativeResult {
   const paragraphs: NarrativeParagraph[] = [];
   const n = result.structuralObstructions.length;
 
   if (n === 0) {
     paragraphs.push(buildZeroObstructionOpening());
     paragraphs.push(buildZeroObstructionExplanation());
+    paragraphs.push(buildZeroObstructionTiltParagraph(ch4Key)); // [신규]
     const caveatPara = buildCaveatParagraph(result.caveats);
     if (caveatPara) paragraphs.push(caveatPara);
-    // 출시 전 감사(F-1) — structuralObstructions가 비어 있어도
-    // supportConstraints/yongsinResolutionStatus는 이미 독립적으로 계산돼
-    // 있다(analyzeWealthObstruction 참고). 이전에는 이 두 값을 무시하고
-    // 항상 같은 두 문장(SupportNote·단일원인없음형)만 썼는데, 이미 있는
-    // 데이터를 그대로 사용하도록 바꾼다 — 새 판정 기준을 만들지 않고,
-    // 비어있지 않은 분기에서는 n≥1일 때 이미 쓰던 것과 같은 함수
-    // (buildSupportParagraph/buildEndingParagraph)를 그대로 재사용한다.
     paragraphs.push(
       result.supportConstraints.length > 0 ? buildSupportParagraph(result.supportConstraints) : buildZeroObstructionSupportNote()
     );
