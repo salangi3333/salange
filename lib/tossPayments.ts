@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { createHash } from "crypto";
 
 /**
  * TossPayments 결제 승인 — server-to-server 전용(브라우저에서 절대 호출하지
@@ -23,6 +23,13 @@ import { randomUUID } from "crypto";
  * 최초 요청 후 15일 유효)를 붙여, confirm 요청이 네트워크 재시도 등으로
  * 중복 전송되더라도 토스 쪽에서 같은 응답을 재사용하게 한다 — 클라이언트
  * 변수 하나로 중복을 막는 수준이 아니라 API 레벨에서 막는다.
+ *
+ * 키는 요청 본문의 식별 값(paymentKey + orderId)에서 결정적으로 만든다 —
+ * 같은 요청은 재시도해도 항상 같은 키, 다른 요청은 다른 키. 호출마다 새
+ * 난수를 쓰면 "Toss에서는 승인 완료, 우리 주문은 PENDING"인 상태에서
+ * 새로고침할 때 토스가 새 요청으로 보고 ALREADY_PROCESSED_PAYMENT로 거절해
+ * 복구가 안 된다. SHA-256 앞 128비트를 UUID(v4 형식) 문자열로 만들어
+ * "UUID처럼 충분히 무작위, 300자 이하" 요건을 맞춘다.
  */
 export interface TossConfirmResult {
   ok: boolean;
@@ -46,12 +53,23 @@ export async function confirmTossPayment(params: {
 
   const auth = Buffer.from(`${secretKey}:`).toString("base64");
 
+  const h = createHash("sha256")
+    .update(`${params.paymentKey}\n${params.orderId}`)
+    .digest("hex");
+  const idempotencyKey = [
+    h.slice(0, 8),
+    h.slice(8, 12),
+    "4" + h.slice(13, 16),
+    "89ab"[parseInt(h[16], 16) & 3] + h.slice(17, 20),
+    h.slice(20, 32),
+  ].join("-");
+
   const res = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": randomUUID(),
+      "Idempotency-Key": idempotencyKey,
     },
     body: JSON.stringify({
       paymentKey: params.paymentKey,
