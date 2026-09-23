@@ -13,20 +13,26 @@ import { buildChapterThreeKey } from "./chapterThreeInterpretation";
  *
  * 새 계산을 하지 않는다 — 전부 이미 동결된 함수 재호출뿐이다.
  *  - buildChapterThreeKey(appData).gwansal(chapterThreeInterpretation.ts,
- *    관살혼잡 여부 — 편관·정관이 동시에 존재하는 구조). 이 챕터에서는
- *    처음 쓰는 축이다(①~⑤ 어디도 관살혼잡을 참조하지 않는다).
+ *    관살혼잡 여부 — 편관·정관이 동시에 존재하는 구조).
  *  - analyzeDayMasterBalance(user).balance(5단계+보류, 재물5장이 쓰는
  *    것과 동일 함수) — ④가 이미 쓰지만 조합 상대(gwansal)가 달라
  *    실제로 다른 문장 갈래가 나온다.
- *  - analyzeSpouseStar(user, gender).exposure — ①③④⑤가 이미 쓰는
- *    값이지만, 여기서는 판정 축이 아니라 "숨음"일 때만 붙는 보조
- *    부연절로만 쓴다(3차 조정, 판정 자체를 바꾸지 않음).
+ *  - analyzeSpouseStar(user, gender).exposure — "숨음"일 때만 붙는 보조
+ *    부연절로만 쓴다(판정 자체를 바꾸지 않음).
  *
  * 1차 분기(핵심 판정): balance===hold면 판정보류형. 그 외에는
  * gwansal.present(있음/없음) × balanceGroup(신강계열/신약계열/중화) 총
  * 6갈래 — 여러 기준을 동시에 감당해야 하는 구조(관살혼잡)가 있는 사람과
  * 없는 사람이, 그 압박을 감당할 그릇(신강/신약/중화)에 따라 가까운
  * 관계에서 실제로 다르게 나타난다는 것이 이 섹션의 핵심 통찰이다.
+ *
+ * 2차 보강(승인된 작업, 2026-09) — 유료 평생운명록 본문으로는 짧다는
+ * 지적에 따라, 같은 6갈래 안에서 새 계산축 추가 없이(A안) 문단 역할만
+ * 늘렸다: 초반 모습 → 결론 → 왜 → (숨음이면 보조절) → 가까운 사람에게만
+ * 보이는 모습 → 관계 자체를 재고하게 되는 지점(④의 "자기중심 유지/
+ * 흔들림 후 회복"과 겹치지 않도록 관계 차원의 재고만) → 생활 예시(기존) →
+ * 장점 → 가깝기 때문에 생기는 부담(④의 "붙잡을지 놓을지"와 다르게 순수
+ * 피로감만) → 알아두면 좋은 점(기존 결론).
  *
  * 안전 원칙: "항상/반드시/운명적으로" 금지. 실제 다툼·이별 등 계산에
  * 없는 구체적 사건을 만들지 않는다. 명리 용어(관살혼잡/신강/신약/편관/
@@ -95,7 +101,67 @@ const CONCRETE_MOMENT_BY_BRANCH: Record<BranchKey, string> = {
 };
 
 const HIDDEN_CLAUSE =
-  " 다만 이런 변화를 먼저 말로 표현하는 편은 아니라서, 상대가 먼저 알아채 주지 않으면 이 사람 안에서만 조용히 지나갈 수 있습니다.";
+  "다만 이런 변화를 먼저 말로 표현하는 편은 아니라서, 상대가 먼저 알아채 주지 않으면 이 사람 안에서만 조용히 지나갈 수 있습니다.";
+
+// ── 초반 모습(branch 6개) ──
+const EARLY_BY_BRANCH: Record<BranchKey, string> = {
+  "관살혼잡있음-신강계열": "이 사람은 관계 초반에는 여러 가지를 한꺼번에 챙기는 기색이 잘 드러나지 않습니다. 무리 없이 만남을 이어가는 것처럼 보이고, 크게 부담스러워하는 티도 나지 않습니다.",
+  "관살혼잡있음-신약계열": "이 사람은 관계 초반에는 크게 힘들어 보이지 않습니다. 상대에게 맞추는 것도, 이런저런 상황에 반응하는 것도 자연스러워 보입니다.",
+  "관살혼잡있음-중화": "이 사람은 관계 초반에는 무난하게 시작합니다. 여러 가지를 동시에 신경 써야 하는 기색도, 특별히 힘들어하는 모습도 잘 드러나지 않습니다.",
+  "관살혼잡없음-신강계열": "이 사람은 관계 초반에는 오히려 조심스러운 모습을 보입니다. 상대를 배려해서 자기 생각을 앞세우기보다 맞춰 주는 모습이 먼저 나타납니다.",
+  "관살혼잡없음-신약계열": "이 사람은 관계 초반에는 상대에게 맞춰 주는 것을 크게 어려워하지 않습니다. 무리하는 느낌 없이 자연스럽게 상대 쪽으로 움직입니다.",
+  "관살혼잡없음-중화": "이 사람은 관계 초반부터 크게 애쓰지 않고 자기 모습 그대로 시작합니다. 상대에게 맞추는 것도, 자기 방식을 지키는 것도 딱히 힘들이지 않습니다.",
+};
+
+// ── 가까운 사람에게만 나타나는 행동/마음(branch 6개) — ①(표현 방식)·④(반복 패턴)와
+// 다르게, "겉모습과 가까운 사이에서만 보이는 모습의 차이" 자체에 집중한다. ──
+const INTIMATE_ONLY_BY_BRANCH: Record<BranchKey, string> = {
+  "관살혼잡있음-신강계열": "겉으로 유들유들하게 넘기는 모습과 달리, 아주 가까운 사람 앞에서는 '오늘은 어느 쪽 기준을 먼저 맞춰야 할지' 고민하는 속내를 슬쩍 내비치기도 합니다. 남들 앞에서는 절대 보이지 않는 지친 표정이 가까운 사람 앞에서만 잠깐 드러날 수 있습니다.",
+  "관살혼잡있음-신약계열": "겉으로는 잘 버티는 것처럼 보여도, 아주 가까운 사람 앞에서만 '오늘은 좀 힘들다'는 말을 슬쩍 꺼낼 수 있습니다. 다른 사람 앞에서는 절대 하지 않는 약한 소리가 가까운 사람 앞에서만 나옵니다.",
+  "관살혼잡있음-중화": "겉으로는 별일 없어 보여도, 아주 가까운 사람 앞에서는 그날 저울질했던 여러 기준을 하나씩 되짚어 이야기하는 모습을 보일 수 있습니다.",
+  "관살혼잡없음-신강계열": "가까워질수록 예전에는 안 하던 자기주장을 더 편하게 꺼내게 됩니다. 남들 앞에서는 안 보이는 고집스러운 면이나 취향이 가까운 사람 앞에서만 자연스럽게 드러날 수 있습니다.",
+  "관살혼잡없음-신약계열": "가까운 사람 앞에서는 오히려 더 맞춰주려는 마음이 커집니다. 남들에게는 크게 신경 쓰지 않을 사소한 것도, 가까운 사람 앞에서는 미리 헤아려 챙기려는 모습으로 나타날 수 있습니다.",
+  "관살혼잡없음-중화": "가까워져도 특별히 다른 얼굴이 나오지는 않지만, 아주 가까운 사람만 알아챌 수 있는 미묘한 편안함이 있습니다. 말수가 조금 늘거나, 사소한 이야기를 더 많이 꺼내는 정도로 나타날 수 있습니다.",
+};
+
+// ── 예상과 다르게 흘러갈 때 — "관계 자체를 재고하게 되는 지점"만 다룬다.
+// ④의 "자기중심 유지/흔들림 후 회복"(개인 내면의 심리 회복 과정)과 겹치지 않도록,
+// 여기서는 순수하게 "우리 사이의 방식을 다시 생각하게 되는" 관계 차원의 재고만 말한다. ──
+const RECONSIDER_BY_BRANCH: Record<BranchKey, string> = {
+  "관살혼잡있음-신강계열": "다만 여러 기준을 동시에 맞추는 일이 계속되다 어느 순간 '이걸 언제까지 나 혼자 다 맞춰야 하나' 싶은 생각이 들면, 그때부터는 관계에서 자기 몫을 어디까지 정할지를 다시 생각하게 됩니다.",
+  "관살혼잡있음-신약계열": "다만 여러 기대를 동시에 맞추는 일이 반복되다 감당하기 버거워지면, '이 관계에서 내가 계속 이렇게 다 떠안아야 하나'라는 생각과 함께 관계의 방식 자체를 다시 생각해보게 됩니다.",
+  "관살혼잡있음-중화": "다만 여러 기준을 맞추는 균형이 자꾸 한쪽으로 기울면, '지금 이 균형이 맞는 건가' 싶어 관계에서 서로 나누는 몫을 다시 짚어보게 됩니다.",
+  "관살혼잡없음-신강계열": "다만 표현이 계속 편해지다 상대가 그 솔직함을 부담스러워하는 기색을 보이면, '내가 너무 내 방식대로만 하고 있나' 싶어 관계에서 어디까지 자기 색을 내도 되는지 다시 가늠하게 됩니다.",
+  "관살혼잡없음-신약계열": "다만 맞춰주는 일이 반복되다 문득 '나는 계속 맞추기만 하는 것 같다'는 생각이 들면, 처음처럼 그냥 넘기기보다 '우리 사이에서는 이 부분을 어떻게 맞춰야 하지?' 하고 관계 자체를 다시 생각하게 될 수 있습니다.",
+  "관살혼잡없음-중화": "다만 한결같던 태도가 상대에게는 밋밋하게 느껴진다는 걸 알게 되면, '내가 너무 똑같이만 하고 있나' 싶어 관계 안에서 무엇을 바꿔야 할지 다시 생각해보게 됩니다.",
+};
+
+// ── 이 사람이 깊은 관계에서 갖는 장점(branch 6개) ──
+const STRENGTH_BY_BRANCH: Record<BranchKey, string> = {
+  "관살혼잡있음-신강계열": "이런 성향에는 분명한 장점이 있습니다. 여러 상황을 동시에 감당하면서도 겉으로 안정감을 잃지 않는 모습은, 관계 전체를 든든하게 만드는 힘이 됩니다.",
+  "관살혼잡있음-신약계열": "이런 성향의 장점은, 여러 기대를 소홀히 하지 않고 하나하나 신경 쓴다는 데 있습니다. 상대는 이 사람이 자신을 세심하게 챙긴다고 느끼기 쉽습니다.",
+  "관살혼잡있음-중화": "이런 성향의 장점은, 여러 기준 사이에서도 균형을 잃지 않으려 애쓴다는 데 있습니다. 관계 안에서 어느 한쪽으로 치우치지 않는 안정감을 줍니다.",
+  "관살혼잡없음-신강계열": "이런 성향의 장점은, 가까워질수록 오히려 더 솔직하고 편안한 모습을 보여준다는 데 있습니다. 상대는 이 사람과 있을 때 꾸밈없는 진짜 모습을 볼 수 있다고 느끼기 쉽습니다.",
+  "관살혼잡없음-신약계열": "이런 성향의 장점은, 가까운 사람을 세심하게 배려하고 맞춰준다는 데 있습니다. 상대는 이 사람과 함께 있을 때 존중받는다는 느낌을 받기 쉽습니다.",
+  "관살혼잡없음-중화": "이런 성향의 장점은, 관계가 깊어져도 한결같은 태도를 유지한다는 데 있습니다. 상대는 이 사람과의 관계에서 변함없는 안정감을 느끼기 쉽습니다.",
+};
+
+// ── 가까운 관계에서 힘들어질 수 있는 지점(branch 6개) — ④의 "관계를 붙잡을지
+// 놓을지"(지속 여부 패턴)와 다르게, "가깝기 때문에 생기는 부담·피로" 자체만 다룬다. ──
+const HARD_PART_BY_BRANCH: Record<BranchKey, string> = {
+  "관살혼잡있음-신강계열": "다만 가까운 사이일수록 여러 기준을 동시에 신경 쓰는 부담이 겉으로 잘 드러나지 않다 보니, 상대는 이 사람이 실제로 얼마나 애쓰고 있는지 알아채기 어려울 수 있습니다.",
+  "관살혼잡있음-신약계열": "다만 가까운 사이일수록 여러 기대를 동시에 떠안는 부담이 쌓이기 쉬워서, 정작 자기 자신을 위한 시간과 에너지는 점점 줄어들 수 있습니다.",
+  "관살혼잡있음-중화": "다만 여러 기준 사이에서 균형을 맞추는 일이 계속되면, 특별히 힘든 일이 없어도 은근히 지치는 순간이 쌓일 수 있습니다.",
+  "관살혼잡없음-신강계열": "다만 가까워질수록 솔직해지는 모습이 상대에게는 다소 강하게 느껴질 수 있어서, 관계 초반의 조심스러움을 그리워하는 상대와 온도차가 생길 수 있습니다.",
+  "관살혼잡없음-신약계열": "다만 맞춰주는 폭이 계속 넓어지면, 정작 자기가 원하는 것이 무엇인지조차 잘 모르게 되는 순간이 올 수 있습니다.",
+  "관살혼잡없음-중화": "다만 한결같은 태도가 오래 이어지면, 상대에게는 관계가 정체된 것처럼 느껴질 수 있어 서로 다른 온도를 마주하는 순간이 생길 수 있습니다.",
+};
+
+function splitSceneToCoreWhy(scene: string): { core: string; why: string } {
+  const idx = scene.indexOf("다. ");
+  if (idx === -1) return { core: scene.trim(), why: "" };
+  return { core: scene.slice(0, idx + 2).trim(), why: scene.slice(idx + 3).trim() };
+}
 
 export function generateLoveDeepeningNarrative(appData: AppData, gender: "male" | "female"): LoveDeepeningNarrativeResult {
   const key = buildChapterThreeKey(appData);
@@ -121,14 +187,21 @@ export function generateLoveDeepeningNarrative(appData: AppData, gender: "male" 
   const group = balanceGroupOf(balance);
   const branchKey: BranchKey = `${key.gwansal.present ? "관살혼잡있음" : "관살혼잡없음"}-${group}`;
   const t = BRANCH_TEXT[branchKey];
-  const hiddenClause = star.exposure === "숨음" ? HIDDEN_CLAUSE : "";
+  const { core, why } = splitSceneToCoreWhy(t.scene);
   const noteHead = `gwansal=${key.gwansal.present}, balance=${balance}(${group}), exposure=${star.exposure}`;
 
-  return {
-    paragraphs: [
-      { text: `${t.scene}${hiddenClause}`, sourceNote: noteHead },
-      { text: CONCRETE_MOMENT_BY_BRANCH[branchKey], sourceNote: `구체적순간(branch=${branchKey})` },
-      { text: t.conclusion, sourceNote: `${branchKey} 결론` },
-    ],
-  };
+  const paras: NarrativeParagraph[] = [
+    { text: EARLY_BY_BRANCH[branchKey], sourceNote: `초반모습(${branchKey})` },
+    { text: core, sourceNote: `결론(${branchKey})` },
+  ];
+  if (why) paras.push({ text: why, sourceNote: `왜(${branchKey})` });
+  if (star.exposure === "숨음") paras.push({ text: HIDDEN_CLAUSE, sourceNote: noteHead });
+  paras.push({ text: INTIMATE_ONLY_BY_BRANCH[branchKey], sourceNote: `가까운사람에게만(${branchKey})` });
+  paras.push({ text: RECONSIDER_BY_BRANCH[branchKey], sourceNote: `관계재고(${branchKey})` });
+  paras.push({ text: CONCRETE_MOMENT_BY_BRANCH[branchKey], sourceNote: `생활예시(${branchKey})` });
+  paras.push({ text: STRENGTH_BY_BRANCH[branchKey], sourceNote: `장점(${branchKey})` });
+  paras.push({ text: HARD_PART_BY_BRANCH[branchKey], sourceNote: `힘든부분(${branchKey})` });
+  paras.push({ text: t.conclusion, sourceNote: `알아두면좋은점(${branchKey})` });
+
+  return { paragraphs: paras };
 }

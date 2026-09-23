@@ -95,6 +95,28 @@ const ROLE_SHARING_BY_BRANCH: Record<BranchKey, string> = {
   "불일치-balanced": "동반자 관계에서는 이상형에 맞춰 미리 역할을 정하기보다, 실제로 함께 지내보며 자연스럽게 역할을 맞춰가는 쪽이 이 사람에게 더 잘 맞습니다.",
 };
 
+/** 2차 보강(승인된 작업, 2026-09) — 새 신호 없음. ①의 "왜 끌리는가"를 반복하지 않고,
+ * "관계가 실제로 이어졌을 때"의 구체적 장면 1개(SCENE_EXAMPLE_BY_BRANCH)와, 기존
+ * conclusion(관계 유형)과 달리 "무엇을 지켜야/알아줘야 오래가는지"라는 조건 자체를 말하는
+ * 문단 1개(LONG_COMFORT_BY_BRANCH)를 추가했다. */
+const SCENE_EXAMPLE_BY_BRANCH: Record<BranchKey, string> = {
+  "일치-subA": "예를 들어 여러 사람과 두루 어울리는 모습에 끌려 만났는데, 함께 지내 보니 그 사교적인 태도 자체가 편안하게 느껴져서 굳이 한 사람에게만 집중하라고 요구하지 않는 관계로 자연스럽게 자리 잡을 수 있습니다.",
+  "일치-subB": "예를 들어 한 사람에게 집중하는 진지한 태도에 끌려 만났는데, 함께 지내 보니 그 한결같음이 실제로도 가장 편안한 부분이라 처음 느꼈던 마음이 시간이 지나도 크게 흔들리지 않을 수 있습니다.",
+  "일치-balanced": "예를 들어 처음 끌렸던 부분을 함께 지내며 다시 짚어봐도 '역시 이래서 좋았지' 싶은 순간이 반복되면서, 관계에 대한 확신이 자연스럽게 쌓일 수 있습니다.",
+  "불일치-subA": "예를 들어 여러 매력에 끌려 만났는데, 정작 오래 곁에 있어 주는 건 그런 화려함과는 거리가 먼 사람이어서 처음엔 의아하다가도 시간이 지날수록 그 편안함을 더 신뢰하게 될 수 있습니다.",
+  "불일치-subB": "예를 들어 한 사람에게 집중하고 싶은 마음으로 만났는데, 실제로 마음이 놓이는 건 처음 그리던 것과는 다른 결의 사람이어서 관계 초반엔 스스로도 헷갈릴 수 있습니다.",
+  "불일치-balanced": "예를 들어 머릿속으로 그리던 이상형과 실제로 편안함을 느끼는 상대가 달라서, 처음엔 '이 사람이 맞나' 싶다가도 함께 지내는 시간이 쌓이며 그 편안함 쪽으로 마음이 기울 수 있습니다.",
+};
+
+const LONG_COMFORT_BY_BRANCH: Record<BranchKey, string> = {
+  "일치-subA": "이런 경우 오래갈수록 중요한 건, 여러 관심사나 관계를 넓게 두는 것을 '흔들린다'고 의심하지 않고 이 사람의 원래 방식으로 받아들여 주는지입니다.",
+  "일치-subB": "이런 경우 오래갈수록 중요한 건, 특별한 자극이 없어도 한결같이 이어지는 마음을 '식었다'고 오해하지 않고 그대로 믿어 주는지입니다.",
+  "일치-balanced": "이런 경우 오래갈수록 중요한 건, 처음의 느낌을 과장되게 재확인시키려 하지 않고 이미 자리 잡은 편안함을 그대로 존중해 주는지입니다.",
+  "불일치-subA": "이런 경우 오래갈수록 중요한 건, 첫인상의 화려함이 아니라 실제로 곁을 지켜주는 사람의 가치를 이 사람 스스로 계속 알아볼 수 있는지입니다.",
+  "불일치-subB": "이런 경우 오래갈수록 중요한 건, 처음 그리던 모습과 다르다는 이유로 관계를 의심하지 않고 실제 느껴지는 편안함을 기준으로 삼는지입니다.",
+  "불일치-balanced": "이런 경우 오래갈수록 중요한 건, 머릿속 이상형과 다르다는 사실보다 지금 실제로 마음이 편안한지를 더 중요한 기준으로 삼는지입니다.",
+};
+
 export function generateLoveSpousePartnerNarrative(appData: AppData, gender: "male" | "female"): LoveSpousePartnerNarrativeResult {
   const star = analyzeSpouseStar(appData.user, gender);
   const { exposure, targetCategory } = star;
@@ -124,7 +146,9 @@ export function generateLoveSpousePartnerNarrative(appData: AppData, gender: "ma
   return {
     paragraphs: [
       { text: t.scene, sourceNote: noteHead },
+      { text: SCENE_EXAMPLE_BY_BRANCH[branchKey], sourceNote: `생활장면(branch=${branchKey})` },
       { text: ROLE_SHARING_BY_BRANCH[branchKey], sourceNote: `역할분담(branch=${branchKey})` },
+      { text: LONG_COMFORT_BY_BRANCH[branchKey], sourceNote: `오래편안조건(branch=${branchKey})` },
       { text: t.conclusion, sourceNote: `${branchKey} 결론` },
     ],
   };

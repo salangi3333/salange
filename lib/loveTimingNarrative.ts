@@ -152,6 +152,19 @@ const PRACTICAL_NOTE_BY_BRANCH: Record<BranchType, string> = {
   quiet: "이미 관계가 있다면, 지금은 관계보다 스스로를 정리하는 시간에 더 마음이 쓰일 수 있습니다. 이 자체가 관계에 나쁜 신호는 아닙니다. 새로운 인연을 기다리는 중이라면, 지금은 사람을 찾아 나서기보다 스스로 무엇을 원하는지 정리해두는 편이 다음 시기를 준비하는 데 더 도움이 됩니다.",
 };
 
+// ── [신규] "예를 들어" 생활 장면. STAR축(배우자성 유입=마음이 움직임)과 PALACE축(배우자궁
+// 관계=관계를 보는 방식·거리감 변화)의 실제 의미 차이를 사건 단정 없이 생활 언어로 그린다.
+// 深化(2026-09, 승인된 확장) — 새 계산 없음, 380~450자였던 본문을 500~650자로 확장. ──
+const EXAMPLE = {
+  twinCross: "예를 들어 평소라면 무심히 지나쳤을 사람의 말이나 표정이 유독 마음에 걸리면서, 동시에 그 사람과 조금 더 편하게 지내고 싶다는 마음이 자연스럽게 함께 움직일 수 있습니다.",
+  sequentialStarFirst: "예를 들어 마음이 먼저 움직이는 시기에는 특정한 사람이나 관계가 자꾸 떠오르며 인연을 의식하게 되지만, 아직은 선뜻 곁을 내줄 여유까지는 없다고 느껴질 수 있습니다. 시간이 지나 곁을 내줄 여유가 넓어지는 시기가 오면, 그제야 관계를 대하는 태도나 거리감 자체가 한결 편안하게 달라질 수 있습니다.",
+  sequentialPalaceFirst: "예를 들어 곁을 내줄 여유가 먼저 넓어지는 시기에는 관계를 대하는 거리감이나 함께 지내는 방식부터 자연스럽게 달라지고, 그 뒤 마음이 움직이는 시기가 오면 그제야 특정한 사람이나 관계가 더 구체적으로 의식되기 시작할 수 있습니다.",
+  starOnly: "예를 들어 이 시기에는 특별한 계기가 없어도 평소보다 사람에 대한 생각이 자주 떠오르고, 인연이라는 주제 자체를 조금 더 의식하게 될 수 있습니다. 다만 그 마음이 실제로 누군가와 가까워지는 여유로까지 바로 이어지지는 않을 수 있습니다.",
+  palaceOnly: "예를 들어 이 시기에는 마음이 크게 움직이지 않아도, 관계를 대하는 거리감이나 함께 지내는 방식 자체가 자연스럽게 달라질 수 있습니다. 이미 관계가 있다면 서로 맞춰온 방식을 다시 조정해 보게 되고, 아니라면 평소와 다른 자리나 사람들 쪽으로 발걸음이 향할 수 있습니다.",
+  daYunBackgroundOnly: "예를 들어 특별히 짚어낼 만한 사건이나 시기 없이도, 사람을 대하는 마음의 결 자체는 이 시간 내내 큰 변화 없이 이어지고 있다고 볼 수 있습니다.",
+  quiet: "예를 들어 지금은 누군가를 새로 만나는 것보다, 스스로 어떤 관계를 원하는지 혹은 지금 삶에서 무엇에 마음을 쓰고 싶은지를 정리하는 데 더 자연스럽게 마음이 쓰일 수 있습니다.",
+};
+
 // ── 서사 표현층 — T1~T8 판정과 하위 분기 조건(leadWithPalace, multi,
 // consecutive, starFirst, multiStar/multiPalace, daYunActive, exposure
 // 등)은 지난 라운드 그대로 유지한다. 이번엔 오직 "문장 자체"만 다시
@@ -234,8 +247,9 @@ function buildTwinCross(appData: AppData, timing: LoveTimingRawSignals, key: Cla
     conclusion = { text: "이 한 해가 앞으로 어떻게 이어질지, 천천히 드러날 것입니다.", sourceNote: "twinCross-single-noBonus 결론(여운)" };
   }
 
+  const example = { text: EXAMPLE.twinCross, sourceNote: "생활장면(twinCross)" };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.twinCross, sourceNote: "실전조언(branch=twinCross)" };
-  return [opening, scene, timingPara, practicalNote, conclusion];
+  return [opening, scene, timingPara, example, practicalNote, conclusion];
 }
 
 function buildSequential(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -306,8 +320,9 @@ function buildSequential(appData: AppData, timing: LoveTimingRawSignals, key: Cl
     };
   }
 
+  const example = { text: starFirst ? EXAMPLE.sequentialStarFirst : EXAMPLE.sequentialPalaceFirst, sourceNote: `생활장면(sequential, starFirst=${starFirst})` };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.sequential, sourceNote: "실전조언(branch=sequential)" };
-  return [opening, scene, timingPara, practicalNote, conclusion];
+  return [opening, scene, timingPara, example, practicalNote, conclusion];
 }
 
 function buildStarOnly(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -364,8 +379,9 @@ function buildStarOnly(appData: AppData, timing: LoveTimingRawSignals, key: Clas
     conclusion = { text: "짧게 지나가는 결일 수 있지만, 그 다음에 어떻게 이어지는지는 계속 지켜볼 만합니다.", sourceNote: "starOnly-single-inactive 결론(여운)" };
   }
 
+  const example = { text: EXAMPLE.starOnly, sourceNote: "생활장면(starOnly)" };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.starOnly, sourceNote: "실전조언(branch=starOnly)" };
-  return [opening, scene, timingPara, practicalNote, conclusion];
+  return [opening, scene, timingPara, example, practicalNote, conclusion];
 }
 
 function buildPalaceOnly(appData: AppData, timing: LoveTimingRawSignals, key: ClassifyResult): NarrativeParagraph[] {
@@ -405,8 +421,9 @@ function buildPalaceOnly(appData: AppData, timing: LoveTimingRawSignals, key: Cl
       ? { text: "이 시기를 지나며 사람을 보는 자리 자체가 새로워질 수 있습니다.", sourceNote: "palaceOnly 결론(태도)" }
       : { text: "서두르지 않고 지켜보는 것만으로 충분한 시기입니다.", sourceNote: "palaceOnly 결론(여운)" };
 
+  const example = { text: EXAMPLE.palaceOnly, sourceNote: "생활장면(palaceOnly)" };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.palaceOnly, sourceNote: "실전조언(branch=palaceOnly)" };
-  return [opening, scene, timingPara, practicalNote, conclusion];
+  return [opening, scene, timingPara, example, practicalNote, conclusion];
 }
 
 function buildDaYunBackgroundOnly(appData: AppData, timing: LoveTimingRawSignals): NarrativeParagraph[] {
@@ -424,9 +441,21 @@ function buildDaYunBackgroundOnly(appData: AppData, timing: LoveTimingRawSignals
       };
 
   const scene = {
-    text: "눈에 띄는 사건 없이도, 사람을 대하는 마음결은 이 시간 내내 조용히 이어지고 있습니다.",
+    text: "눈에 띄는 사건 없이도, 사람을 대하는 마음결은 이 시간 내내 조용히 이어지고 있습니다. 특별히 짚을 만한 계기가 없다 보니, 본인도 이 흐름을 뚜렷한 시기로 의식하지 못한 채 지나가는 경우가 많습니다.",
     sourceNote: "daYunBackgroundOnly 장면",
   };
+
+  const reason = young
+    ? {
+        text: "지금 이 10년은 아직 배우자 기운이 뚜렷하게 짚히는 특정 해까지는 나타나지 않지만, 그렇다고 인연과 무관한 시간은 아닙니다. 사람을 대하는 마음의 바탕 자체가 이 시기 내내 꾸준히 자리를 잡아가는 중이라고 보면 됩니다.",
+        sourceNote: "daYunBackgroundOnly 근거절(young)",
+      }
+    : {
+        text: "이 10년 동안은 특정 해에 신호가 몰리기보다, 사람을 향한 마음 자체가 전반적으로 잔잔하게 이어지는 쪽에 가깝습니다. 그래서 어느 한 해를 콕 집어 기다리기보다 시간 전체를 하나의 흐름으로 보는 편이 더 정확합니다.",
+        sourceNote: "daYunBackgroundOnly 근거절(general)",
+      };
+
+  const example = { text: EXAMPLE.daYunBackgroundOnly, sourceNote: "생활장면(daYunBackgroundOnly)" };
 
   const conclusion = {
     text: "특별한 사건을 기다리기보다, 지금 이 시간 전체를 하나의 바탕으로 받아들이면 됩니다.",
@@ -434,7 +463,7 @@ function buildDaYunBackgroundOnly(appData: AppData, timing: LoveTimingRawSignals
   };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.daYunBackgroundOnly, sourceNote: "실전조언(branch=daYunBackgroundOnly)" };
 
-  return [opening, scene, practicalNote, conclusion];
+  return [opening, scene, reason, example, practicalNote, conclusion];
 }
 
 function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativeParagraph[] {
@@ -455,21 +484,28 @@ function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativePa
             sourceNote: "quiet, exposure=미미(잠잠한흐름형)",
           };
 
-  // exposure=뚜렷 케이스만 최소 보강 — "왜 지금 이렇게 읽히는지"를
-  // classify()가 이미 quiet로 가르는 데 쓴 사실(연도·대운 신호가 전혀
-  // 없음, timing.spouseStarTiming.daYunActive===false)로만 한 문장 잇는다.
+  // exposure 3분기 전부 보강 — "왜 지금 이렇게 읽히는지"를 classify()가
+  // 이미 quiet로 가르는 데 쓴 사실(연도·대운 신호가 전혀 없음,
+  // timing.spouseStarTiming.daYunActive===false)로 한 문단씩 잇는다.
   // periodOpeningClause는 기존에 다른 분기들이 이미 쓰는 동결 함수를
-  // 그대로 재사용한 것— 새 계산 아님. 숨음/미미 쪽은 이번 범위 밖이라
-  // 손대지 않는다.
-  const basis =
+  // 그대로 재사용한 것 — 새 계산 아님.
+  const reason =
     exposure === "뚜렷"
-      ? [
-          {
-            text: `${periodOpeningClause(appData, timing)} 인연 쪽으로 뚜렷하게 붙는 신호가 따로 없다 보니, 마음이 자연스럽게 관계보다 자기 자신 쪽으로 먼저 향하는 시기입니다.`,
-            sourceNote: "quiet 근거절(exposure=뚜렷, daYunActive=false, 연도 신호 없음)",
-          },
-        ]
-      : [];
+      ? {
+          text: `${periodOpeningClause(appData, timing)} 인연 쪽으로 뚜렷하게 붙는 신호가 따로 없다 보니, 마음이 자연스럽게 관계보다 자기 자신 쪽으로 먼저 향하는 시기입니다. 실제로도 관계를 피하기보다, 여러 조건 중 어느 하나에도 뚜렷하게 붙는 게 없어 자연스럽게 이렇게 흐르는 쪽에 가깝습니다.`,
+          sourceNote: "quiet 근거절(exposure=뚜렷, daYunActive=false, 연도 신호 없음)",
+        }
+      : exposure === "숨음"
+        ? {
+            text: "원래도 마음이 움직여도 겉으로 잘 드러내지 않는 편이라, 이 시기에 마음이 조금씩 움직이더라도 특별히 티가 나지 않는 모습으로 나타날 수 있습니다. 그래서 본인조차 지금이 조용한 시기인지 스스로도 뚜렷이 느끼지 못할 수 있습니다.",
+            sourceNote: "quiet 근거절(exposure=숨음)",
+          }
+        : {
+            text: "지금은 관계보다 일이나 자기 자신, 혹은 다른 삶의 영역에 마음이 먼저 가 있다 보니, 인연 쪽으로는 자연스럽게 관심이 뒤로 밀리는 모습으로 나타날 수 있습니다. 억지로 밀어낸다기보다, 지금 우선순위 자체가 다른 곳에 있는 것에 가깝습니다.",
+            sourceNote: "quiet 근거절(exposure=미미)",
+          };
+
+  const example = { text: EXAMPLE.quiet, sourceNote: "생활장면(quiet)" };
 
   const conclusion = {
     text: "닫혀 있는 건 아니라는 것, 지금은 그것만으로도 충분합니다.",
@@ -477,7 +513,7 @@ function buildQuiet(appData: AppData, timing: LoveTimingRawSignals): NarrativePa
   };
   const practicalNote = { text: PRACTICAL_NOTE_BY_BRANCH.quiet, sourceNote: "실전조언(branch=quiet)" };
 
-  return [opening, ...basis, practicalNote, conclusion];
+  return [opening, reason, example, practicalNote, conclusion];
 }
 
 export function generateLoveTimingNarrative(appData: AppData, timing: LoveTimingRawSignals): LoveTimingNarrativeResult {

@@ -139,6 +139,22 @@ const AVOID_STRUCTURE_BY_TYPE: Record<DaySipseong, string> = {
   정인: "반대로, 힘들다는 티를 내지 않는다고 정말 괜찮은 줄 알고 방치하는 관계는 이 사람 안에 오래도록 서운함을 남깁니다.",
 };
 
+// 深化(2026-09, 승인된 확장) — 새 신호 없음. daySipseong 10종 1개당 "예를 들어" 생활
+// 장면 1문장만 추가한다. relation state(합충)로는 더 쪼개지 않는다(각 타입의 결론이 실제
+// 관계에서 어떤 구체적 순간으로 드러나는지만 보여준다. 사건 단정 없음).
+const SCENE_EXAMPLE_BY_TYPE: Record<DaySipseong, string> = {
+  비견: "예를 들어 주말 계획을 각자 다르게 세워도 굳이 이유를 캐묻지 않고 존중해 줄 때, 오히려 다시 만났을 때 더 반갑고 편하게 느껴질 수 있습니다.",
+  겁재: "예를 들어 함께 준비하는 일에서 누가 무엇을 맡을지 미리 분명하게 정해두면, 나중에 서운함이 쌓이기보다 오히려 마음 편하게 그 일에 집중할 수 있습니다.",
+  식신: "예를 들어 특별한 약속이 없는 평범한 날에도 오늘 있었던 사소한 이야기를 편하게 주고받을 수 있을 때, 이 관계가 오래갈 수 있겠다는 확신이 들 수 있습니다.",
+  상관: "예를 들어 순간 떠오른 생각을 장난스럽게 꺼냈을 때 상대가 정색하지 않고 같이 웃어넘겨 줄 때, 이 사람 앞에서는 말을 고르지 않아도 되겠다는 편안함을 느낄 수 있습니다.",
+  편재: "예를 들어 약속했던 만남이 갑자기 취소돼도, 그 자리에서 당황하기보다 다른 계획을 바로 제안해 주는 상대 앞에서 이 사람은 오히려 더 믿음이 갈 수 있습니다.",
+  정재: "예를 들어 특별한 이유 없이 연락하기로 한 시간이 자꾸 늦어지면, 그 자체보다 약속이 가볍게 여겨진다는 느낌이 먼저 마음에 남을 수 있습니다.",
+  편관: "예를 들어 곤란한 상황이 생겼을 때 상대가 얼버무리지 않고 분명하게 자기 입장을 말해 줄 때, 그제야 마음을 놓고 곁을 내줄 수 있습니다.",
+  정관: "예를 들어 함께 정한 시간에 별다른 말 없이 늘 그 자리에 나와 있는 모습을 보면서, 화려한 표현보다 이런 꾸준함에서 신뢰를 쌓아갈 수 있습니다.",
+  편인: "예를 들어 혼자 있고 싶어 하는 기색을 보일 때 이유를 캐묻지 않고 그대로 시간을 주는 상대 앞에서, 오히려 먼저 마음을 열고 다가가게 될 수 있습니다.",
+  정인: "예를 들어 힘든 티를 내지 않아도 먼저 괜찮은지 물어봐 주는 순간이 있을 때, 그 관심 하나로 그날의 힘듦이 한결 가벼워질 수 있습니다.",
+};
+
 type RelationState = "없음" | "합만" | "충만" | "합충모두";
 
 const RELATION_CLAUSE: Record<Exclude<RelationState, "없음">, string> = {
@@ -170,6 +186,7 @@ export function generateLoveStabilityConditionNarrative(appData: AppData, gender
   return {
     paragraphs: [
       { text: `${t.scene}${clause}`, sourceNote: noteHead },
+      { text: SCENE_EXAMPLE_BY_TYPE[daySipseong], sourceNote: `생활예시(daySipseong=${daySipseong})` },
       { text: LONG_TERM_BY_TYPE[daySipseong], sourceNote: `장기적으로 중요한 태도(daySipseong=${daySipseong})` },
       { text: AVOID_STRUCTURE_BY_TYPE[daySipseong], sourceNote: `피해야 할 구조(daySipseong=${daySipseong})` },
       { text: t.conclusion, sourceNote: `${daySipseong} 결론(state=${state})` },

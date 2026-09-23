@@ -1,9 +1,11 @@
 import { AppData } from "./sajuContent";
 import { analyzeSpouseStar, SpouseStarExposure, SpouseStarProfile } from "./spouseStarAnalysis";
 import { analyzeDayMasterBalance, BalanceVerdict } from "./dayMasterBalanceAnalysis";
+import { analyzeRoot } from "./natalStructure";
+import { buildChapterThreeKey } from "./chapterThreeInterpretation";
 
 /**
- * 사랑·인연 ③ "사랑에서 자꾸 반복되는 장면" 전용 고객용 서술 레이어.
+ * 사랑·인연 ④ "사랑에서 자꾸 반복되는 장면" 전용 고객용 서술 레이어.
  *
  * 새 계산을 하지 않는다 — 이미 동결된 함수만 그대로 재호출한다.
  *  - analyzeSpouseStar(user, gender): exposure/strength.total/subtypes만 사용
@@ -11,6 +13,8 @@ import { analyzeDayMasterBalance, BalanceVerdict } from "./dayMasterBalanceAnaly
  *    건드리지 않는다)
  *  - analyzeDayMasterBalance(user): balance(6단계: clearlyStrong~hold)
  *    만 사용(재물5장이 이미 쓰는 것과 동일 함수, 여기서 재해석만 한다)
+ *  - buildChapterThreeKey(appData).gwansal(③⑤⑨가 이미 씀)
+ *  - analyzeRoot(user).hasRoot(⑤⑨가 이미 씀)
  *
  * 1차 분기(핵심 판정, 절대 원칙): exposure × balance × total 3단계
  * (HIGH/MID/LOW, 이미 계산된 total 숫자를 서술 문구 선택에만 쓰는 순수
@@ -24,11 +28,24 @@ import { analyzeDayMasterBalance, BalanceVerdict } from "./dayMasterBalanceAnaly
  * 항상 같은 출력이다. 정재/편재/정관/편관 같은 명리 용어는 고객 문장에
  * 절대 노출하지 않고 내부 sourceNote에만 남긴다.
  *
+ * 2차 보강(승인된 작업, 2026-09) — 유료 평생운명록 본문으로는 짧다는
+ * 지적에 따라, 기존 6(balance×total)×3(subtype) 분기 + exposure/shape
+ * 보정은 전부 그대로 유지한 채 새 축 2개(gwansal, hasRoot — 둘 다 이미
+ * ③⑤⑨가 쓰는 기존 값)를 "역할이 다른 조각"으로 추가했다:
+ *  - gwansal → 기준/마음이 단순히 한쪽으로 가는지, 서로 다른 기준 사이에서
+ *    조율하는 지점이 있는지(GWANSAL_FOCUS, SCENE_BY_BRANCH_GWANSAL)
+ *  - hasRoot → "가까워지는 과정"(행동이 실제로 어떻게 달라지는가,
+ *    CLOSENESS_BY_ROOT)과 "예상 밖 상황·갈등에서 기준을 어떻게
+ *    정리·회복하는가"(CENTER_HOLD_BY_ROOT)에 각각 다른 역할로 쓴다 —
+ *    두 문단이 "바뀐다/안 바뀐다"는 같은 뜻을 반복하지 않도록 역할을
+ *    분리했다(행동 변화 vs 회복 과정).
+ * 새로 쓴 문단은 branch(6가지, 기존 축) 또는 gwansal/hasRoot(2가지씩)로만
+ * 갈라 "72개 고정 템플릿"이 아니라 "역할별 조각의 조합"으로 구성한다.
+ *
  * 안전 원칙: "항상/늘/반드시" 같은 확정 어휘 대신 "~하기 쉽습니다/
  * ~쪽에 가깝습니다"로 헤지한다. 실제 연애·이별·외도·결혼 등 계산에
  * 없는 사건은 만들지 않는다. 관계 "안에서의" 행동·반응까지만 다루고
- * 생활사(취업·자기계발 등 관계 밖 사건)는 다루지 않는다. "무게/기준/
- * 편안함/흐름/두드러지지 않는다" 같은 반복 추상어는 쓰지 않는다.
+ * 생활사(취업·자기계발 등 관계 밖 사건)는 다루지 않는다.
  */
 
 export interface NarrativeParagraph {
@@ -56,25 +73,11 @@ function isStrong(balance: BalanceVerdict): boolean {
   return balance === "clearlyStrong" || balance === "slightlyStrong";
 }
 
-/**
- * exposure=숨음일 때 붙는 부연절 — ①(마음이 생겼을 때 표현까지 시간이
- * 걸린다는, 사랑이 "시작되는 순간"의 표현 방식)과 겹치지 않도록, 여기서는
- * "성향 설명"이 아니라 관계가 진행되는 동안 반복되는 작동 방식만 다룬다:
- * 말로 확인시키지 않고 넘어감 → 상대는 문제없다고 여김 → 확인받지 못한
- * 마음이 쌓임. 새 분기를 늘리지 않고 기존 문장 뒤에 붙이는 부연절로만
- * 쓴다(원래는 문장 앞에 붙는 수식절이었으나, ①과의 의미 중복을 없애기
- * 위해 관계 작동 과정을 담은 뒷절로 바꿨다).
- */
 function hiddenClauseFor(exposure: SpouseStarExposure): string {
   if (exposure !== "숨음") return "";
-  return " 이런 감정을 굳이 말로 확인시키지 않고 넘어가는 편이라, 상대는 별다른 문제가 없다고 여기기 쉽습니다. 그렇게 넘어간 순간들이 쌓이면, 정작 이 사람 안에는 확인받지 못한 마음이 조금씩 남게 됩니다.";
+  return "이런 감정을 굳이 말로 확인시키지 않고 넘어가는 편이라, 상대는 별다른 문제가 없다고 여기기 쉽습니다. 그렇게 넘어간 순간들이 쌓이면, 정작 이 사람 안에는 확인받지 못한 마음이 조금씩 남게 됩니다.";
 }
 
-/**
- * 2차 분기 — 이미 계산된 subtypes([subA, subB]) 안에서 어느 쪽이 실제로
- * 더 많이 드러났는지(visible+rooted+hidden 총 히트 수)만 비교한다.
- * 새 강도 공식이 아니라 기존 배열 길이 비교일 뿐이다.
- */
 type SubtypeFocus = "subA" | "subB" | "balanced";
 
 function subtypeFocusOf(star: SpouseStarProfile): SubtypeFocus {
@@ -86,14 +89,6 @@ function subtypeFocusOf(star: SpouseStarProfile): SubtypeFocus {
   return "balanced";
 }
 
-/**
- * 3차 분기(장면 안의 결만 더 세분화, 판정·1차·2차 분기는 그대로) —
- * focus가 가리키는 subtype(또는 balanced면 둘을 합친 것) 안에서
- * visible/rooted/hidden 중 어느 슬롯이 실제로 우세한지만 비교한다.
- * 이미 계산되어 있는 배열 길이 비교일 뿐, 새 강도 공식이 아니다.
- * 어느 한쪽도 뚜렷하게 우세하지 않으면(동률 포함) "none"을 반환하고,
- * 이 경우 문장을 억지로 쪼개지 않고 2차 분기 결과를 그대로 쓴다.
- */
 type ExposureShape = "visible" | "rooted" | "hidden" | "none";
 
 function exposureShapeOf(star: SpouseStarProfile, focus: SubtypeFocus): ExposureShape {
@@ -108,25 +103,6 @@ function exposureShapeOf(star: SpouseStarProfile, focus: SubtypeFocus): Exposure
   return "none";
 }
 
-/**
- * shape별 장면 부연절 — 특정 분기 전용 문구가 아니라 어느 분기의 장면
- * 뒤에 붙여도 성립하는 일반 문장이다("이런 모습"/"이런 성향"이 바로 앞
- * 문장이 묘사한 행동을 가리킨다). visible/rooted/hidden 같은 명리 용어는
- * 쓰지 않는다.
- *
- * visible/rooted는 ①(마음이 생겼을 때 나타나는 성향·표현 방식)과 서사
- * 역할을 분리한다 — ①이 이미 "표현이 빨리 드러난다/마음이 오래간다"는
- * 성향 자체를 말하므로, 여기서 그 결론(상대가 알아차린다/꾸준히
- * 이어진다)을 다시 반복하지 않는다. 대신 그 성향 때문에 관계 안에서
- * 실제로 반복되는 상호작용(표현 이후 상대 반응을 살펴 다음 행동을
- * 조정함 / 관계가 흔들려도 바로 정리하지 않고 지켜봄)으로 한 단계
- * 이어붙인다 — ①에 이미 나온 사실을 다른 말로 재진술하는 게 아니라
- * 그다음에 벌어지는 일을 보여준다. 계산에 없는 사건(구체적 다툼·이별
- * 등)은 만들지 않는다.
- * exposure=숨음(겉으로 티 안 남)일 때 shape=hidden까지 또 붙이면 같은
- * 말을 두 번 하게 되므로 그 조합만 예외로 생략한다(하드코딩된 인물
- * 분기가 아니라 exposure×shape 조합에 대한 일반 규칙).
- */
 const SHAPE_SCENE_CLAUSE: Record<Exclude<ExposureShape, "none">, string> = {
   visible: "표현이 겉으로 드러난 뒤에는, 상대의 반응이나 거리감을 빠르게 파악하고 그에 맞춰 다음 행동을 조정하는 패턴이 반복되기 쉽습니다.",
   hidden: "이런 모습을 그때그때 말로 짚어주기보다 혼자 삭이고 넘어가는 경우가 많아, 상대는 별일 없었다는 듯 그냥 지나가기 쉽습니다. 그 사이 이 사람 안에는 정리되지 않은 감정이 조금씩 쌓입니다.",
@@ -135,8 +111,8 @@ const SHAPE_SCENE_CLAUSE: Record<Exclude<ExposureShape, "none">, string> = {
 
 function shapeClauseFor(exposure: SpouseStarExposure, shape: ExposureShape): string {
   if (shape === "none") return "";
-  if (exposure === "숨음" && shape === "hidden") return ""; // hiddenPrefix와 같은 말 중복 방지
-  return " " + SHAPE_SCENE_CLAUSE[shape];
+  if (exposure === "숨음" && shape === "hidden") return ""; // hiddenClauseFor와 같은 말 중복 방지
+  return SHAPE_SCENE_CLAUSE[shape];
 }
 
 interface FocusText {
@@ -244,14 +220,6 @@ const BRANCH_TEXT: Record<BranchKey, Record<SubtypeFocus, FocusText>> = {
   },
 };
 
-/**
- * 深化(2026-09, 승인된 확장) — 새 신호 없음. 이미 판정된 6갈래 BranchKey를
- * "기대가 어긋났을 때" / "관계를 붙잡거나 놓는 방식"이라는 다른 두 국면에
- * 한 번씩 더 적용한다. focus(subA/subB/balanced)까지 교차하면 18갈래가
- * 되어 지나치게 잘게 쪼개지므로, 이 두 문단은 핵심 판정(BranchKey)
- * 수준에서만 갈라지게 한다 — 기존 scene/conclusion이 이미 focus까지
- * 반영하고 있어 그쪽에서 세밀함을 담당한다.
- */
 const WHEN_LET_DOWN_BY_BRANCH: Record<BranchKey, string> = {
   과부하형: "기대했던 대로 흘러가지 않을 때, 이 사람은 상대를 탓하기보다 먼저 '내가 뭘 놓쳤나' 하고 스스로를 돌아보는 쪽에 가깝습니다. 그 반성이 지나치면 정작 상대에게 필요한 말을 못 꺼내고 혼자 끌어안게 됩니다.",
   점증형: "기대했던 대로 흘러가지 않을 때, 처음엔 티를 안 내다가 비슷한 상황이 몇 번 반복되고 나서야 서운함이 조금씩 겉으로 드러나기 시작합니다. 그전까지는 스스로도 괜찮다고 넘기는 경우가 많습니다.",
@@ -270,22 +238,84 @@ const HOLD_OR_LET_GO_BY_BRANCH: Record<BranchKey, string> = {
   균형형: "관계를 붙잡을지 놓을지는 그때그때 상황에 따라 다르게 결정합니다. 정해진 기준이 있다기보다, 그 시점에 느껴지는 것에 맞춰 유연하게 판단하는 쪽입니다.",
 };
 
-function buildBranchParagraphs(
-  branch: BranchKey,
-  focus: SubtypeFocus,
-  shape: ExposureShape,
-  exposure: SpouseStarExposure,
-  noteHead: string
-): NarrativeParagraph[] {
-  const t = BRANCH_TEXT[branch][focus];
-  const hiddenClause = hiddenClauseFor(exposure);
-  const shapeClause = shapeClauseFor(exposure, shape);
-  return [
-    { text: `${t.scene}${hiddenClause}${shapeClause}`, sourceNote: `${noteHead}, focus=${focus}, shape=${shape}` },
-    { text: WHEN_LET_DOWN_BY_BRANCH[branch], sourceNote: `기대어긋남(branch=${branch})` },
-    { text: HOLD_OR_LET_GO_BY_BRANCH[branch], sourceNote: `붙잡거나놓는방식(branch=${branch})` },
-    { text: t.conclusion, sourceNote: `${branch} 결론(focus=${focus})` },
-  ];
+// ── 초반 반응(branch 6개, ①의 EARLY_BEHAVIOR_BY_BRANCH와 같은 패턴 — subtype까지
+// 쪼개지 않는다. 뒤에 나오는 scene의 focus 서술과 역할이 겹치지 않도록 "시작 시점"만 다룬다) ──
+const EARLY_BEHAVIOR_BY_BRANCH: Record<BranchKey, string> = {
+  과부하형: "이 사람은 관계 초반에는 상대에게 맞추는 것을 힘들어하지 않습니다. 오히려 먼저 나서서 상대의 사정을 살피고, 조금 불편해도 웃으며 넘기는 모습을 보입니다.",
+  점증형: "이 사람은 관계 초반에는 별다른 티가 나지 않습니다. 상대에게 맞추는 것도 자연스럽고, 딱히 힘들다는 느낌 없이 무난하게 시작합니다.",
+  방향부재형: "이 사람은 관계 초반에는 상대에게 큰 확신 없이도 일단 시작해 보는 편입니다. 맞는지 아닌지는 나중에 겪어보며 판단하려 하지, 처음부터 확신을 갖고 들어가지는 않습니다.",
+  "여유-무난형": "이 사람은 관계 초반부터 힘을 들이지 않고 편안하게 시작합니다. 상대에게 맞추는 것도, 자기 방식을 지키는 것도 크게 부담스러워하지 않습니다.",
+  "여유-이끄는형": "이 사람은 관계 초반부터 자연스럽게 상황을 이끄는 쪽에 섭니다. 어디서 만날지, 무엇을 할지 먼저 제안하고 정리하는 역할을 스스럼없이 맡습니다.",
+  균형형: "이 사람은 관계 초반에는 상대를 관찰하며 천천히 맞춰가는 편입니다. 너무 앞서지도, 너무 물러서지도 않으면서 적당한 거리에서 시작합니다.",
+};
+
+// hasRoot를 "가까워지는 과정"(행동이 실제로 어떻게 달라지는가)과 "자기중심 유지"
+// (예상 밖 상황·갈등에서 기준을 어떻게 정리·회복하는가)에 각각 다른 역할로 쓴다.
+// 여기(가까워지는 과정)는 "관계가 깊어질수록 행동 자체가 어떻게 바뀌는가"만 다룬다
+// (지속성·회복력 판단은 아래 CENTER_HOLD_BY_ROOT의 몫으로 넘긴다).
+const CLOSENESS_BY_ROOT: Record<"있음" | "없음", string> = {
+  있음: "관계가 가까워질수록 오히려 더 편하게 자기 방식대로 행동하게 됩니다. 초반에는 상대를 의식해서 조심하던 부분도, 가까워진 뒤에는 애써 꾸미지 않고 자연스럽게 드러내는 쪽으로 바뀝니다.",
+  없음: "관계가 가까워질수록 행동의 결이 상황에 따라 달라지기 시작합니다. 처음에 보였던 모습과 달리, 상대나 그날의 분위기에 맞춰 대응 방식이 그때그때 다르게 나타날 수 있습니다.",
+};
+
+// ── 기준/마음이 어떻게 움직이는지(gwansal 2가지) ──
+const GWANSAL_FOCUS: Record<"있음" | "없음", string> = {
+  있음: "이 사람 안에는 원래 서로 다른 두 가지 기준이 함께 있어서, 관계 안에서도 마음이 한쪽으로만 단순하게 흘러가지 않습니다. 상황에 따라 이 기준과 저 기준 사이에서 저울질하며 조율하는 지점이 자주 생깁니다.",
+  없음: "이 사람은 관계 안에서 기준이 비교적 단순한 편이라, 여러 생각 사이에서 오래 갈등하기보다 한 가지 방향으로 마음이 정리되는 쪽에 가깝습니다.",
+};
+
+// ── 생활 예시(branch 6 × gwansal 2 = 12) — 계산이 허용하는 범위의 관계 "안에서" 반응만,
+// 사건(이별/바람 등)은 만들지 않는다. gwansal=있음은 "두 마음이 함께 올라오는" 구도로, 없음은
+// 한 방향으로 정리되는 구도로 — 같은 branch라도 실제 장면의 결이 달라진다. ──
+const SCENE_BY_BRANCH_GWANSAL: Record<BranchKey, Record<"있음" | "없음", string>> = {
+  과부하형: {
+    있음: "예를 들어 처음 한두 번은 상대의 사정을 먼저 생각하며 넘어갈 수 있습니다. 하지만 약속이나 연락 방식처럼 서로 정해 둔 방식이 자꾸 달라지면, 그때부터는 '상대에게 사정이 있었겠지'라는 생각과 '그런데 왜 계속 내가 맞추고 있지?'라는 마음이 함께 올라올 수 있습니다.",
+    없음: "예를 들어 상대의 사정으로 약속이나 연락 방식이 자꾸 달라져도, 굳이 여러 이유를 따지기보다 '그럴 수도 있지' 하고 한 방향으로 넘기는 경우가 많습니다. 다만 그런 순간이 쌓이다 보면 넘기는 것 자체가 점점 버거워질 수 있습니다.",
+  },
+  점증형: {
+    있음: "예를 들어 약속을 조율하는 역할을 은근히 맡아 오다가도, '이 정도는 내가 맞추는 게 맞다'는 생각과 '그런데 이것도 매번 내 몫이네'라는 생각이 동시에 들 때가 있습니다. 그 두 마음 사이에서 정리가 안 된 채 시간만 흘러가기 쉽습니다.",
+    없음: "예를 들어 약속을 조율하는 역할을 은근히 맡아 오다가, 어느 순간 '이건 나만 계속 챙기고 있는 것 같다'는 생각이 뚜렷하게 들면 그때부터는 비교적 분명하게 거리를 두거나 이야기를 꺼내는 쪽으로 마음이 정리됩니다.",
+  },
+  방향부재형: {
+    있음: "예를 들어 상대의 사소한 말 한마디에 마음이 흔들릴 때, '내가 예민한 건가' 싶으면서도 동시에 '아니, 이건 짚고 넘어가야 하는 부분 아닌가' 하는 생각이 함께 듭니다. 두 생각 사이에서 정작 결론은 더 늦어지기 쉽습니다.",
+    없음: "예를 들어 상대의 사소한 말 한마디에 마음이 흔들려도, 며칠 지나고 나면 '그냥 그런 뜻은 아니었겠지' 하고 비교적 단순하게 정리하며 넘어가는 쪽입니다.",
+  },
+  "여유-무난형": {
+    있음: "예를 들어 약속이 갑자기 바뀌어도 크게 내색하지 않지만, 속으로는 '그럴 수도 있지'라는 마음과 '그래도 미리 말해줬으면' 하는 마음이 동시에 있을 수 있습니다. 겉으로는 무난하게 넘어가도 그 안에서는 두 마음이 함께 움직입니다.",
+    없음: "예를 들어 약속이 갑자기 바뀌어도 크게 내색하지 않고, '그럴 수도 있지' 하며 비교적 단순하게 넘기는 편입니다. 굳이 여러 생각을 쌓아두지 않고 그 자리에서 정리하고 지나갑니다.",
+  },
+  "여유-이끄는형": {
+    있음: "예를 들어 계획이 틀어지면 먼저 나서서 다음 방향을 정리하면서도, 마음 한쪽에서는 '내가 원하는 방식'과 '지금 상황에 맞는 방식' 사이에서 잠깐씩 저울질하게 됩니다. 다만 겉으로는 그 흔들림이 잘 드러나지 않습니다.",
+    없음: "예를 들어 계획이 틀어지면 크게 망설이지 않고 곧바로 다음 방향을 정리해서 상대에게 제안하는 쪽입니다. 여러 갈래로 고민하기보다 한 가지 방향을 빠르게 정하고 움직입니다.",
+  },
+  균형형: {
+    있음: "예를 들어 의견이 갈리는 순간, 상대 입장을 이해하려는 마음과 자기 생각을 지키려는 마음이 동시에 움직여서 바로 결론을 내리지 못하고 한 박자 멈추게 됩니다. 그 사이에서 무엇을 먼저 말할지 스스로도 정리가 필요한 순간이 반복됩니다.",
+    없음: "예를 들어 의견이 갈리는 순간에도 여러 생각 사이에서 오래 머무르기보다, 그 상황에 맞는 쪽으로 비교적 담담하게 마음을 정하고 넘어가는 편입니다.",
+  },
+};
+
+// 여기는 "예상 밖 상황·갈등이 생겼을 때 생각과 기준을 어떻게 정리·회복하는가"라는
+// 회복 과정 자체만 다룬다("바뀐다/안 바뀐다"는 위 CLOSENESS_BY_ROOT의 몫이라 여기서 다시
+// 말하지 않는다) — 기준을 다시 세우는 데 걸리는 시간과 그 과정에서 누구의 도움이 필요한지로 갈린다.
+const CENTER_HOLD_BY_ROOT: Record<"있음" | "없음", string> = {
+  있음: "예상하지 못한 상황이 생기거나 갈등이 일어나도, 이 사람은 자기만의 기준으로 돌아와 생각을 정리하는 과정을 거칩니다. 당장은 복잡해도 시간을 들여 스스로 납득할 지점을 찾고, 그 지점을 찾고 나면 다시 평소의 태도로 돌아옵니다.",
+  없음: "예상하지 못한 상황이 생기거나 갈등이 일어나면, 스스로 기준을 다시 세우는 데 시간이 걸리는 편입니다. 혼자 정리할 여유가 없으면 그 혼란이 다음 상황에까지 이어지기 쉽고, 곁에서 함께 정리해 줄 사람이 있을 때 더 빨리 제자리를 찾습니다.",
+};
+
+// ── 이 성향의 장점(branch 6개) ──
+const STRENGTH_BY_BRANCH: Record<BranchKey, string> = {
+  과부하형: "이런 성향에는 분명한 장점도 있습니다. 상대의 입장에서 먼저 생각하고 필요한 것을 미리 챙기는 배려는, 관계를 편안하고 안정적으로 만드는 힘이 됩니다.",
+  점증형: "이런 성향의 장점은, 관계에서 필요한 크고 작은 일들을 놓치지 않고 알아서 챙긴다는 데 있습니다. 상대는 특별히 신경 쓰지 않아도 관계가 매끄럽게 굴러가는 편안함을 느낄 수 있습니다.",
+  방향부재형: "이런 성향의 장점은, 섣불리 단정 짓지 않고 상대와 관계를 천천히 알아가려 한다는 데 있습니다. 빠른 확신보다 신중한 판단을 앞세우는 만큼, 관계를 급하게 몰아가지 않습니다.",
+  "여유-무난형": "이런 성향의 장점은, 웬만한 일에 크게 흔들리지 않고 관계를 안정적으로 지켜간다는 데 있습니다. 상대 입장에서는 함께 있을 때 마음이 편안해지는 사람으로 느껴지기 쉽습니다.",
+  "여유-이끄는형": "이런 성향의 장점은, 관계가 흔들릴 때 오히려 중심을 잡고 상황을 정리해 준다는 데 있습니다. 상대는 이 사람 곁에서 안정감을 느끼는 경우가 많습니다.",
+  균형형: "이런 성향의 장점은, 어느 한쪽으로 치우치지 않고 상황에 맞게 유연하게 움직인다는 데 있습니다. 관계 안에서 균형 잡힌 태도를 보여주는 사람으로 느껴지기 쉽습니다.",
+};
+
+function splitSceneToCoreWhy(scene: string): { core: string; why: string } {
+  const idx = scene.indexOf("다. ");
+  if (idx === -1) return { core: scene.trim(), why: "" };
+  return { core: scene.slice(0, idx + 2).trim(), why: scene.slice(idx + 3).trim() };
 }
 
 export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "male" | "female"): LoveRepeatingSceneNarrativeResult {
@@ -293,14 +323,12 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
   const balanceResult = analyzeDayMasterBalance(appData.user);
   const { exposure, strength } = star;
   const { balance } = balanceResult;
-  const tier = totalTierOf(strength.total);
-  const focus = subtypeFocusOf(star);
-  const shape = exposureShapeOf(star, focus);
-  const [subA, subB] = star.subtypes;
-  const focusDetail = `subA(${subA.subtype})=${subA.visible.length + subA.rooted.length + subA.hidden.length} vs subB(${subB.subtype})=${subB.visible.length + subB.rooted.length + subB.hidden.length}`;
+  const gwansal = buildChapterThreeKey(appData).gwansal.present;
+  const hasRoot = analyzeRoot(appData.user).hasRoot;
+  const gwansalKey: "있음" | "없음" = gwansal ? "있음" : "없음";
+  const rootKey: "있음" | "없음" = hasRoot ? "있음" : "없음";
 
   // ── 1순위: exposure=미미 → 이 축 자체가 반복의 중심이 아님 ────────
-  // (subtype 초점을 나눌 근거 자체가 없는 상태이므로 분리하지 않는다)
   if (exposure === "미미") {
     return {
       paragraphs: [
@@ -313,19 +341,11 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
   }
 
   // ── 2순위: balance=hold(판정 보류) ────────────────────────────────
-  // (판정 자체가 "여러 힘이 팽팽하다"는 의미이므로 추가로 쪼개지 않는다)
   if (balance === "hold") {
-    // ③(관계가 깊어졌을 때의 나)의 balance=hold 문장과 근거 신호가
-    // 같아(여유의 그릇 자체가 안 잡힘) 예전엔 "여러 힘이 팽팽하게
-    // 맞서 있어~그때그때 지켜보는 편이 정확합니다" 틀을 거의 그대로
-    // 공유했다. ③은 "여유를 얼마나/어떻게 갖는지"를, 여기(④)는 "무슨
-    // 장면이 반복되는지"를 묻는 다른 질문이라 그 초점만 살려 최소
-        // 압축했다(2026-09, 승인된 第四章 반복 정리) — 판정(hold)과
-    // hiddenClauseFor 결합 방식은 그대로다.
     return {
       paragraphs: [
         {
-          text: `이 사람에게 실제로 반복되는 장면이 무엇인지는, 지금 명식만으로 하나로 짚어내기 어렵습니다. 여러 힘이 비슷한 크기로 맞서 있다 보니, 같은 관계 안에서도 이끄는 모습과 버거워하는 모습이 번갈아 나타날 수 있습니다.${hiddenClauseFor(exposure)}`,
+          text: `이 사람에게 실제로 반복되는 장면이 무엇인지는, 지금 명식만으로 하나로 짚어내기 어렵습니다. 여러 힘이 비슷한 크기로 맞서 있다 보니, 같은 관계 안에서도 이끄는 모습과 버거워하는 모습이 번갈아 나타날 수 있습니다.${exposure === "숨음" ? " " + hiddenClauseFor(exposure) : ""}`,
           sourceNote: `balance=hold(판정보류형), exposure=${exposure}, total=${strength.total}`,
         },
         {
@@ -336,21 +356,39 @@ export function generateLoveRepeatingSceneNarrative(appData: AppData, gender: "m
     };
   }
 
-  // ── 3순위: 신약 계열(clearlyWeak/slightlyWeak) × total tier ───────
-  if (isWeak(balance)) {
-    const branch: BranchKey = tier === "high" ? "과부하형" : tier === "mid" ? "점증형" : "방향부재형";
-    const noteHead = `신약+total${tier === "high" ? "高" : tier === "mid" ? "中" : "低"}(${branch}), balance=${balance}, total=${strength.total}, ${focusDetail}`;
-    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, noteHead) };
-  }
+  const tier = totalTierOf(strength.total);
+  const focus = subtypeFocusOf(star);
+  const shape = exposureShapeOf(star, focus);
+  const [subA, subB] = star.subtypes;
+  const focusDetail = `subA(${subA.subtype})=${subA.visible.length + subA.rooted.length + subA.hidden.length} vs subB(${subB.subtype})=${subB.visible.length + subB.rooted.length + subB.hidden.length}`;
 
-  // ── 4순위: 신강 계열(clearlyStrong/slightlyStrong) × total tier ──
-  if (isStrong(balance)) {
-    const branch: BranchKey = tier === "high" ? "여유-이끄는형" : "여유-무난형";
-    const noteHead = `신강+total${tier === "high" ? "高" : "中低"}(${branch}), balance=${balance}, total=${strength.total}, ${focusDetail}`;
-    return { paragraphs: buildBranchParagraphs(branch, focus, shape, exposure, noteHead) };
-  }
+  let branch: BranchKey;
+  if (isWeak(balance)) branch = tier === "high" ? "과부하형" : tier === "mid" ? "점증형" : "방향부재형";
+  else if (isStrong(balance)) branch = tier === "high" ? "여유-이끄는형" : "여유-무난형";
+  else branch = "균형형";
 
-  // ── 5순위: neutral(균형) ───────────────────────────────────────
-  const noteHead = `balance=neutral(균형형), exposure=${exposure}, total=${strength.total}, ${focusDetail}`;
-  return { paragraphs: buildBranchParagraphs("균형형", focus, shape, exposure, noteHead) };
+  const t = BRANCH_TEXT[branch][focus];
+  const { core, why } = splitSceneToCoreWhy(t.scene);
+  const hidden = hiddenClauseFor(exposure);
+  const shapeC = shapeClauseFor(exposure, shape);
+  const howParts = [hidden, shapeC].filter(Boolean);
+  const how = howParts.length ? howParts.join(" ") : "";
+  const noteHead = `gwansal=${gwansal}, hasRoot=${hasRoot}, balance=${balance}(${branch}), total=${strength.total}, ${focusDetail}`;
+
+  const paras: NarrativeParagraph[] = [
+    { text: EARLY_BEHAVIOR_BY_BRANCH[branch], sourceNote: `초반반응(${branch})` },
+    { text: core, sourceNote: `결론(${branch}:${focus})` },
+  ];
+  if (why) paras.push({ text: why, sourceNote: `이유(${branch}:${focus})` });
+  if (how) paras.push({ text: how, sourceNote: `실제모습(exposure=${exposure}, shape=${shape})` });
+  paras.push({ text: CLOSENESS_BY_ROOT[rootKey], sourceNote: `가까워지면(hasRoot=${hasRoot})` });
+  paras.push({ text: GWANSAL_FOCUS[gwansalKey], sourceNote: `기준/마음(gwansal=${gwansal})` });
+  paras.push({ text: WHEN_LET_DOWN_BY_BRANCH[branch], sourceNote: `예상과다를때(branch=${branch})` });
+  paras.push({ text: SCENE_BY_BRANCH_GWANSAL[branch][gwansalKey], sourceNote: `생활예시(branch=${branch}, gwansal=${gwansal})` });
+  paras.push({ text: CENTER_HOLD_BY_ROOT[rootKey], sourceNote: `자기중심유지(hasRoot=${hasRoot})` });
+  paras.push({ text: STRENGTH_BY_BRANCH[branch], sourceNote: `장점(${branch})` });
+  paras.push({ text: HOLD_OR_LET_GO_BY_BRANCH[branch], sourceNote: `힘든부분(branch=${branch})` });
+  paras.push({ text: t.conclusion, sourceNote: `맞는관계방식(${branch}:${focus}), ${noteHead}` });
+
+  return { paragraphs: paras };
 }
