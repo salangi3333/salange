@@ -254,7 +254,7 @@ export function generateLoveSipseongInsightNarrative(appData: AppData, gender: "
     : " 다만 이 사람 자신의 기반(일간)은 상대적으로 여린 편이라, 이 힘을 받아들이는 게 때때로 스스로를 흔드는 일이 될 수 있습니다.";
   picks.push(
     buildPick(
-      `⑩ 사랑을 움직이는 힘 — ${termDisplay(primarySub.subtype)}`,
+      `사랑을 움직이는 힘 — ${termDisplay(primarySub.subtype)}`,
       primarySub.subtype,
       `${POSITION_TEXT_BY_SHAPE[primaryShape]} ${MONTH_SCORE_TEXT(star.strength.monthScore)}`,
       ORIGIN_TEXT[primarySub.subtype] ?? "",
@@ -281,7 +281,7 @@ export function generateLoveSipseongInsightNarrative(appData: AppData, gender: "
       : "배우자를 상징하는 자리(일지)와, 마음이 끌리는 배우자성이 서로 다른 글자라는 점이 중요합니다. 명리에서 일지는 '내가 편안해지는 자리', 배우자성은 '내가 끌리는 힘'으로 서로 다른 원리로 정해지기 때문에, 끌리는 유형과 편안해지는 관계가 다르게 나타날 수 있습니다.";
     picks.push(
       buildPick(
-        `⑪ 배우자 자리에 놓인 힘 — ${termDisplay(daySipseong)}`,
+        `배우자 자리에 놓인 힘 — ${termDisplay(daySipseong)}`,
         daySipseong,
         `이 힘은 배우자를 상징하는 자리(일지)에 직접 놓여 있습니다.${relText}`,
         ORIGIN_TEXT[daySipseong] ?? "",
@@ -298,7 +298,7 @@ export function generateLoveSipseongInsightNarrative(appData: AppData, gender: "
   if (gwansal.present && star.targetCategory !== "관성" && gwansal.pyeongwan && gwansal.jeonggwan) {
     const stageLabel: Record<string, string> = { year: "태어난 해", month: "태어난 달", day: "태어난 날", hour: "태어난 시" };
     picks.push({
-      heading: `⑫ 함께 작동하는 또 다른 힘 — 관살혼잡`,
+      heading: `함께 작동하는 또 다른 힘 — 관살혼잡`,
       paragraphs: [
         { text: "쉽게 말하면, 정관과 편관이 함께 있으면 서로 다른 두 기준(정해진 질서 vs 즉각적인 대응)이 동시에 작동한다는 뜻입니다.", sourceNote: "정의(관살혼잡)" },
         { text: `이 사람은 ${stageLabel[gwansal.pyeongwan.stage]} 자리에 편관, ${stageLabel[gwansal.jeonggwan.stage]} 자리에 정관을 함께 갖고 있습니다.`, sourceNote: "위치(관살혼잡)" },
