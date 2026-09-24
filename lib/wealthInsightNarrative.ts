@@ -16,6 +16,16 @@ import { ChapterFourContent } from "./chapterFourNarrative";
 // 다시 읽기만 한다 — 이 파일의 다른 재호출 패턴(analyzeDayMasterBalance 등)과
 // 동일. 새 계산이 아니다.
 import { analyzeWealthTiming, TimingLabel } from "./wealthTimingAnalysis";
+import { generateSenseSectionV2 } from "./wealthChapter/senseSection";
+import { generateMakingSectionV2 } from "./wealthChapter/makingSection";
+import { generateMainMakingV5 } from "./wealthChapter/mainMaking";
+import { generateMakeVsKeepV2 } from "./wealthChapter/makeVsKeep";
+import { generateObstructionV6 } from "./wealthChapter/obstruction";
+import { generateOrgStyleV12 } from "./wealthChapter/orgStyle";
+import { generateScaleV4 } from "./wealthChapter/scale";
+import { generateFlowNewV7 } from "./wealthChapter/flow";
+import { generateYearlyV5 } from "./wealthChapter/yearly";
+import { generateEvidenceV1 } from "./wealthChapter/evidence";
 
 /**
  * 第五章("재물운") 확장 — 3차 승인 완료된 第四章(사랑과 인연)에서 확립한
@@ -940,123 +950,44 @@ const WEALTH_DIRECTION_CONNECTOR: Partial<Record<TimingLabel, string>> = {
 // SIPSEONG_HANJA)도 이미 같은 방식으로 값을 재선언해왔다, 새 관계 아님).
 const DISPERSING_LABELS_FOR_BRIDGE: TimingLabel[] = ["분산/흔들림형(D)", "부담형(B)"];
 
+// [2026-09-24 5장 재물운 ①~⑩ 최종 이식] 확정된 scratch(scripts/_scratch_ch5_*.ts 등)를 lib/wealthChapter/*.ts로
+// 그대로 옮겨 조립한다. 계산 조건·분기·문장은 scratch와 동일하며 여기서 새로 짓거나 바꾸지 않는다.
+//  - ⑧: 과거/현재/다음/과거전 대운 값이 전혀 없을 때만 생략(생성기가 빈 문단을 돌려주면 섹션 자체를 만들지 않는다).
+//  - ⑨: 현재 대운이 없어 5개년 세운을 만들 수 없을 때만 생략(같은 방식).
+//  - ⑩: "이 풀이의 명리 근거"(계산값만 나열, 서사 없음). 용신은 확정된 경우에만 값 표시.
+//  - 본문 안의 굵게 표시 마커(**)는 화면/PDF가 해석하지 않으므로 scratch 검증과 같이 제거한 텍스트를 쓴다.
+//  - chapterFourContent의 hook/killpoint/highlight는 기존 그대로 유지하고,
+//    chapterFiveContent/chapterSixContent(기존 5·6장 문단)는 더 이상 화면 조립에 쓰지 않는다(시그니처 유지).
+const stripBold = (s: string) => s.replace(/\*\*/g, "");
+const paraTexts = (r: { paragraphs: { text: string }[] }) => r.paragraphs.map((p) => stripBold(p.text));
+
 export function assembleWealthChapterSections(
   appData: AppData,
   chapterFourContent: ChapterFourContent,
-  chapterFiveContent: { bridgeIntro?: string; body: string[] },
-  chapterSixContent: { bridgeIntro?: string; body: string[] } | undefined
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _chapterFiveContent: { bridgeIntro?: string; body: string[] },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _chapterSixContent: { bridgeIntro?: string; body: string[] } | undefined
 ): AssembledWealthChapter {
   const key = buildChapterFourKey(appData);
-  const balanceResult = analyzeDayMasterBalance(appData.user);
   const obstruction = analyzeWealthObstruction(appData);
-  const glossedInIntro = new Set(chapterFourContent.glossedInIntro);
-
-  // chapters[3].publicPreview는 항상 [훅, 오프닝(재성 위치+뿌리),
-  // 식상生財 문단, 커지는 조건 문단] 4개 고정 순서(buildChapterFourNarrative
-  // 참고, 구조 불변) — 인덱스로 그대로 꺼내 재배치한다.
-  const [hook, openingPara, makingPara, growingCorePara] = chapterFourContent.publicPreview;
-  // lockedDetail은 [흔드는조건, ...대운흐름(1~4개), 조언] 순서 고정 —
-  // 흔드는조건·조언은 ⑤로, 가운데 대운흐름만 ⑧로 옮긴다.
-  const lockedDetail = chapterFourContent.lockedDetail;
-  const shakingPara = lockedDetail[0];
-  const advicePara = lockedDetail[lockedDetail.length - 1];
-  const daYunFlowParas = lockedDetail.slice(1, -1);
+  const [hook] = chapterFourContent.publicPreview;
 
   const sections: WealthInsightSection[] = [];
-
-  // ① 타고난 돈의 감각 — HOW(감각 유형) → WHY(실제 재성 위치, 기존 오프닝
-  // 문단) → WHY(쓸때/지킬때, 겉속차이) → HOW(구체 장면)
-  const sense = buildWealthSenseSection(appData, key);
-  sections.push({
-    heading: "① 타고난 돈의 감각",
-    body: [sense.intro, openingPara, sense.spendKeep, sense.surfaceHidden, sense.moment],
-  });
-
-  // ② 나는 어떻게 돈을 만들어내는 사람인가 — HOW(유형) → WHY(기존
-  // 식상生財 문단) → HOW(구체 장면)
-  const making = buildMoneyMakingSection(key);
-  sections.push({
-    heading: "② 나는 어떻게 돈을 만들어내는 사람인가",
-    body: [making.lead, makingPara, making.moment],
-  });
-
-  // ③ 돈을 움직이는 나의 십성(1~4개) — ①·②에서 이미 뜻풀이가 나온
-  // 십성은 glossedInIntro로 걸러 다시 설명하지 않는다.
-  sections.push(...buildSipseongInsightSections(key, balanceResult.balance, obstruction, glossedInIntro));
-
-  // ④ '버는 힘'과 '지키는 힘' — 기존 "커지는 조건" 문단을 첫 문단으로 흡수
-  sections.push(buildMakeVsKeepSection(key, growingCorePara));
-
-  // ⑤ 돈이 새거나 흔들리는 조건 — 짧은 진단(기존 lockedDetail[0]) → 깊은
-  // 진단(기존 5장 전체) → 실질적 관리 팁(기존 lockedDetail 마지막 조언)
-  const leakBody: string[] = [shakingPara];
-  if (chapterFiveContent.bridgeIntro) leakBody.push(chapterFiveContent.bridgeIntro);
-  leakBody.push(...chapterFiveContent.body, advicePara);
-  sections.push({ heading: "⑤ 돈이 새거나 흔들리는 조건", body: leakBody });
-
-  // ⑥ 조직·독립·사업에서 돈의 방식
-  sections.push(buildOrgStyleSection(key));
-
-  // ⑦ 큰돈을 다룰 때 달라지는 모습 — 근거 있을 때만
-  const scaleSection = buildScaleSection(key, obstruction);
-  if (scaleSection) sections.push(scaleSection);
-
-  // ⑧ 지나온 흐름부터 다음 대운까지 — 기존 대운 흐름 문단을 그대로 하나의
-  // 흐름으로 옮긴다. 개수(1~4개)에 상관없이 있는 만큼 그대로 보여준다
-  // (예전처럼 "정확히 5개일 때만" 같은 고정 개수 조건을 걸지 않는다).
-  if (daYunFlowParas.length > 0) {
-    sections.push({ heading: "⑧ 지나온 흐름부터 다음 대운까지", body: daYunFlowParas });
-  }
-
-  // ⑨ 지금부터 달라지는 재물의 시기 — 기존 6장(대운·세운 A~E 분류)
-  if (chapterSixContent) {
-    // [6장 조사·최소수정 전용] 이미 승인된 계산(analyzeWealthTiming)을
-    // 다시 읽어, 이 섹션을 "어떻게 조립할지"만 결정한다 — 6장 자체의
-    // 계산(wealthTimingAnalysis.ts)도 문장(wealthTimingNarrative.ts)도
-    // 전혀 건드리지 않는다.
-    const timing = analyzeWealthTiming(appData);
-    const currentLabel = timing.applicable && timing.currentDaYun ? timing.currentDaYun.classification.label : null;
-    const currentGanCategory = timing.applicable && timing.currentDaYun ? timing.currentDaYun.period.ganCategory : null;
-
-    const timingBody: string[] = [];
-
-    // (2) 4장↔6장 모순처럼 읽히는 경우 — ⑧의 마지막 문단(현재 대운)이
-    // "재물을 직접 다루는 힘이 커지는 시기"라는 재성 전용 문구를 쓰는
-    // 건 daYunFlowParas가 있고 currentGanCategory==="재성"일 때뿐이다
-    // (chapterFourNarrative.ts의 describePeriodFunction). 그 재성이
-    // 지금 용신·희신을 공격해 6장에서 D/B로 판정된 경우에만 연결문을
-    // 넣는다 — 재성이 그의 용신·희신과 일치해 6장도 A/C로 읽히는
-    // 사람(예: 이도윤)은 애초에 두 섹션이 같은 방향이라 연결문이
-    // 필요 없다.
-    if (daYunFlowParas.length > 0 && currentGanCategory === "재성" && currentLabel && DISPERSING_LABELS_FOR_BRIDGE.includes(currentLabel)) {
-      const connector = WEALTH_DIRECTION_CONNECTOR[currentLabel];
-      if (connector) timingBody.push(connector);
-    }
-
-    // (3) bridgeIntro↔6장 첫 문장 중복 — wealthChapterBridge.ts의
-    // buildDisperseBridge와 정확히 같은 발동 조건(구조적 방해축 없음 +
-    // D/B라벨)일 때만 발생한다. 이 조건일 때 bridgeIntro(ATTACKER_BRIDGE_D
-    // 또는 BRIDGE_B)와 6장 첫 문단(buildOpeningParagraph의 D/B 분기)은
-    // 같은 "공격측 카테고리가 겹친다"는 사실을 두 번 말하도록 설계돼
-    // 있다(wealthChapterBridge.ts 자체 주석: "6장 ATTACK_FLAVOR와 같은
-    // 5개 관계를... 다시 쓴 것"). 이 조건에서만 6장 첫 문단(body[0])을
-    // 생략하고, 나머지(대표 세운·다음 대운·종결)는 그대로 둔다 — 문장을
-    // 새로 쓰지 않고, 이미 중복으로 설계된 문단 하나만 건너뛴다.
-    const isDisperseBridge = Boolean(
-      chapterSixContent.bridgeIntro &&
-        currentLabel &&
-        DISPERSING_LABELS_FOR_BRIDGE.includes(currentLabel) &&
-        obstruction.structuralObstructions.length === 0
-    );
-
-    if (chapterSixContent.bridgeIntro) timingBody.push(chapterSixContent.bridgeIntro);
-    timingBody.push(...(isDisperseBridge ? chapterSixContent.body.slice(1) : chapterSixContent.body));
-
-    sections.push({ heading: "⑨ 지금부터 달라지는 재물의 시기", body: timingBody });
-  }
-
-  // ⑩ 앞으로 돈을 다루는 전략 — 章 전체의 유일한 최종 종합
-  sections.push(buildStrategySection(key, obstruction));
+  sections.push({ heading: "① 타고난 돈의 감각", body: paraTexts(generateSenseSectionV2(appData, key)) });
+  sections.push({ heading: "② 나는 어떻게 돈을 만들어내는 사람인가", body: paraTexts(generateMakingSectionV2(appData, key)) });
+  const { main, making } = generateMainMakingV5(appData, key);
+  sections.push({ heading: main.heading, body: paraTexts(main.result) });
+  if (making) sections.push({ heading: making.heading, body: paraTexts(making.result) });
+  sections.push({ heading: "④ ‘버는 힘’과 ‘지키는 힘’", body: paraTexts(generateMakeVsKeepV2(key)) });
+  sections.push({ heading: "⑤ 돈이 새거나 흔들리는 조건", body: paraTexts(generateObstructionV6(obstruction, key)) });
+  sections.push({ heading: "⑥ 조직·독립·사업에서 돈의 방식", body: paraTexts(generateOrgStyleV12(key)) });
+  sections.push({ heading: "⑦ 큰돈을 다룰 때 달라지는 모습", body: paraTexts(generateScaleV4(key)) });
+  const flow = paraTexts(generateFlowNewV7(key));
+  if (flow.length > 0) sections.push({ heading: "⑧ 지나온 흐름부터 다음 대운까지", body: flow });
+  const yearly = paraTexts(generateYearlyV5(appData));
+  if (yearly.length > 0) sections.push({ heading: "⑨ 지금부터 달라지는 재물의 시기", body: yearly });
+  sections.push({ heading: "⑩ 이 풀이의 명리 근거", body: generateEvidenceV1(appData).text.split(String.fromCharCode(10)) });
 
   return {
     hook,
