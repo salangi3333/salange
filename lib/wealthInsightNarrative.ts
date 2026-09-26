@@ -76,14 +76,13 @@ const CIRCLED_NUMBERS = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧",
 const HEADING_NUMBER_RE = /^([①-⑫])(-\d+)?(\s.*)$/;
 
 function renumberSections(sections: WealthInsightSection[]): WealthInsightSection[] {
-  let topIndex = -1;
+  // [2026-09 번호 제거] 고객에게 보이는 소제목 앞 원문자 번호(①~⑫, ③-2 포함)는 표시하지 않는다.
+  // 소제목 문구·순서·본문은 그대로 두고 번호 접두어만 뗀다(함수 이름은 호출부 유지를 위해 그대로 둔다).
   return sections.map((section) => {
     const match = section.heading.match(HEADING_NUMBER_RE);
     if (!match) return section;
-    const [, , suffix, rest] = match;
-    if (!suffix) topIndex += 1;
-    const circled = CIRCLED_NUMBERS[topIndex] ?? CIRCLED_NUMBERS[CIRCLED_NUMBERS.length - 1];
-    return { ...section, heading: `${circled}${suffix ?? ""}${rest}` };
+    const [, , , rest] = match;
+    return { ...section, heading: rest.trimStart() };
   });
 }
 

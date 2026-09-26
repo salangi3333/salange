@@ -616,46 +616,46 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
+/** 6장 인용구 — 새 ⑦ 「가져갈 것과 내려놓을 것」의 첫 문장 + 새 ⑧ 「정리 근거」의 마지막 본문 문장.
+ * 이미 만들어진 문장을 그대로 잘라 쓸 뿐이며 새 문장을 짓지 않는다(마침표 기준으로만 끊음).
+ * ⑧의 [명리 근거] 줄과 항목 제목 줄(마침표로 끝나지 않음)은 본문이 아니므로 건너뛴다. 없는 쪽은 생략한다. */
+/** 새 ⑧ 「정리 근거」의 마지막 본문 문장 — [명리 근거] 줄과 항목 제목 줄(마침표로 끝나지 않음)은 건너뛴다.
+ * 이미 만들어진 문장을 마침표 기준으로 잘라 쓸 뿐이며 새 문장을 짓지 않는다. 없으면 빈 문자열. */
+export function lifeTransitionLastBasisSentence(sections: { heading: string; body: string[] }[] | undefined): string {
+  const basis = sections?.find((x) => x.heading.replace(/^[①-⑩]\s*/, "") === "정리 근거")?.body ?? [];
+  const last = [...basis].reverse().find((l) => l && !l.startsWith("[명리 근거]") && l.endsWith("."));
+  if (!last) return "";
+  const parts = last.split(". ");
+  return parts.length > 1 ? parts[parts.length - 1] : last;
+}
+
+/** 6장 인용구 — 새 ⑦ 「가져갈 것과 내려놓을 것」의 첫 문장 + 새 ⑧ 「정리 근거」의 마지막 본문 문장. 없는 쪽은 생략한다. */
+function lifeTransitionQuote(sections: { heading: string; body: string[] }[]): string {
+  const keep = sections.find((x) => x.heading.replace(/^[①-⑩]\s*/, "") === "가져갈 것과 내려놓을 것")?.body.find(Boolean);
+  const firstSentence = (t: string) => (t.includes(". ") ? t.split(". ")[0] + "." : t);
+  return [keep ? firstSentence(keep) : "", lifeTransitionLastBasisSentence(sections)].filter(Boolean).join(" ");
+}
+
 export function buildChapterLifeTransition(report: ReportResult, fairy: FairyImageSlot, seqLabel: string): React.ReactElement[] {
   const c = report.chapterLifeTransition;
   if (!c) return [];
   const insight = report.chapterLifeTransitionInsight;
   const accent = CHAPTER_ACCENT.lifeTransition;
-  const fullQuote = c.sections[c.sections.length - 1]?.body ?? c.title;
-  // [2026-09 사용자 피드백 — 여백 재조정] ④ 문단 전체(2문장)를 그대로
-  // 큰 인용구(18pt)로 얹었더니 페이지가 넘쳐 텅 빈 2페이지가 됐다.
-  // 새 문장을 짓지 않고, 실제 존재하는 첫 문장만 그대로 잘라 쓴다(문장
-  // 자체를 고치거나 요약하지 않음 — 마침표 기준으로 끊었을 뿐).
-  const quote = fullQuote.includes(". ") ? fullQuote.split(". ")[0] + "." : fullQuote;
+  // [6장 이식] 본문은 새 ①~⑧(insight)만 쓴다 — 옛 ①~④(c.sections)는 더 이상 이 장에 찍지 않는다.
+  // c는 제목·장 번호(seqLabel)·목차 계산에만 쓴다.
+  const quote = insight ? lifeTransitionQuote(insight.sections) : "";
   const out: React.ReactElement[] = [
     <BookChapterHero key="lt-hero" fairy={fairy} label={seqLabel} title={c.title} accent={accent} />,
-    <BookQuoteImage key="lt-quote" fairy={fairy} label={`${seqLabel} · 핵심 통찰`} quote={quote} accent={accent} objectPosition="55% 25%" zoom={1.1} />,
   ];
-  // [2026-09 사용자 피드백 — 재조정] 섹션당 1페이지(3페이지)는 반대로
-  // 너무 헐렁해졌다는 지적 — ①은 단독, ②③은 한 페이지로 묶어 2페이지로
-  // 조정한다(문장·순서 그대로, 페이지 구성만 변경).
-  const bodySections = c.sections.slice(0, -1);
-  const bodyGroups = [bodySections].filter((g) => g.length > 0);
-  bodyGroups.forEach((group, gi) => {
-    out.push(
-      <section className="b-chapter bpage b-texture-weak" key={`lt-body-${gi}`}>
-        {group.map((s, idx) => (
-          <div key={idx} style={{ marginBottom: idx < group.length - 1 ? "16pt" : 0 }}>
-            <h3 className="b-subheading" style={{ marginTop: idx === 0 ? 0 : undefined }}>{s.heading}</h3>
-            <p className="bp">{s.body}</p>
-          </div>
-        ))}
-      </section>
-    );
-  });
+  if (quote) {
+    out.push(<BookQuoteImage key="lt-quote" fairy={fairy} label={`${seqLabel} · 핵심 통찰`} quote={quote} accent={accent} objectPosition="55% 25%" zoom={1.1} />);
+  }
   if (insight && insight.sections.length > 0) {
-    // 기존 4+4(한 페이지에 4섹션)에서 2섹션씩으로 더 잘게 나눠 여백을
-    // 확보한다 — 내용·순서 동일, 페이지 수만 늘어난다.
+    // 새 ①~⑧을 기존처럼 2섹션씩 한 페이지로 묶는다(내용·순서 그대로, 페이지 구성만).
     const groups = chunk(insight.sections, 2);
     groups.forEach((group, gi) => {
       out.push(
         <section className="b-chapter bpage b-texture-weak" key={`lt-deep-${gi}`}>
-          {gi === 0 && <span className="b-label" style={{ color: accent }}>{seqLabel} · 더 깊이 — 전환점을 지나는 법</span>}
           {group.map((s, idx) => (
             <div key={idx} style={{ marginBottom: "12pt" }}>
               <h4 className="b-subsubheading" style={{ marginTop: gi === 0 && idx === 0 ? 0 : undefined }}>{s.heading}</h4>
@@ -807,8 +807,8 @@ function toSecondPersonForLetter(text: string): string {
  * 마크는 배경이 있을 때만 생략해 중복을 없앤다(이미지가 없으면 기존처럼
  * 텍스트 마크로 폴백). */
 export function BookClosingLetterPage({ report, bg }: { report: ReportResult; bg?: FairyImageSlot }) {
-  const lastLtRaw = report.chapterLifeTransition?.sections.slice(-1)[0]?.body;
-  const lastLt = lastLtRaw ? toSecondPersonForLetter(lastLtRaw) : undefined;
+  // [6장 이식] 옛 chapterLifeTransition ④ 대신 새 ⑧ 「정리 근거」의 마지막 본문 문장을 쓴다(인용구와 같은 문장).
+  const lastLt = lifeTransitionLastBasisSentence(report.chapterLifeTransitionInsight?.sections) || undefined;
   const hasBg = !!bg?.dataUri;
   return (
     <section className="bletter">
