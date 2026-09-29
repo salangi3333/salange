@@ -215,6 +215,23 @@ function buildB2(f: B2Facts): B2Out {
   const showDouble = sameKind && !ghSelf;
   let named = false;
   const nm = () => { if (named) return ""; named = true; return `${f.name}님은 `; };
+  // [수정본4 반영] 관살혼잡(편관+정관이 함께 있음)인 사람은 "일이나 사람 앞에서는 ~" 도입 없이
+  // "책임을 대하는 모습에는 두 가지가 함께 있다"는 문단으로 바로 시작한다 — 정관=규칙·순서를 지켜
+  // 제대로 해내려는 모습, 편관=같은 일도 더 무겁게 받아들이는 모습으로 구분해서 쓴다.
+  if (f.gh.present) {
+    const junggwanSub = f.xSub === "정관" ? f.xSub : f.ySub === "정관" ? f.ySub : null;
+    const pyeongwanSub = f.xSub === "편관" ? f.xSub : f.ySub === "편관" ? f.ySub : null;
+    const junggwanPos = f.xSub === "정관" ? "월지" : "월간";
+    const pyeongwanPos = f.xSub === "편관" ? "월지" : "월간";
+    const g: Tagged[] = [
+      { text: `${nm()}책임을 대하는 모습에는 두 가지가 함께 있습니다.`, rule: "b2:gh:1" },
+      { text: `하나는 정해진 규칙과 순서를 지켜서 제대로 해내려는 모습입니다. 다른 하나는 같은 일도 남보다 더 무겁게 받아들이는 모습입니다. 그래서 ${f.name}님에게 책임은 "해야 하니까 하는 일"로 끝나지 않고, 규칙대로 해야 한다는 마음 위에 부담이 한 겹 더 얹히는 일이 되기 쉽습니다.`, rule: "b2:gh:2" },
+    ];
+    if (f.gh.bothInMonth) g.push({ text: "이런 모습은 일이나 사람을 대할 때 특히 잘 나타납니다.", rule: "b2:gh:4:month" });
+    paras.push(g);
+    const basis = `관살혼잡: 정관(${junggwanPos}, 규칙·순서를 따르는 책임)과 편관(${pyeongwanPos}, 부담이 강한 책임)이 함께 있음${f.gh.bothInMonth ? " · 둘 다 월주(사회로 나가는 자리)에 놓여 일·사람 앞에서 드러남" : ""}`;
+    return { paras, basis };
+  }
   if (xOk) lead.push({ text: `${nm()}일이나 사람 앞에서는 ${B2_SEEN[f.x]}`, rule: `b2:seen:${f.x}` });
   if (showDouble) {
     lead.push({
@@ -226,19 +243,9 @@ function buildB2(f: B2Facts): B2Out {
   }
   if (!sameKind && yOk && f.y) lead.push({ text: xOk ? B2_ADD[f.y] : `${nm()}일이나 사람 앞에서는 ${B2_SEEN[f.y]}`, rule: xOk ? `b2:add:${f.y}` : `b2:seen:${f.y}` });
   if (lead.length) paras.push(lead);
-  if (f.gh.present) {
-    const g: Tagged[] = [
-      { text: `${nm()}책임이 걸린 일 앞에서는 두 가지 행동이 함께 나옵니다.`, rule: "b2:gh:1" },
-      { text: "하나는 맡은 일의 절차를 빠뜨리지 않고 챙기는 것이고, 다른 하나는 같은 일을 남보다 더 크게 떠안는 것입니다.", rule: "b2:gh:2" },
-      { text: "그래서 어떤 일도 대충 넘기지 않고 손을 대는 편입니다.", rule: "b2:gh:3" },
-    ];
-    if (f.gh.bothInMonth) g.push({ text: "이런 모습은 일이나 사람을 대할 때 특히 잘 나타납니다.", rule: "b2:gh:4:month" });
-    paras.push(g);
-  }
   if (f.back.length) paras.push([{ text: `${b2JoinHearts(f.back)}도 있지만, 일이나 사람 앞에서는 먼저 나서서 쓰기보다 필요할 때만 꺼내 쓰는 편입니다.`, rule: `b2:back:${f.back.join("+")}` }]);
   const basis = [
     `월주: 월지 ${f.xSub}(${f.x}), 월간 ${f.ySub}(${f.y ?? "-"})${sameKind ? " · 같은 종류가 겹침" : ""}`,
-    f.gh.present ? `관살혼잡: 편관·정관이 함께 있음${f.gh.bothInMonth ? "(둘 다 월주)" : ""}` : "",
     f.back.length ? `월령 도움 안 됨▽이면서 월주에 없는 십성: ${f.back.join("·")}` : "",
   ].filter(Boolean).join(" · ");
   return { paras, basis };
@@ -327,8 +334,8 @@ function b3FactsFor(appData: AppData): B3Facts {
  * ──────────────────────────────────────────────────────────────── */
 const B4_ORDER: Cat[] = ["관성", "인성", "비겁", "식상", "재성"];
 const B4_LEAD = {
-  겉만: (h: string) => `${h}은 굳이 숨기지 않아도 자연스럽게 드러나는 편입니다. 겉으로 보이는 모습과 속마음이 크게 다르지 않습니다.`,
-  겉속: (h: string) => `${h}은 겉에서 보이는 것과 속에서 판단하는 것이 같지 않은 사람입니다. 겉으로 드러나는 부분이 있는가 하면, 속에서 따로 움직이는 부분도 있습니다.`,
+  겉만: (h: string) => `${h}은 겉으로도 분명하게 보입니다. 일하고 사람을 만나는 자리에 이미 눈에 보이게 놓여 있어서, 겉으로 보이는 모습과 속마음이 크게 다르지 않은 편입니다.`,
+  겉속: (h: string) => `${h}은 겉으로 드러난 것이 하나이고, 속에 숨어 있는 것이 하나 더 있습니다.`,
   속에만: (h: string) => `${h}은 겉으로는 드러나지 않고 속에만 있습니다.`,
 };
 const B4_RESULT: Record<Cat, Record<Shape, (name: string) => string>> = {
@@ -421,7 +428,7 @@ interface B5Out { paras: Tagged[][]; basis: string }
 const B5_CORE: Record<Compo, string> = {
   정관만: "맡은 일은 정해진 기준과 순서를 끝까지 지켜야 마음이 놓이는 편입니다.",
   편관만: "한 번 맡은 일은 어떻게든 끝을 봐야 마음이 놓이는 편입니다.",
-  혼잡: "맡은 일은 정해진 기준을 지키는 것과 끝까지 밀어붙이는 것, 두 가지를 한꺼번에 챙겨야 마음이 놓이는 편입니다.",
+  혼잡: "맡은 몫이 무거워도 쉽게 내려놓지 못하는 편입니다.",
 };
 const B5_LAST = (reinforced: boolean) =>
   reinforced
@@ -437,10 +444,20 @@ const B5_POS: Record<PosBucket, (name: string) => string> = {
 function buildB5(f: B5Facts): B5Out {
   if (!f.present) return { paras: [], basis: "" };
   const reinforced = f.monthMark === "▲";
-  const p1: Tagged[] = [
-    { text: B5_CORE[f.compo], rule: `b5:core:${f.compo}` },
-    { text: B5_LAST(reinforced), rule: `b5:month:${reinforced ? "reinforced" : "plain"}` },
-  ];
+  const p1: Tagged[] = [{ text: B5_CORE[f.compo], rule: `b5:core:${f.compo}` }];
+  // [수정본4 반영] 편관+정관이 함께 있는(혼잡) 경우는 "역할이 바뀌면 무게도 달라진다"는 자리 설명
+  // 대신, 책임이 겹칠 때 부담이 커진다는 문장으로 마무리한다 — 자리(일지/월주/그외) 문단은 생략.
+  if (f.compo === "혼잡") {
+    p1.push({ text: "책임을 맡으면 그 마음이 쉽게 가벼워지지 않고 오래 남습니다. 그래서 해야 할 일이 겹치면 부담을 크게 느끼기 쉽습니다.", rule: "b5:gh:closing" });
+    const paras: Tagged[][] = [p1];
+    const mark2 = reinforced ? `${f.monthScore >= 3 ? "왕" : "상"}▲` : f.monthMark;
+    const basis2 = [
+      `관성 ${f.count}개(${f.visibleNames.join("·")})가 겉에 직접 나타남`,
+      `월령 ${mark2}: ${reinforced ? "태어난 달이 관성을 받쳐 주어 이 힘이 상황에 따라 쉽게 약해지지 않음" : "태어난 달이 관성을 특별히 받쳐 주지는 않음"}`,
+    ].join(" · ");
+    return { paras, basis: basis2 };
+  }
+  p1.push({ text: B5_LAST(reinforced), rule: `b5:month:${reinforced ? "reinforced" : "plain"}` });
   const p2: Tagged[] = [];
   if (f.shape === "겉+속") p2.push({ text: B5_SHAPE_EXTRA, rule: "b5:shape:겉+속" });
   p2.push({ text: B5_POS[f.pos](f.name), rule: `b5:pos:${f.pos}` });
@@ -448,7 +465,7 @@ function buildB5(f: B5Facts): B5Out {
   const mark = reinforced ? `${f.monthScore >= 3 ? "왕" : "상"}▲` : f.monthMark;
   const basis = [
     `관성 ${f.count}개(${f.visibleNames.join("·")})가 겉에 직접 나타남(${f.posDesc.join(", ")})`,
-    `구성: ${f.compo === "혼잡" ? "편관+정관(관살혼잡)" : f.compo}`,
+    `구성: ${f.compo}`,
     `형태: ${f.shape}`,
     `월령 ${mark}: ${reinforced ? "태어난 달이 관성을 받쳐 주어 이 힘이 상황에 따라 쉽게 약해지지 않음" : "태어난 달이 관성을 특별히 받쳐 주지는 않음"}`,
   ].join(" · ");
@@ -508,8 +525,8 @@ const B6_PAIR_CORE: Record<string, CoreText> = {
   "비겁+관성": {
     smooth: "정해진 틀 안에서도 나만의 방식을 자연스럽게 녹여내는 편입니다. 맡은 책임을 다하려는 마음과 내 방식대로 하려는 마음이 서로 맞아떨어져서, 규칙을 지키면서도 내 식대로 풀어낼 방법을 잘 찾기 때문입니다.",
     smoothScene: "예를 들어 정해진 규칙이 있는 일에서도, 그 안에서 나만의 방식을 자연스럽게 녹여내는 모습으로 나타날 수 있습니다.",
-    tense: "맡은 일은 끝까지 해내고 싶어 하면서도, 모든 것을 남이 정한 방식대로 따라가는 것은 답답하게 느낄 수 있습니다. 책임을 지키려는 마음과 내 방식대로 하려는 마음이 동시에 세게 작동해서, 둘 중 어느 쪽도 쉽게 포기가 안 되기 때문입니다.",
-    tenseScene: "예를 들어 함께 일을 정할 때 해야 할 책임은 피하지 않지만, 방법까지 하나하나 정해 주면 오히려 자기 방식으로 다시 정리하고 싶어질 수 있습니다.",
+    tense: "책임을 맡으면 남에게 넘기기보다 내 손으로 끝내려는 편입니다. 기준을 지키려는 마음 옆에, 내 힘으로 해내고 싶은 마음이 함께 있기 때문입니다. 그래서 맡은 일은 다른 사람에게 미루지 않고 스스로 끝까지 해내려 합니다.",
+    tenseScene: "다만 그 방식은 정해진 기준과 순서 안에서 이루어집니다. 내 식대로 새로운 방법을 밀어붙이기보다, 정해진 방식에 맞춰 내 손으로 마무리하는 쪽입니다. 일하고 사람을 만나는 자리에서는 내 방식보다 책임과 기준이 먼저 나서기 때문입니다. 그래서 다른 사람 눈에도 내 방식을 앞세우는 사람보다, 기준을 지키면서 일을 끝까지 해내는 사람으로 보이기 쉽습니다.",
   },
   "비겁+인성": {
     smooth: "새로운 일을 맡아도, 이해가 되고 나면 남 눈치 보지 않고 내 방식대로 척척 해내는 편입니다. 충분히 납득한 뒤에는 내 방식대로 하려는 마음이 거침없이 따라오기 때문입니다.",
@@ -901,6 +918,85 @@ function b8FactsFor(appData: AppData): B8Facts {
 }
 
 /* ────────────────────────────────────────────────────────────────
+ * B8 보완 「안에서 정리하는 방식 / 밖으로 표현하는 방식」(인성·식상 비교) — 항상 생성,
+ * B8의 첫 문단으로 합쳐진다. scripts/_scratch_ch3_b7b8_restore_v1.ts에서 22명 전수검증
+ * (undefined/NaN 0건, 계산값-문장 불일치 0건, 홍지영 승인 문장 유지)까지 마친 뒤
+ * 그대로 옮긴 것이다. 새 명리 계산 없음 — 인성·식상 각각의 겉/지장간 개수(이미
+ * buildInterpretationKey가 계산)와 월령 점수(이미 analyzeWealthCategoryStrength가
+ * 계산)만 다시 읽어서, 두 값의 차이를 더한 combined로 우세를 가른다.
+ * ──────────────────────────────────────────────────────────────── */
+type InnerLean = "정리형" | "표현형" | "균형형";
+type InnerShape = "겉" | "속"; // 우세한 쪽이 겉(글자로 드러남)인지 지장간에만 있는지 — 2차 분기용
+interface InnerLeanFacts {
+  name: string; lean: InnerLean; shape: InnerShape | null; // 균형형이면 shape 안 씀
+  inCount: number; inScore: number; exCount: number; exScore: number;
+  inVisible: number; exVisible: number;
+  combined: number; // (inCount-exCount)+(inScore-exScore) — 이미 있는 네 값을 더한 것뿐, 새 계산 아님
+  overlap: boolean; // (A)의 우세 카테고리가 B8의 dc와 같아서 7문단이 반복되는 경우 — 타이밍 표현으로 대체
+}
+
+function innerLeanFactsFor(appData: AppData, dc: Cat): InnerLeanFacts {
+  const u: any = appData.user;
+  const ck: any = buildInterpretationKey(appData);
+  const w: any = analyzeWealthCategoryStrength(u);
+  const cnt = ck.categoryCounts as Record<Cat, number>;
+  const hidn = (c: Cat) => {
+    const cs = w.byCategory[c];
+    const dup = (x: any) => x.position === "본기" && x.stage !== "day" && CAT_OF_SIPSEONG[u.pillars.branches[x.stage].sipseong] === c;
+    return cs.rootHits.filter((x: any) => !dup(x)).length;
+  };
+  const inVisible = cnt["인성"], exVisible = cnt["식상"];
+  const inCount = inVisible + hidn("인성");
+  const exCount = exVisible + hidn("식상");
+  const inScore = w.byCategory["인성"].monthScore;
+  const exScore = w.byCategory["식상"].monthScore;
+  const combined = (inCount - exCount) + (inScore - exScore);
+  const CLEAR = 3;
+  let lean: InnerLean; let shape: InnerShape | null;
+  if (Math.abs(combined) >= CLEAR) {
+    lean = combined > 0 ? "정리형" : "표현형";
+    shape = lean === "정리형" ? (inVisible > 0 ? "겉" : "속") : (exVisible > 0 ? "겉" : "속");
+  } else {
+    lean = "균형형"; shape = null;
+  }
+  const overlap = lean !== "균형형" && dc === (lean === "정리형" ? "인성" : "식상");
+  return { name: u.name, lean, shape, inCount, inScore, exCount, exScore, inVisible, exVisible, combined, overlap };
+}
+
+function buildInnerLean(f: InnerLeanFacts): Tagged {
+  const n = f.name;
+  const STRONG = 6;
+  const strong = Math.abs(f.combined) >= STRONG;
+  const text =
+    f.overlap && f.lean === "정리형"
+      ? `${n}님은 어떤 생각이나 감정이 떠올라도 일단 시간을 두고 곱씹어 본 뒤에야 다음 행동으로 넘어갑니다. 바로 반응하는 대신, 마음속에서 몇 번이고 정리를 거친 뒤에 결론을 내리는 쪽에 가깝습니다. 그래서 ${n}님의 생각은 겉으로 나오기까지 한 박자, 때로는 여러 박자가 걸립니다.`
+      : f.overlap
+      ? `${n}님은 어떤 생각이나 감정이 떠오르면 그 자리에서 바로 말이나 행동으로 옮기는 편입니다. 따로 정리하거나 곱씹는 시간을 갖기보다, 일단 반응부터 하고 나서 필요하면 다시 손을 보는 쪽에 가깝습니다. 그래서 ${n}님의 생각은 떠오른 순간과 밖으로 나오는 순간 사이에 시간차가 거의 없습니다.`
+      : f.lean === "정리형" && f.shape === "겉" && !strong
+      ? `${n}님은 마음속 이야기를 그때그때 꺼내기보다, 속에서 먼저 정리하는 편입니다. 느끼고 생각한 것을 바로 말이나 행동으로 옮기기보다, 마음속에서 충분히 정리가 된 뒤에 꺼냅니다. 그래서 하고 싶은 말을 그 자리에서 하지 못하고 지나가는 일이 생길 수 있고, 주변 사람들은 ${n}님이 말해 주기 전에는 어떻게 생각하는지 알기 어렵습니다. 그렇다고 표현을 아예 하지 않는 것은 아니어서, 정리가 되면 말이나 행동으로 꺼내는 길도 열려 있습니다.`
+      : f.lean === "정리형" && f.shape === "겉"
+      ? `${n}님은 마음속 이야기를 거의 항상 속에서 정리하고 나서야 꺼내는 사람입니다. 무슨 일이 생기든 일단 혼자 충분히 생각을 정리하는 시간을 가진 뒤에야 말이나 행동으로 옮기고, 그 전에는 좀처럼 먼저 나서서 말하지 않습니다. 그래서 주변 사람들은 ${n}님이 무슨 생각을 하는지 한참 뒤에야, 그것도 ${n}님이 먼저 말해줘야 알게 되는 경우가 많습니다.`
+      : f.lean === "정리형"
+      ? `${n}님은 마음속 이야기를 그때그때 꺼내기보다, 속에서 먼저 정리하는 편입니다. 다만 이 습관은 겉에서 잘 티가 나지 않습니다. 느끼고 생각한 것을 마음속에서 충분히 정리한 뒤에 꺼내는데, 정리하고 있다는 것 자체가 밖으로 드러나지 않다 보니, 주변 사람들은 ${n}님이 별생각이 없는 줄 알았다가 나중에 가서야 다 정리된 이야기를 듣고 놀라는 일이 생길 수 있습니다.`
+      : f.lean === "표현형" && f.shape === "겉" && !strong
+      ? `${n}님은 마음속 이야기를 오래 담아 두기보다, 떠오르는 대로 먼저 꺼내는 편입니다. 느끼고 생각한 것을 따로 정리할 시간을 갖기보다, 일단 말이나 행동으로 옮기고 나서 다시 돌아보는 쪽에 가깝습니다. 그래서 주변 사람들은 ${n}님이 지금 무슨 생각을 하는지 비교적 빨리 알아채는 편이고, 속내를 오래 숨기지 못합니다. 다만 아무 생각 없이 던지는 것은 아니어서, 일단 꺼내 놓고 나서 다시 손보는 방식으로 마무리를 짓습니다.`
+      : f.lean === "표현형" && f.shape === "겉"
+      ? `${n}님은 마음속 이야기를 거의 담아 두지 못하고, 떠오르는 즉시 꺼내는 사람입니다. 정리할 시간을 따로 갖기보다 일단 말이나 행동으로 먼저 옮기고, 그 뒤에 상황을 보며 다시 손보는 쪽입니다. 그래서 주변 사람들은 ${n}님이 지금 무슨 생각을 하는지 거의 실시간으로 알아챌 수 있고, 속마음을 오래 숨기는 모습은 거의 보기 어렵습니다.`
+      : f.lean === "표현형"
+      ? `${n}님은 마음속 이야기를 오래 담아 두기보다, 떠오르는 대로 먼저 꺼내고 싶어 하는 마음이 원래 강한 사람입니다. 다만 이 마음은 첫눈에는 잘 드러나지 않아서, 처음 보는 사람은 ${n}님을 신중하고 조용한 사람으로 오해하기 쉽습니다. 하지만 편해지고 나면 생각보다 빨리, 자주 속내를 꺼내는 모습을 보게 됩니다.`
+      : f.combined === 0
+      ? `${n}님은 생각이나 감정을 속에서 정리하는 방식과 바로 꺼내는 방식을 거의 같은 비중으로 씁니다. 어떤 날은 한 박자 쉬고 정리한 뒤에 말하고, 어떤 날은 떠오르는 대로 바로 꺼내는데, 어느 쪽이 더 익숙하다고 딱 잘라 말하기 어렵습니다. 상황에 따라 자연스럽게 방식을 바꿔 쓰는 사람에 가깝습니다.`
+      : Math.abs(f.combined) <= 1 && f.combined > 0
+      ? `${n}님은 생각이나 감정을 속에서 정리하는 쪽과 바로 꺼내는 쪽이 거의 반반입니다. 그래도 아주 살짝은 속에서 한 번 정리하고 넘어가는 쪽에 더 가깝습니다. 뚜렷한 차이는 아니어서, 상황에 따라 자유롭게 오가는 사람으로 보일 수 있습니다.`
+      : Math.abs(f.combined) <= 1
+      ? `${n}님은 생각이나 감정을 속에서 정리하는 쪽과 바로 꺼내는 쪽이 거의 반반입니다. 그래도 아주 살짝은 떠오르는 대로 먼저 꺼내는 쪽에 더 가깝습니다. 뚜렷한 차이는 아니어서, 상황에 따라 자유롭게 오가는 사람으로 보일 수 있습니다.`
+      : f.combined > 0
+      ? `${n}님은 생각이나 감정을 겉으로 바로 꺼내는 날도 있고, 한 박자 쉬면서 속으로 정리한 뒤에야 꺼내는 날도 있습니다. 다만 대체로는 후자 쪽에 조금 더 가깝습니다 — 뭔가 마음에 걸리면 일단 속으로 한 번 정리해 보고 나서 말이나 행동으로 옮기는 편입니다. 그렇다고 완전히 담아 두기만 하는 것은 아니어서, 정리가 끝나면 결국 표현으로 이어집니다.`
+      : `${n}님은 생각이나 감정을 속으로 오래 붙잡고 있는 날도 있고, 떠오르는 대로 바로 꺼내는 날도 있습니다. 다만 대체로는 후자 쪽에 조금 더 가깝습니다 — 뭔가 마음에 걸리면 정리할 시간을 갖기보다 일단 말이나 행동으로 먼저 옮기고 보는 편입니다. 그렇다고 아무 생각 없이 던지는 것은 아니어서, 꺼내 놓은 뒤에는 다시 한 번 손을 봅니다.`;
+  return { text, rule: `b8plus:${f.lean}:${f.shape ?? "-"}:${strong ? "강" : "보통"}:${f.overlap ? "겹침" : "-"}:${f.combined}` };
+}
+
+/* ────────────────────────────────────────────────────────────────
  * 정리(마무리) — 항상 생성. B1~B8 코드/계산은 건드리지 않고, 이미 계산된
  * 결과(ups/present/applicable/dc)만 재사용한다.
  * ──────────────────────────────────────────────────────────────── */
@@ -972,7 +1068,10 @@ export function buildChapterThreeSentenceBankSections(appData: AppData): Chapter
   const b5facts = b5FactsFor(appData); const b5 = buildB5(b5facts);
   const b6facts = b6FactsFor(appData); const b6 = buildB6(b6facts);
   const b7facts = b7FactsFor(appData); const b7 = buildB7(b7facts);
-  const b8facts = b8FactsFor(appData); const b8 = buildB8(b8facts);
+  const b8facts = b8FactsFor(appData); const b8raw = buildB8(b8facts);
+  // B8 보완(인성/식상 개인화)을 B8의 첫 문단으로 합친다 — B8/closing 계산·문장은 건드리지 않는다.
+  const innerLean = buildInnerLean(innerLeanFactsFor(appData, b8facts.dc));
+  const b8: B8Out = { paras: [[innerLean], ...b8raw.paras], basis: b8raw.basis };
   const closing = buildClosing({
     name: appData.user.name,
     ups: b1r.facts.ups.map((u) => u.cat),
