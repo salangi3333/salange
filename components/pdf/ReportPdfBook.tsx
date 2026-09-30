@@ -683,8 +683,13 @@ export function buildChapterTenYear(
   if (!c) return [];
   const accent = CHAPTER_ACCENT.tenYear;
   const introFirst = c.intro.split("\n\n")[0] ?? c.intro;
+  // [2026-09 7장 서술 개정] highlights 계산(점수 기반 "특히 눈여겨볼 해"
+  // 선정)은 그대로 유지한다 — 다만 이 해들만 보여주고 나머지 연도를
+  // 화면에서 빼던 것을, 이제는 "10개 연도를 전부 보여주되 이 해들만
+  // 시각적으로 조금 더 강조"하는 용도로만 쓴다(highlights.reason은 더
+  // 이상 본문으로 노출하지 않는다 — 아래 narrative가 이미 그 내용을
+  // 포함한다).
   const highlightYears = new Set(c.highlights.map((h) => h.year));
-  const keyItems = c.items.filter((it) => it.isTransitionYear || highlightYears.has(it.year));
 
   const out: React.ReactElement[] = [
     <BookChapterHero key="ty-hero" fairy={fairy} label={seqLabel} title={c.title} accent={accent} />,
@@ -698,13 +703,13 @@ export function buildChapterTenYear(
       <div className="btenyear-art-scrim" />
       <div className="btenyear-art-content">
         <p className="b-label" style={{ color: accent }}>{seqLabel} · 10년의 지도</p>
-        <h2 className="btenyear-art-title">앞으로 10년의 지도</h2>
+        <h2 className="btenyear-art-title">앞으로 10년의 흐름</h2>
         <p className="btenyear-art-subtitle">{introFirst}</p>
         <div className="btenyear-track">
           {c.items.map((it, idx) => (
             <div className="btenyear-col" key={idx}>
               <div className="btenyear-bar-wrap">
-                <div className={`btenyear-bar${it.isTransitionYear ? " bar-transition" : ""}`} style={{ height: `${Math.max(8, it.flowIntensity)}%` }} />
+                <div className="btenyear-bar" style={{ height: `${Math.max(8, it.flowIntensity)}%` }} />
               </div>
               <span className="btenyear-ganzhi">{it.ganZhiHanja}</span>
               <span className="btenyear-year">{it.year}</span>
@@ -712,31 +717,41 @@ export function buildChapterTenYear(
             </div>
           ))}
         </div>
-        <p className="btenyear-legend">막대 높이 = 이 10년 안에서의 상대적 신호 밀도(절대 길흉 점수 아님) · 진한 막대 = 대운이 바뀌는 해</p>
+        <p className="btenyear-legend">막대 높이 = 이 10년 안에서의 상대적 신호 밀도(절대적인 길흉 점수는 아님).</p>
       </div>
     </section>,
-    // 2/3 — 주요 연도 상세(전환년 + 하이라이트로 지정된 실제 연도만, 새 연도 창작 없음)
+    // 2/3 — 2026~2035 전체 연도(10개 모두 노출). 평범한 해는 짧게(.bp 한 줄),
+    // 하이라이트/전환년만 기존 .byear-card(카드)로 더 강조한다. narrative는
+    // buildYearItem()이 이미 계산해 둔 값 그대로이고, 전환년만 두 문단
+    // (\n\n)으로 와서 Paragraphs로 나눠 렌더링된다 — 새 CSS 클래스 추가 없음.
     <section className="b-chapter bpage b-texture-weak" key="ty-years">
-      <span className="b-label" style={{ color: accent }}>{seqLabel} · 특히 기억할 시기</span>
-      <h3 className="b-subheading" style={{ marginTop: 0 }}>주요 연도</h3>
-      {keyItems.map((it) => {
-        const h = c.highlights.find((hi) => hi.year === it.year);
-        return (
-          <div className="byear-card" key={it.year}>
-            <div className="byear-card-head">
-              <span className="byear-card-year">{it.year}</span>
-              <span className="byear-card-ganzhi">{it.ganZhiHanja}({it.ganZhiHangul})</span>
-              <span className="byear-card-age">{it.age}세{it.isTransitionYear ? " · 대운 전환" : ""}</span>
+      <span className="b-label" style={{ color: accent }}>{seqLabel} · 한 해씩 짚어보는 10년</span>
+      <h3 className="b-subheading" style={{ marginTop: 0 }}>2026년부터 2035년까지</h3>
+      {c.items.map((it) => {
+        const isKey = it.isTransitionYear || highlightYears.has(it.year);
+        if (isKey) {
+          return (
+            <div className="byear-card" key={it.year}>
+              <div className="byear-card-head">
+                <span className="byear-card-year">{it.year}</span>
+                <span className="byear-card-ganzhi">{it.ganZhiHanja}({it.ganZhiHangul})</span>
+                <span className="byear-card-age">{it.age}세{it.isTransitionYear ? " · 대운 전환" : ""}</span>
+              </div>
+              <p className="byear-card-signal">{it.coreSignal}</p>
+              <Paragraphs items={it.narrative.split("\n\n")} />
             </div>
-            <p className="byear-card-signal">{it.coreSignal}</p>
-            <p className="bp" style={{ margin: 0 }}>{h ? h.reason : it.narrative}</p>
-          </div>
+          );
+        }
+        return (
+          <p className="bp" key={it.year}>
+            <strong>{it.year}년</strong>({it.ganZhiHanja}·{it.age}세) — {it.coreSignal}. {it.narrative}
+          </p>
         );
       })}
     </section>,
-    // 3/3 — 10년 핵심 메시지(구간 요약 + closing 전문)
+    // 3/3 — 10년 정리(구간 요약 + closing 전문)
     <section className="b-chapter bpage b-texture-strong" key="ty-message">
-      <span className="b-label" style={{ color: accent }}>{seqLabel} · 10년을 관통하는 메시지</span>
+      <span className="b-label" style={{ color: accent }}>{seqLabel} · 10년을 한 번에 보면</span>
       {c.segments.map((seg, idx) => (
         <p className="bp" key={idx}><strong>{seg.range}</strong> — {seg.summary}</p>
       ))}
@@ -849,7 +864,7 @@ export function BookClosingLetterPage({ report, bg }: { report: ReportResult; bg
         {!hasBg && <p className="bletter-mark">八字門</p>}
         <h2 className="bletter-title">마지막으로, {report.userName}님에게</h2>
         <p className="bletter-line">
-          여덟 글자는 태어난 순간 정해지지만, 그것을 어떻게 읽고 살아가는지는 늘 당신의 몫이었습니다.
+          여덟 글자는 태어난 순간 정해지지만, 운명을 알면 앞으로의 삶은 바꿔나갈 수 있습니다.
         </p>
         {lastLt && <p className="bletter-line">{lastLt}</p>}
         {!hasBg && <div className="bletter-seal"><BookOrnament color="#6B3A0C" /></div>}

@@ -98,66 +98,72 @@ interface YearSignalEntry {
   action: string;
 }
 
+// [2026-09 7장 서술 2차 개정] 10개 항목 전부 "○○하는 힘이 강해지는
+// 해입니다" 오프닝 템플릿을 쓰던 걸, 계산 신호가 실제로 어떤 행동/선택
+// 으로 나타나는지부터 말하는 문장으로 바꿨다. 각 항목의 문장 구조(첫
+// 문장이 무엇으로 시작하는지)도 서로 다르게 썼다 — 10개가 나란히 와도
+// 같은 틀로 안 읽히도록. 카테고리가 가리키는 실제 의미(계산)는 전혀
+// 바꾸지 않았다.
 const SEUN_SIGNAL: Record<string, YearSignalEntry> = {
   비견: {
-    label: "스스로 판단하고 나서는 힘이 강해지는 해",
+    label: "스스로 정해서 움직이는 시기",
     area: "변화와 선택",
-    core: "이 해에는 나와 같은 성질의 기운이 앞으로 나서면서, 결정의 무게중심이 다른 사람에서 나 자신 쪽으로 옮겨옵니다. 그동안 누군가의 의견을 먼저 구하고 확인받은 뒤에야 움직였다면, 이 시기에는 '일단 내가 정해보자'는 마음이 먼저 올라오기 쉽습니다. 누가 갑자기 나를 바꿔주는 해라기보다, 스스로 내린 판단을 스스로 믿어보기 시작하는 해에 가깝습니다.",
+    core: "남의 의견을 먼저 구하고 확인받은 뒤에야 움직이던 습관에서 벗어나, 일단 내가 정한 대로 해보자는 마음이 먼저 올라옵니다. 결정을 남에게 미루지 않고 끝까지 내 손으로 끌고 가려는 쪽에 가깝습니다. 그만큼 밀어붙이는 힘은 세지지만, 의견을 구하는 절차를 건너뛰기도 쉬워집니다.",
     action: "다만 그 확신이 앞서는 만큼, 중요한 결정 하나 정도는 실행하기 전에 주변에 한 번 말해보는 편이 나중에 후회를 줄여줍니다.",
   },
   겁재: {
-    label: "나누고 움직이려는 힘이 커지는 해",
+    label: "가진 걸 나누고 벌이는 시기",
     area: "돈과 일",
-    core: "가진 것을 나누거나 다른 곳으로 옮기려는 힘이 강해지는 해라, 돈이든 시간이든 한 곳에 오래 머물러 있지 못하는 느낌을 받기 쉽습니다. 누군가와 함께 무언가를 벌이고 싶은 마음이 커지고, 그 제안을 거절하기가 유독 어렵게 느껴질 수 있습니다. 그런데 정작 나중에 돌아보면 그 나눔이 나에게 무엇을 남겼는지 헷갈리는 경우도 잦아지는 시기입니다.",
+    core: "돈이든 시간이든 한곳에 붙잡아두기보다, 누군가와 나누거나 함께 벌이는 쪽으로 자꾸 움직이게 됩니다. 같이 하자는 제안이 들어오면 거절하기 유독 어렵게 느껴지고, 일단 함께 해보자는 마음이 먼저 듭니다. 다만 나중에 돌아보면 그 나눔이 실제로 무엇을 남겼는지 헷갈리는 경우가 잦아집니다.",
     action: "큰돈이 오가는 약속이나 동업 제안일수록, 이 해에는 한 박자 늦게 답해도 늦지 않습니다.",
   },
   식신: {
-    label: "차분히 결과를 만들어가는 힘이 강해지는 해",
+    label: "서두르지 않고 몰입하는 시기",
     area: "표현과 활동",
-    core: "서두르지 않고 꾸준히 쌓아가려는 힘이 강해지는 해입니다. 겉으로 눈에 띄는 변화가 없어 스스로 제자리걸음처럼 느껴질 수 있지만, 실제로는 조용히 쌓인 것들이 힘을 갖기 시작하는 시기에 더 가깝습니다. 빨리 결과를 보여줘야 한다는 조급함보다, 지금 하고 있는 것을 계속 이어가고 싶은 마음이 자연스럽게 커집니다.",
+    core: "빨리 결과를 보여줘야 한다는 조급함보다, 지금 하고 있는 걸 계속 붙들고 있고 싶은 마음이 커집니다. 겉으로 티가 안 나도 크게 신경 쓰지 않고, 조용히 계속 이어가는 쪽을 택하기 쉽습니다. 제자리걸음처럼 느껴질 수 있지만, 실제로는 그 시간이 조금씩 쌓이고 있는 쪽에 가깝습니다.",
     action: "당장 티가 안 난다고 방향을 자주 바꾸기보다, 지금 하던 것을 한 번 더 밀어붙여 보는 편이 이 해와 잘 맞습니다.",
   },
   상관: {
-    label: "생각을 적극적으로 표현하려는 힘이 커지는 해",
+    label: "마음을 밖으로 꺼내는 시기",
     area: "표현과 활동",
-    core: "안에 담아뒀던 생각이나 감정을 밖으로 꺼내고 싶은 힘이 강해지는 해입니다. 평소라면 넘어갔을 일에도 하고 싶은 말이 더 많아지고, 표현하지 않고 넘어가면 오히려 더 답답하게 느껴질 수 있습니다. 예전 방식이 갑갑하게 느껴지고, 조금 다르게 해보고 싶다는 충동이 자주 올라옵니다.",
+    core: "평소라면 그냥 넘어갔을 일에도 하고 싶은 말이 자꾸 생기고, 담아두면 오히려 더 답답하게 느껴집니다. 예전 방식이 갑갑하게 느껴지면서, 조금 다르게 해보고 싶다는 충동이 자주 올라옵니다. 안에 담아뒀던 생각이나 감정을 실제로 꺼내 보이는 쪽으로 움직이게 됩니다.",
     action: "다만 감정이 먼저 튀어나오는 만큼, 하고 싶은 말을 한 박자만 쉬었다 꺼내는 습관이 이 해에는 유독 도움이 됩니다.",
   },
   편재: {
-    label: "기회와 자원이 움직이며 커지는 해",
+    label: "새로운 판이 열리는 시기",
     area: "돈과 일",
-    core: "한곳에 머물지 않고 기회와 자원을 움직이며 판을 넓히려는 힘이 강해지는 해입니다. 새로운 제안이나 낯선 기회가 평소보다 자주 눈에 들어오고, 그걸 놓치면 안 될 것 같은 조급함도 함께 따라오기 쉽습니다. 움직이는 만큼 손에 잡히는 것도 늘어나지만, 그만큼 나가는 것도 함께 커지는 흐름입니다.",
+    core: "새로운 제안이나 낯선 기회가 평소보다 자주 눈에 들어오고, 그냥 지나치기보다 직접 해볼 수 있는지를 따져보게 됩니다. 한곳에 머물기보다 판 자체를 넓히고 싶은 마음이 커지고, 움직이는 만큼 손에 들어오는 것도 늘어납니다. 다만 넓히는 만큼 나가는 것도 함께 커지는 시기입니다.",
     action: "기회가 늘어나는 해일수록 지출 계획을 먼저 세워두는 편이, 나중에 남는 게 없다는 느낌을 줄여줍니다.",
   },
   정재: {
-    label: "꾸준히 쌓이는 힘이 강해지는 해",
+    label: "지금 방식을 착실히 다지는 시기",
     area: "돈과 일",
-    core: "한 번에 크게보다 꾸준하고 안정적으로 쌓이는 힘이 강해지는 해입니다. 눈에 띄는 한 방보다, 지금까지 해온 방식을 그대로 이어가고 싶은 마음이 커집니다. 큰 결정을 미루고 있었다면, 이 시기에는 무리해서 벌이기보다 다지는 쪽으로 마음이 기울기 쉽습니다.",
-    action: "당장 크게 벌리기보다 지금까지 쌓아온 것을 다지는 데 집중하면, 이 해의 흐름을 가장 잘 쓸 수 있습니다.",
+    core: "한 번에 크게 벌이기보다, 지금까지 해온 방식을 그대로 이어가고 싶은 마음이 커집니다. 눈에 띄는 큰 결정을 미루고, 가진 것을 다지는 쪽으로 마음이 기울기 쉽습니다. 서두르지 않아도 꾸준히 쌓이는 쪽에 가깝습니다.",
+    action: "당장 크게 벌리기보다 지금까지 쌓아온 것을 다지는 데 집중하면, 이 해를 가장 든든하게 보낼 수 있습니다.",
   },
   편관: {
-    label: "긴장과 책임이 커지는 해",
+    label: "갑작스러운 승부처가 많아지는 시기",
     area: "책임과 압박",
-    core: "상황 앞에서 즉각 움직여야 하는 힘이 강해지는 해라, 부담스러운 자리나 예상치 못한 승부처가 함께 찾아오기 쉽습니다. 마음의 여유보다 긴장이 먼저 앞서고, 몸이 먼저 지치는 느낌을 받을 수 있습니다. 다만 그 압박을 잘 넘기면 실력을 있는 그대로 인정받는 계기가 되기도 하는 시기입니다.",
-    action: "무리한 일정을 욕심내기보다 체력과 컨디션 관리를 먼저 챙기는 편이, 이 시기의 압박을 훨씬 수월하게 넘기게 해줍니다.",
+    core: "예상치 못한 자리나 부담스러운 상황이 한꺼번에 찾아오기 쉽고, 마음의 여유보다 긴장이 먼저 앞섭니다. 즉각 움직여야 하는 일이 늘면서 몸이 먼저 지치는 느낌을 받을 수 있습니다. 다만 그 압박을 한 번 넘기고 나면, 실력을 있는 그대로 인정받는 계기가 되기도 합니다.",
+    action: "전부 한꺼번에 해내려 하기보다, 일정을 나눠서 하나씩 처리하는 편이 이 시기를 수월하게 넘기게 해줍니다.",
   },
   정관: {
-    label: "맡은 역할과 책임이 뚜렷해지는 해",
+    label: "맡은 자리를 제대로 해내야 하는 시기",
     area: "책임과 압박",
-    core: "정해진 기준과 책임을 지키려는 힘이 강해지는 해입니다. 맡은 자리의 무게가 전보다 뚜렷하게 느껴지고, 이제는 제대로 해내야 한다는 마음이 자연스럽게 커집니다. 누군가 시켜서라기보다, 스스로 그 역할을 인정받고 싶은 마음이 앞서는 시기입니다.",
+    core: "맡은 자리의 무게가 전보다 뚜렷하게 느껴지고, 이제는 제대로 해내야 한다는 마음이 자연스럽게 커집니다. 누가 시켜서라기보다, 스스로 그 역할을 인정받고 싶은 마음이 앞섭니다. 정해진 기준과 약속을 지키려는 쪽으로 움직이게 됩니다.",
     action: "책임이 커지는 만큼 전부 혼자 떠안기보다, 우선순위를 정해 하나씩 처리하는 편이 이 해를 덜 힘들게 지나가게 해줍니다.",
   },
   편인: {
-    label: "남다른 방식으로 정리하려는 힘이 커지는 해",
+    label: "혼자 정리하는 시간이 필요한 시기",
     area: "배움과 준비",
-    core: "남다른 방식으로 받아들이고 정리하려는 힘이 강해지는 해입니다. 사람들과 어울리기보다 혼자 생각을 정리하는 시간이 더 편하게 느껴지고, 새로운 분야를 파고들고 싶은 마음도 자연스럽게 커집니다. 예전 같으면 신경 쓰였을 남의 시선이 이 시기에는 상대적으로 덜 중요하게 느껴질 수 있습니다.",
+    core: "사람들과 어울리기보다 혼자 생각을 정리하는 시간이 더 편하게 느껴지고, 새로운 분야를 파고들고 싶은 마음도 커집니다. 남다른 방식으로 받아들이고 정리하려는 쪽에 가깝고, 예전 같으면 신경 쓰였을 남의 시선도 상대적으로 덜 중요해집니다.",
     action: "혼자만의 시간을 가지는 것은 좋지만, 주변과의 연락까지 완전히 끊지는 않는 편이 균형을 지키는 데 도움이 됩니다.",
   },
   정인: {
-    label: "받아들이고 신뢰를 쌓는 힘이 커지는 해",
+    label: "잘 알아본 뒤 결정하는 시기",
     area: "배움과 준비",
-    core: "안정적으로 받아들이고 신뢰를 쌓으려는 힘이 강해지는 해입니다. 서두르기보다 배우고 이해하는 데 마음이 먼저 가고, 곁에 있는 사람이나 조언에 기대고 싶은 마음도 함께 커집니다. 큰 결정을 서두르기보다 한 번 더 확인하고 싶은 신중함이 자연스럽게 앞서는 시기입니다.",
-    action: "서두르기보다 배우고 이해하는 데 시간을 들이면, 이 해의 흐름을 가장 잘 활용할 수 있습니다.",
+    core: "혼자 판단해서 밀어붙이기보다, 잘 아는 사람의 말을 듣고 충분히 알아본 뒤 결정하는 일이 많아질 수 있습니다. 서두르기보다 배우고 이해하는 데 먼저 마음이 가고, 곁에 있는 사람이나 조언에 기대고 싶은 마음도 커집니다. 큰 결정일수록 한 번 더 확인하고 싶은 신중함이 앞섭니다.",
+    action: "급하게 정하기보다 배우고 이해하는 데 시간을 들이면, 뒤늦게 후회할 일이 줄어듭니다.",
   },
 };
 
@@ -235,6 +241,75 @@ function findCoveringPeriod(periods: DaYunWealthPeriod[], age: number): DaYunWea
 // ② 연도별 항목 조립
 // ────────────────────────────────────────────────────────────────
 
+/** [2026-09 7장 서술 개정] 한 해에 이미 계산되어 있는 관계 신호(합/충/
+ * 천간합/자형 — natalRelations·dayunRelations·ganHeNatal·ganHeDayun·
+ * selfPunishNatal·selfPunishDayun)를 "당겨지는 쪽(합·천간합)"과
+ * "부딪히는 쪽(충·자형)"으로 나눠 센다. 새 계산이 아니라 SeunKey에 이미
+ * 들어있는 값들의 개수를 세는 것뿐이다. buildHighlights(③)와
+ * compoundingClause(②) 양쪽이 같은 기준을 공유한다. */
+function countRelSignals(sk: SeunKey): { pulls: number; clashes: number } {
+  const pulls =
+    sk.natalRelations.filter((r) => r.type === "합").length +
+    sk.dayunRelations.filter((r) => r.type === "합").length +
+    sk.ganHeNatal.length + sk.ganHeDayun.length;
+  const clashes =
+    sk.natalRelations.filter((r) => r.type === "충").length +
+    sk.dayunRelations.filter((r) => r.type === "충").length +
+    sk.selfPunishNatal.length + sk.selfPunishDayun.length;
+  return { pulls, clashes };
+}
+
+/** [2026-09 7장 서술 개정] 한 해에 관계 신호가 2개 이상 겹치는지를
+ * "성격"(mixed/clash/pull)으로 나눈다. countRelSignals 값을 그대로
+ * 분류하는 것뿐, 새 계산이 아니다. */
+type CompoundCat = "mixed" | "clash" | "pull" | null;
+function compoundCategory(sk: SeunKey): CompoundCat {
+  const { pulls, clashes } = countRelSignals(sk);
+  if (pulls + clashes < 2) return null;
+  if (pulls > 0 && clashes > 0) return "mixed";
+  if (clashes >= 2) return "clash";
+  return "pull";
+}
+
+/** [2026-09 7장 서술 개정] 관계 신호가 2개 이상 겹치는 해에 본문 한
+ * 문장을 더 붙인다. 이전엔 같은 성격(mixed/clash/pull)이 여러 해
+ * 이어지면 완전히 같은 문장이 반복됐다 — 이번엔 "바로 앞 해"·"두 해
+ * 전"과 성격이 같은지(prevCat/prevPrevCat, 이미 계산된 compoundCategory를
+ * 순서대로 비교만 함)를 봐서, 처음 나타난 해는 "시작", 이어지는 해는
+ * "계속", 세 해째부터는 "정리" 느낌으로 문장을 바꾼다. 특정 연도를
+ * 고정하지 않고, 실제로 같은 성격이 몇 해 이어지는지에 따라 사람마다
+ * 다르게 나온다. hasOccurredBefore는 "이전에 이어지지 않고 따로
+ * 나타난 적이 있는지"만 보는 값으로, 연속은 아니지만 같은 성격이 두
+ * 번째로 나타날 때 문장이 똑같아지는 것도 막는다(둘 다 이미 계산된
+ * compoundCategory 순서를 비교만 하는 것뿐, 새 계산 아님). */
+function compoundingClause(cat: CompoundCat, prevCat: CompoundCat, prevPrevCat: CompoundCat, hasOccurredBefore: boolean): string | null {
+  if (!cat) return null;
+  const FIRST: Record<"mixed" | "clash" | "pull", string> = {
+    mixed: "이런 해에는 한 가지에만 매달리기보다, 성격이 다른 몇 가지 일을 동시에 챙기는 쪽이 더 잘 맞습니다.",
+    clash: "생각한 대로 순서가 잘 안 맞을 수 있어, 계획보다 한 박자 여유를 두고 움직이는 편이 낫습니다.",
+    pull: "여러 가지가 동시에 맞아떨어지는 만큼, 망설이던 일이 있다면 이 시기에 실제로 진행해봐도 좋습니다.",
+  };
+  const AGAIN: Record<"mixed" | "clash" | "pull", string> = {
+    mixed: "이 해에도 성격이 다른 일들이 겹치기 쉬우니, 순서를 정해두고 하나씩 처리하는 편이 낫습니다.",
+    clash: "이번에도 뜻대로 잘 안 풀리는 부분이 있을 수 있어, 서두르지 않는 편이 낫습니다.",
+    pull: "이번에도 여러 가지가 순조롭게 맞아떨어질 수 있어, 미뤄둔 일이 있다면 움직여볼 만합니다.",
+  };
+  const CONTINUE: Record<"mixed" | "clash" | "pull", string> = {
+    mixed: "이렇게 여러 가지를 함께 챙기는 흐름이 작년부터 이어지고 있어서, 이번에도 비슷한 방식으로 움직이는 편이 자연스럽습니다.",
+    clash: "이런 답답함이 작년부터 이어지고 있어서, 조급해하지 않고 한 박자씩 늦추는 습관이 이번에도 필요합니다.",
+    pull: "이렇게 맞아떨어지는 흐름이 작년부터 이어지고 있어서, 미뤄둔 일이 있다면 이번에도 진행해볼 만합니다.",
+  };
+  const SETTLE: Record<"mixed" | "clash" | "pull", string> = {
+    mixed: "여러 가지를 함께 챙기던 시간도 이쯤에서 한 번 정리해 볼 때입니다.",
+    clash: "여러 해 이어진 답답함도 이제 조금씩 가닥이 잡히기 시작할 수 있습니다.",
+    pull: "그동안 순조롭게 맞아떨어지던 것들을 이제 눈에 보이는 결과로 확인하게 될 수 있습니다.",
+  };
+  if (cat === prevCat && cat === prevPrevCat) return SETTLE[cat];
+  if (cat === prevCat) return CONTINUE[cat];
+  if (hasOccurredBefore) return AGAIN[cat];
+  return FIRST[cat];
+}
+
 function buildYearItem(
   year: number,
   age: number,
@@ -246,7 +321,24 @@ function buildYearItem(
   // computeDayunTier 재계산 아님 — buildTenYearNarrative에서 한 번 계산해
   // 전달만 한다). "같은 대운 관계가 바로 앞 해와 똑같이 이어지는지"만
   // 판단하는 데 쓴다 — 새 명리 판정이 아니라 이미 있는 값들의 순서 비교.
-  prevDayunTier: "같음" | "충돌" | null
+  prevDayunTier: "같음" | "충돌" | null,
+  // [2026-09 7장 서술 개정] compoundingClause의 연속 판단용(바로 앞 해·
+  // 두 해 전의 compoundCategory). buildTenYearNarrative에서 순서대로
+  // 미리 계산해 전달만 한다 — 새 계산 아님.
+  prevCompoundCat: CompoundCat,
+  prevPrevCompoundCat: CompoundCat,
+  // [2026-09 7장 서술 개정] 이 해의 compoundCategory가 연속은 아니어도
+  // 이전 어느 해엔가 이미 나온 적 있는지(compoundingClause의 AGAIN
+  // 분기용). buildTenYearNarrative에서 순서대로 미리 계산해 전달한다.
+  compoundCatSeenBefore: boolean,
+  // [2026-09 7장 서술 개정] axisMatch(원국 중심축과 같은 해)는 10년 중
+  // 정확히 2번 나온다(10천간 순환 특성). 두 번째로 나올 때 똑같은 문장이
+  // 반복되지 않도록 "이전에 이미 나온 적 있는지"만 센다 — 새 판정 아님.
+  axisMatchSeenBefore: boolean,
+  // [2026-09 7장 서술 개정] selfPunish(자형)도 10년 중 여러 해에 걸쳐
+  // 나타날 수 있어(연속이 아닐 수도 있음), 이미 몇 번째로 나타나는지에
+  // 따라 문장을 바꾼다(0=처음).
+  selfPunishSeenCount: number
 ): TenYearItem {
   const entry = SEUN_SIGNAL[sk.seunGanSipseong];
   const isTransitionYear = Boolean(prevPeriod && prevPeriod.ganZhi !== period.ganZhi);
@@ -264,16 +356,23 @@ function buildYearItem(
   if (isTransitionYear) area = "변화와 선택";
   else if (selfPunish) area = "안정과 정리";
 
-  const parts: string[] = [];
-
+  // [2026-09 7장 서술 개정] 대운이 바뀌는 해는 "지난 시간 → 앞으로"라는
+  // 별개의 맥락이 한 해 안에 같이 담기므로, 두 문단으로 나눈다(그 외
+  // 연도는 한 문단). transitionPara가 있으면 최종 narrative는
+  // `transitionPara + "\n\n" + parts.join(" ")`로 합친다.
+  let transitionPara: string | null = null;
   if (isTransitionYear && prevPeriod) {
     const outgoing = SEGMENT_SUMMARY[prevPeriod.ganSipseong];
-    const outgoingGains = outgoing ? outgoing.gains : "지금까지의 방식";
-    parts.push(
-      `지난 시간 동안은 ${outgoingGains} 위에서 살아왔다면, 이 해부터는 대운 자체가 ${termDisplay(period.ganSipseong)} 쪽으로 넘어가며 삶의 앞자리에 서는 힘 자체가 바뀝니다. 그동안 익숙했던 방식이 이제는 예전만큼 편하게 느껴지지 않을 수 있습니다 — 틀려서가 아니라, 지금부터는 다른 힘이 더 필요해지기 때문입니다.`
-    );
+    const outgoingGains = outgoing ? outgoing.gains : "지금까지 쓰던 방식";
+    // [2026-09 7장 서술 개정] termDisplay(십성명+한자, 예: "식신(食神)")를
+    // 그대로 노출하던 부분을 SEGMENT_SUMMARY의 생활 언어 표현으로 바꿨다.
+    // 계산값(period.ganSipseong)은 그대로 쓰고, 보여주는 말만 바꾼 것이다.
+    const incoming = SEGMENT_SUMMARY[period.ganSipseong];
+    const incomingGains = incoming ? incoming.gains : "다른 방식";
+    transitionPara = `지금까지는 ${outgoingGains}을 주로 써왔다면, 이 해부터는 ${incomingGains}을 더 많이 쓰게 됩니다. 그동안 익숙했던 방식이 예전만큼 편하게 느껴지지 않을 수 있는데, 틀려서가 아니라 지금부터는 다른 방식이 더 필요해지기 때문입니다.`;
   }
 
+  const parts: string[] = [];
   parts.push(entry.core);
 
   // [7장 조사·최소수정 전용] dayunTier(같음/충돌) 자체는 "그 해의 세운이
@@ -307,14 +406,26 @@ function buildYearItem(
     // 익숙하다"는 사실은 그대로 두고, 그래프와 충돌해 보일 수 있는 비교급
     // 표현만 뺐다 — 익숙함은 flowIntensity와 무관하게 항상 성립하는
     // 주관적 느낌이라 그래프 수치와 부딪힐 일이 없다.
-    parts.push("이 힘은 원래도 이 사람을 가장 크게 움직여온 축이라, 낯설지 않고 익숙하게 느껴질 수 있습니다.");
+    parts.push(
+      axisMatchSeenBefore
+        ? "이번에도 원래 이 사람이 가장 많이 써온 방식이 겹쳐 있어, 낯설지 않고 익숙하게 느껴질 수 있습니다."
+        : "이 방식은 원래도 이 사람이 가장 많이 써온 쪽이라, 낯설지 않고 익숙하게 느껴질 수 있습니다."
+    );
   }
   if (selfPunish) {
-    parts.push("같은 자리끼리 부딪히는 결이 겹쳐 있어, 밖으로 벌이는 것보다 안에서 스스로와 부대끼며 정리하는 데 더 마음이 쓰이는 해이기도 합니다.");
+    const SELF_PUNISH_LINES = [
+      "같은 자리끼리 부딪히는 결이 겹쳐 있어, 밖으로 벌이는 것보다 안에서 스스로와 부대끼며 정리하는 데 더 마음이 쓰이는 해이기도 합니다.",
+      "이번에도 같은 자리끼리 부딪히는 결이 있어, 밖으로 벌이기보다 안에서 스스로 정리하는 데 마음이 쓰일 수 있습니다.",
+      "이런 결은 이 10년 안에서 몇 차례 더 나타날 수 있는데, 그때마다 억지로 해소하려 하기보다 잠시 지켜보는 편이 낫습니다.",
+    ];
+    parts.push(SELF_PUNISH_LINES[Math.min(selfPunishSeenCount, SELF_PUNISH_LINES.length - 1)]);
   }
+  const compounding = compoundingClause(compoundCategory(sk), prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBefore);
+  if (compounding) parts.push(compounding);
   parts.push(entry.action);
 
   const coreSignal = (isTransitionYear ? "대운이 바뀌는 해 — " : "") + entry.label;
+  const narrative = transitionPara ? `${transitionPara}\n\n${parts.join(" ")}` : parts.join(" ");
 
   const noteBits = [
     `seunGan=${sk.seunGanSipseong}`,
@@ -334,7 +445,7 @@ function buildYearItem(
     ganZhiHangul: `${sk.seunGanHangul}${sk.seunJiHangul}`,
     coreSignal,
     area,
-    narrative: parts.join(" "),
+    narrative,
     isTransitionYear,
     sourceNote: noteBits.join(", "),
   };
@@ -361,12 +472,12 @@ function buildSegments(items: TenYearItem[], periodsByYear: (DaYunWealthPeriod |
 
   return segments.map((seg) => {
     if (!seg.ganSipseong || !SEGMENT_SUMMARY[seg.ganSipseong]) {
-      return { ...seg, summary: `${yearSpanClause(seg.startYear, seg.endYear)} 특정한 한 힘으로 정리되기보다 여러 힘이 함께 작동하는 구간입니다.` };
+      return { ...seg, summary: `${yearSpanClause(seg.startYear, seg.endYear)} 한 가지로 정리되기보다 여러 가지가 섞여서 나타나는 시기입니다.` };
     }
     const s = SEGMENT_SUMMARY[seg.ganSipseong];
     return {
       ...seg,
-      summary: `${yearSpanClause(seg.startYear, seg.endYear)} ${s.gains}이 삶의 중심에 있는 구간입니다. 큰 방향을 바꾸기보다 ${s.prepare}을 곁에 두면 이 구간을 지나기가 한결 수월해집니다.`,
+      summary: `${yearSpanClause(seg.startYear, seg.endYear)} ${s.gains}을 주로 쓰게 됩니다. 이 기간에는 ${s.prepare}을 함께 챙기면 한결 수월합니다.`,
     };
   });
 }
@@ -389,20 +500,14 @@ function yearSpanClause(startYear: number, endYear: number): string {
 function buildIntro(segments: TenYearSegment[]): string {
   if (segments.length === 1) {
     const gains = segmentGains(segments[0]);
-    return [
-      `앞으로 10년의 지도를 먼저 펼쳐보면, 이 사람은 하나의 뚜렷한 흐름 위에 서 있습니다. ${segments[0].startYear}년부터 ${segments[0].endYear}년까지 ${gains}이 계속 삶의 앞자리를 지키고 있어, 10년 내내 다른 방향으로 크게 꺾이는 시기는 아닙니다.`,
-      `다만 같은 힘이 이어진다고 해서 10년이 똑같이 흘러가지는 않습니다. 해마다 세운이 다르게 들어오면서, 이 힘이 어떤 얼굴로 나타나는지가 매년 달라지기 때문입니다. 앞으로의 내용은 그 해마다 달라지는 얼굴을 하나씩 짚어가는 방식으로 읽으시면 됩니다.`,
-    ].join("\n\n");
+    return `앞으로 10년은 방향을 자주 바꾸기보다, ${gains}을 꾸준히 이어가면서 자기 방식을 다져가는 쪽에 가깝습니다. 다만 해마다 들어오는 결이 달라서, 어떤 해는 가볍게 지나가고 어떤 해는 유독 마음이 많이 쓰일 수 있습니다. 아래에서 2026년부터 2035년까지 한 해씩 짚어드립니다.`;
   }
 
   const first = segments[0];
   const rest = segments.slice(1);
-  const restText = rest.map((seg) => `${seg.startYear}년부터는 ${segmentGains(seg)}이 그 자리를 넘겨받습니다.`).join(" ");
+  const restText = rest.map((seg) => `${seg.startYear}년부터는 ${segmentGains(seg)} 쪽으로 무게가 옮겨갑니다.`).join(" ");
 
-  return [
-    `앞으로 10년의 지도를 먼저 펼쳐보면, 이 10년은 한 흐름으로 쭉 이어지지 않습니다. ${yearSpanClause(first.startYear, first.endYear)} ${segmentGains(first)}이 삶의 앞자리에 있고, ${restText} 대운 자체가 바뀌는 경계가 이 10년 안에 들어 있는 셈이라, 앞부분에서 맞았던 방식이 뒷부분에서는 조금 다르게 다가올 수 있습니다.`,
-    `이렇게 중심이 옮겨가는 흐름이기 때문에, 앞부분과 뒷부분을 하나로 뭉뚱그려 읽기보다 두 구간으로 나눠 읽는 편이 이 사람의 실제 흐름에 더 가깝습니다. 지금 서 있는 자리와 앞으로 넘어갈 자리, 두 개의 결을 함께 보시면 됩니다.`,
-  ].join("\n\n");
+  return `앞으로 10년은 한 가지 방식으로 쭉 흘러가지 않습니다. ${yearSpanClause(first.startYear, first.endYear)} ${segmentGains(first)}을 주로 쓰게 되고, ${restText} 앞서 하던 방식을 한 번에 버릴 필요는 없지만, 뒤로 갈수록 조금씩 다른 방식에 익숙해지게 됩니다. 아래에서 2026년부터 2035년까지 한 해씩 짚어드립니다.`;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -423,54 +528,37 @@ function scoreYear(item: TenYearItem, sk: SeunKey): number {
   return score;
 }
 
-/** 이 해가 다른 해와 다르게 어떤 "구체적 관계"로 걸리는지를 사실 그대로
- * 나열한다 — 관계 유무만 boolean으로 뭉뚱그리지 않고, 어느 기둥(년/월/일/시)과
- * 합인지 충인지까지 그대로 옮긴다. 두 해가 똑같이 "원국과 관계있음"이어도
- * 그 대상 기둥·합/충 여부가 다르면 문장 자체가 달라지는 구조다. */
-function buildEvidenceClauses(sk: SeunKey): string[] {
-  const clauses: string[] = [];
-  sk.natalRelations.forEach((r) => {
-    clauses.push(
-      r.type === "합"
-        ? `${STAGE_LABEL[r.stage]}와 부드럽게 이어지는 합(合)의 관계`
-        : `${STAGE_LABEL[r.stage]}와 정면으로 부딪히는 충(沖)의 관계`
-    );
-  });
-  sk.dayunRelations.forEach((r) => {
-    clauses.push(
-      r.type === "합"
-        ? "지금 지나는 대운과도 같은 결로 이어지는 관계"
-        : "지금 지나는 대운과 정면으로 부딪히는 관계"
-    );
-  });
-  sk.ganHeNatal.forEach((r) => {
-    clauses.push(`${STAGE_LABEL[r.stage]} 천간과 자연스럽게 손을 잡는 관계`);
-  });
-  if (sk.ganHeDayun.length > 0) clauses.push("지금 대운의 천간과도 손을 잡는 관계");
-  sk.selfPunishNatal.forEach((r) => {
-    clauses.push(`${STAGE_LABEL[r.stage]}와 같은 글자가 겹치는 자리`);
-  });
-  if (sk.selfPunishDayun.length > 0) clauses.push("지금 대운과 같은 글자가 겹치는 자리");
-  return clauses;
-}
-
-function buildWhyClause(isTransitionYear: boolean, evidence: string[], dayunTier: "같음" | "충돌" | null): string {
-  if (isTransitionYear && evidence.length > 0) {
-    return `대운 자체가 바뀌는 경계에 있으면서, 동시에 ${evidence.join("와 ")}까지 겹쳐 있는 해`;
-  }
+/** [2026-09 7장 서술 개정] 기존엔 "OO와 정면으로 부딪히는 충(沖)의
+ * 관계가 겹쳐 있는 해입니다"처럼 명리 용어(합/충/천간/대운)를 고객
+ * 문장에 그대로 노출했다. 계산 자체(관계가 몇 개, 어느 성질로 겹치는지)는
+ * 그대로 두고, countRelSignals로 이미 센 pulls/clashes 개수만으로 그
+ * 해가 실제로 어떻게 체감되는지를 생활 언어로 옮긴다. */
+function buildSituationClause(isTransitionYear: boolean, pulls: number, clashes: number, dayunTier: "같음" | "충돌" | null): string {
   if (isTransitionYear) {
-    return "대운 자체가 바뀌는 경계에 있는 해";
+    return "지금까지 지나온 시기 자체가 한 매듭을 짓고 다음 시기로 넘어가는 해입니다.";
   }
-  if (evidence.length > 0) {
-    return `${evidence.join("와 ")}가 겹쳐 있는 해`;
+  if (pulls > 0 && clashes > 0) {
+    return "순조롭게 풀리는 부분과 뜻대로 잘 안 풀리는 부분이 함께 나타나는 해입니다.";
+  }
+  if (clashes >= 2) {
+    return "여러 곳에서 동시에 제동이 걸리는 느낌을 받기 쉬운 해입니다.";
+  }
+  if (clashes === 1) {
+    return "마음먹은 대로 잘 안 풀리는 부분이 뚜렷하게 나타나는 해입니다.";
+  }
+  if (pulls >= 2) {
+    return "여러 가지가 한꺼번에 순조롭게 맞아떨어지는 해입니다.";
+  }
+  if (pulls === 1) {
+    return "순조롭게 풀리는 부분이 뚜렷하게 나타나는 해입니다.";
   }
   if (dayunTier === "같음") {
-    return "지금 지나는 대운의 성질과 같은 결이 이어지며 눈에 띄게 두드러지는 해";
+    return "지금 지나는 시기와 같은 결로 이어지며 눈에 띄게 두드러지는 해입니다.";
   }
   if (dayunTier === "충돌") {
-    return "지금 지나는 대운의 성질과 부딪히며 유독 신호가 도드라지는 해";
+    return "지금 지나는 시기와는 다른 결이라 유독 도드라지는 해입니다.";
   }
-  return "다른 해보다 흐름이 뚜렷하게 갈리는 해";
+  return "다른 해보다 흐름이 뚜렷하게 갈리는 해입니다.";
 }
 
 /** "다른 9개 연도와 비교했을 때 무엇이 두드러지는가"를 실제 점수 분포로
@@ -480,12 +568,12 @@ function buildRankClause(score: number, allScores: number[]): string {
   const maxScore = Math.max(...allScores);
   const countAtMax = allScores.filter((s) => s === maxScore).length;
   if (score === maxScore && countAtMax === 1) {
-    return "10년을 통틀어 이 정도로 여러 신호가 한꺼번에 겹치는 해는 이 한 해뿐입니다.";
+    return "10년을 통틀어 이 정도로 여러 가지가 한꺼번에 겹치는 해는 이 한 해뿐입니다.";
   }
   if (score === maxScore) {
-    return "10년 중에서도 신호가 가장 짙게 겹치는 해들 가운데 하나입니다.";
+    return "10년 중에서도 유독 여러 가지가 겹치는 해들 가운데 하나입니다.";
   }
-  return "10년 중 흐름이 유독 뚜렷하게 갈리는 몇 안 되는 해 중 하나입니다.";
+  return "10년 중 흐름이 뚜렷하게 갈리는 몇 안 되는 해 중 하나입니다.";
 }
 
 function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[]): TenYearHighlight[] {
@@ -502,10 +590,10 @@ function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[])
     // 해에 선택된 항목의 core/action은 같은 회차에 뽑힌 다른 하이라이트와
     // 절대 겹치지 않는다(SEUN_SIGNAL 자체가 이미 exact 십성 키).
     const entry = SEUN_SIGNAL[sk.seunGanSipseong];
-    const evidence = buildEvidenceClauses(sk);
+    const { pulls, clashes } = countRelSignals(sk);
     const dayunTier = computeDayunTier(sk);
 
-    const whyClause = buildWhyClause(item.isTransitionYear, evidence, dayunTier);
+    const situationClause = buildSituationClause(item.isTransitionYear, pulls, clashes, dayunTier);
     const rankClause = buildRankClause(score, scores);
     // realLifeClause(entry.core의 첫 문장)는 삭제됨(2026-09 출시 전 정밀
     // QA에서 발견) — 이 문장이 바로 위 ②(연도별 흐름)에서 같은 해의
@@ -520,7 +608,7 @@ function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[])
       ? " 이 해를 기점으로 앞서 이어지던 방식과는 결이 달라지므로, 익숙했던 방식을 그대로 끌고 가기보다 새로 맞춰가는 자세가 필요합니다."
       : "";
 
-    const reason = `${item.year}년은 ${whyClause}입니다. ${rankClause}${transitionClause} ${entry.action}`;
+    const reason = `${item.year}년은 ${situationClause} ${rankClause}${transitionClause} ${entry.action}`;
 
     return { year: item.year, reason };
   });
@@ -530,28 +618,28 @@ function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[])
 // ④ 이 10년을 지나가는 방법
 // ────────────────────────────────────────────────────────────────
 
-function buildClosing(segments: TenYearSegment[], highlights: TenYearHighlight[]): string {
+/** [2026-09 7장 서술 개정] "관통하는 흐름/무게 중심/변화의 폭" 같은
+ * 보고서식 표현을 빼고, 앞으로 10년 동안 무엇이 이어지고 무엇이
+ * 달라지는지만 2~3문장으로 짧게 정리한다. highlights 연도를 다시
+ * 나열하지 않는다 — 이제 10개 연도 본문을 전부 보여주므로, 그 안에서
+ * 이미 각자의 비중이 드러난다(아래 ⑤ 참고).
+ */
+function buildClosing(segments: TenYearSegment[]): string {
   const first = segments[0];
   const last = segments[segments.length - 1];
   // 카테고리(5종) 동일 여부가 아니라 "실제 대운이 바뀌었는가"(segments가
   // 2개 이상이면 이미 그런 뜻)로 판단한다 — 편재→정재처럼 카테고리는 같아도
   // 실제 대운이 바뀌는 경우를 "변화 없음"으로 잘못 읽지 않기 위함.
   const changed = segments.length > 1;
-  const highlightYears = highlights.map((h) => `${h.year}년`).join(", ");
   const firstGains = segmentGains(first);
   const lastGains = segmentGains(last);
-  const lastPrepare = last.ganSipseong && SEGMENT_SUMMARY[last.ganSipseong] ? SEGMENT_SUMMARY[last.ganSipseong].prepare : "달라지는 흐름에 맞춰 조정하는 습관";
+  const lastPrepare = last.ganSipseong && SEGMENT_SUMMARY[last.ganSipseong] ? SEGMENT_SUMMARY[last.ganSipseong].prepare : "달라지는 방식에 맞춰 조정하는 습관";
   const firstPrepare = first.ganSipseong && SEGMENT_SUMMARY[first.ganSipseong] ? SEGMENT_SUMMARY[first.ganSipseong].prepare : "지금의 방식을 꾸준히 이어가는 습관";
 
-  const p1 = changed
-    ? `이 10년을 관통하는 흐름 하나만 꼽는다면, ${firstGains}에서 ${lastGains}으로 무게 중심이 넘어간다는 점입니다. 앞부분에서 몸에 밴 방식을 한순간에 버릴 필요는 없습니다. 다만 뒷부분으로 갈수록 ${lastPrepare}을 조금씩 늘려가는 쪽이, 바뀐 흐름 위에서 덜 부딪히며 걸어가는 방법입니다.`
-    : `이 10년은 ${firstGains}이 처음부터 끝까지 삶의 중심에 있는 구간입니다. 방식을 바꾸기보다, ${firstPrepare}을 꾸준히 이어가는 쪽이 이 흐름 위에서 가장 멀리 갈 수 있는 방법입니다.`;
-
-  const p2 = `특히 ${highlightYears}은 앞뒤 해보다 변화의 폭이 크게 느껴질 수 있는 시기입니다. 이 해들을 미리 알고 있는 것만으로도, 막상 그 흐름이 왔을 때 당황하기보다 "아, 지금이 그때구나" 하고 받아들일 수 있는 여유가 생깁니다.`;
-
-  const p3 = "10년 전체를 관통하는 원칙은 결국 하나입니다 — 같은 사람 안에서도 해마다 오는 결이 다르므로, 그 해에 실제로 두드러지는 것에 힘을 쓰고 나머지는 무리하게 끌고 가지 않는 것입니다. 10년을 한 번에 다 잘하려 하지 않아도 됩니다.";
-
-  return [p1, p2, p3].join("\n\n");
+  if (changed) {
+    return `10년을 하나로 보면, 앞에서는 ${firstGains}을 주로 쓰다가 뒤로 갈수록 ${lastGains}을 더 많이 쓰게 됩니다. 앞서 하던 방식을 한 번에 버릴 필요는 없습니다. 다만 뒤로 갈수록 ${lastPrepare}을 조금씩 늘려가면, 달라지는 쪽에 덜 부딪히며 지나갈 수 있습니다.`;
+  }
+  return `10년 내내 ${firstGains}을 주로 쓰게 됩니다. 방식을 자주 바꾸기보다 ${firstPrepare}을 꾸준히 이어가는 쪽이 가장 멀리 갈 수 있는 방법이고, 그 사이 유독 마음 쓰일 해와 수월하게 넘어갈 해가 번갈아 옵니다.`;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -592,13 +680,41 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
   // 준다. computeDayunTier는 이미 있는 순수함수를 그대로 재호출하는
   // 것뿐이다.
   const dayunTiers = sks.map((sk) => computeDayunTier(sk));
+  // [2026-09 7장 서술 개정] compoundingClause/axisMatch 문장이 연도마다
+  // 반복되지 않도록, 순서대로 한 번만 미리 계산해 둔다 — 전부 이미 있는
+  // 함수(compoundCategory/sk.seunGanCategory)를 재호출하는 것뿐, 새 판정
+  // 없음.
+  const compoundCats = sks.map((sk) => compoundCategory(sk));
+  let axisMatchCount = 0;
+  const axisMatchSeenBeforeFlags = sks.map((sk) => {
+    const isMatch = sk.seunGanCategory !== null && sk.seunGanCategory === key.natalAxis;
+    const seenBefore = isMatch && axisMatchCount > 0;
+    if (isMatch) axisMatchCount++;
+    return seenBefore;
+  });
+  const compoundCatSeenCounts: Partial<Record<"mixed" | "clash" | "pull", number>> = {};
+  const compoundCatSeenBeforeFlags = compoundCats.map((cat) => {
+    if (!cat) return false;
+    const seenBefore = (compoundCatSeenCounts[cat] ?? 0) > 0;
+    compoundCatSeenCounts[cat] = (compoundCatSeenCounts[cat] ?? 0) + 1;
+    return seenBefore;
+  });
+  let selfPunishCount = 0;
+  const selfPunishSeenCounts = sks.map((sk) => {
+    const isMatch = sk.selfPunishNatal.length > 0 || sk.selfPunishDayun.length > 0;
+    const countSoFar = selfPunishCount;
+    if (isMatch) selfPunishCount++;
+    return countSoFar;
+  });
 
   const items = years.map((y, i) => {
     const age = y - birthYear + 1;
     const period = periodsByYear[i]!;
     const prevPeriod = i > 0 ? periodsByYear[i - 1] : null;
     const prevDayunTier = i > 0 ? dayunTiers[i - 1] : null;
-    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis, prevDayunTier);
+    const prevCompoundCat = i > 0 ? compoundCats[i - 1] : null;
+    const prevPrevCompoundCat = i > 1 ? compoundCats[i - 2] : null;
+    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis, prevDayunTier, prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBeforeFlags[i], axisMatchSeenBeforeFlags[i], selfPunishSeenCounts[i]);
   });
 
   const scores = items.map((item, i) => scoreYear(item, sks[i]));
@@ -615,6 +731,6 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
     segments,
     items: itemsWithScore,
     highlights,
-    closing: buildClosing(segments, highlights),
+    closing: buildClosing(segments),
   };
 }
