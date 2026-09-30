@@ -2181,6 +2181,47 @@ export default function ResultLandingV2({
         </section>
       )}
 
+      {/* 제9장 — 종합. lib/chapterNineNarrative.ts가 1~8장이 쓰는 기존 계산
+          결과(신강신약·용신희신·원국중심축·인생국면·재물방해구조·배우자성·
+          7장 하이라이트·8장 귀인신살)만 재조합해 만든 값을 그대로 옮긴다 —
+          이 컴포넌트에서 새 문장을 만들지 않는다. 8장과 동일한 레이아웃
+          패턴(소제목 카드 + 마무리 문단)을 재사용한다. 무료 화면에서는
+          다른 유료 장들과 같은 스위치로 가린다. */}
+      {!HIDE_PAID_BLOCKS_ON_FREE_SCREEN && data.chapterNineSection && (
+        <section className="border-b border-white/5 bg-sceneBgAlt px-6 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-content2 text-center">
+            <span className="block text-center font-serif-kr text-3xl font-bold text-sceneGold">
+              {data.chapterNineSection.chapterLabel}
+            </span>
+            <h2 className="mt-2 font-serif-kr text-[22px] font-bold leading-snug text-sceneText sm:text-[26px]">
+              {data.chapterNineSection.title}
+            </h2>
+            <p className="mt-4 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
+              {wrapHanjaTokens(data.chapterNineSection.intro)}
+            </p>
+
+            <div className="mt-6 space-y-8 text-left">
+              {data.chapterNineSection.sections.map((sec, idx) => (
+                <div key={idx}>
+                  <ChapterOneSubheading>{sec.heading}</ChapterOneSubheading>
+                  {sec.body.map((p, pi) => (
+                    <p key={pi} className="text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
+                      {wrapHanjaTokens(p)}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            {data.chapterNineSection.closing && (
+              <p className="mt-8 text-[16px] sm:text-[15px] leading-[1.95] text-sceneBody">
+                {wrapHanjaTokens(data.chapterNineSection.closing)}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 법적고지 Footer(승인된 작업, 2026-09 개인정보·보안 통합) — 무료/유료
           콘텐츠와 무관하게 항상 표시한다. 어두운 scene 배경에 맞춰
           variant="dark" 토큰을 쓴다(components/Footer.tsx 참고). 리포트

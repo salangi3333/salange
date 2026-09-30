@@ -47,6 +47,7 @@ import { generateLoveSipseongInsightNarrative } from "./loveSipseongInsightNarra
 import { buildLifeTransitionNarrative } from "./lifeTransitionNarrative";
 import { buildTenYearNarrative } from "./tenYearNarrative";
 import { buildGwiinSinsalSection, GwiinSinsalSection } from "./gwiinSinsalNarrative";
+import { buildChapterNineSection, ChapterNineSection } from "./chapterNineNarrative";
 import { buildChapterOneDeepNarrative, ChapterOneDeepVisual } from "./chapterOneDeepNarrative";
 import { buildChapterTwoDeepNarrative, ChapterTwoDeepVisual } from "./chapterTwoDeepNarrative";
 import { buildChapterThreeDeepNarrative, ChapterThreeDeepVisual } from "./chapterThreeDeepNarrative";
@@ -368,6 +369,13 @@ export interface ReportResult {
    * 귀인·신살이 없을 때만(이론상 발생하지 않음) undefined — 선택적
    * 필드로 두어 기존 정적 fallback을 건드리지 않는다. */
   gwiinSinsalSection?: GwiinSinsalSection;
+  /** "종합"(제9장) — 1~8장의 완성 문장을 요약하지 않고, 그 아래의 검증된
+   * 계산 결과(신강신약·용신희신·원국중심축·인생국면·재물방해구조·배우자성·
+   * 7장 하이라이트·8장 귀인신살)만 다시 연결해 만든 마지막 장. 새 계산
+   * 없음(chapterNineNarrative.ts). 이론상 buildChapterNineSection은 항상
+   * 값을 반환하므로(단, 방어적으로 선택적 필드로 둔다 — 기존 정적
+   * fallback을 건드리지 않기 위함, gwiinSinsalSection과 동일한 원칙). */
+  chapterNineSection?: ChapterNineSection;
   /** 第一~三章 유료 심화(2026-09, 이번 작업) — 무료 第一~三章 본문은
    * 전혀 건드리지 않고, 결제 고객에게만 같은 장 안에서 추가로 보이는
    * 확장 섹션. chapterOneDeepNarrative.ts/chapterTwoDeepNarrative.ts/
@@ -943,6 +951,10 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
   const chapterFourContentForInsight = buildChapterFourNarrative(appData, buildChapterFourKey(appData));
   const wealthInsight = assembleWealthChapterSections(appData, chapterFourContentForInsight, chapterFive, chapterSix);
 
+  // 第八章(귀인과 신살) — 한 번만 계산해서 8장 필드와 9장(종합)이 함께 쓴다
+  // (buildChapterNineSection은 재계산하지 않고 이 결과를 읽기만 한다).
+  const gwiinSinsalSectionResult = buildGwiinSinsalSection(user);
+
   return {
     userName: user.name,
     summaryTitle: user.typeLabel,
@@ -963,9 +975,10 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     chapterSix,
     chapterWealthInsight: wealthInsight,
     chapterLifeTransitionInsight: generateLifeTransitionInsightNarrative(appData),
-    gwiinSinsalSection: buildGwiinSinsalSection(user),
+    gwiinSinsalSection: gwiinSinsalSectionResult,
     chapterOneDeep: buildChapterOneDeepNarrative(appData),
     chapterTwoDeep: buildChapterTwoDeepNarrative(appData),
     chapterThreeDeep: buildChapterThreeDeepNarrative(appData),
+    chapterNineSection: buildChapterNineSection(appData, gender, gwiinSinsalSectionResult),
   };
 }

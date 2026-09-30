@@ -57,6 +57,7 @@ const CHAPTER_ACCENT: Record<string, string> = {
   lifeTransition: "#5C4A73",
   tenYear: "#33505E",
   gwiin: "#9C6B22",
+  nine: "#3E3226",
 };
 
 /** 오행 — 책 전용 색(§18): 서로 뚜렷이 구별되면서도 원색 그대로가
@@ -778,6 +779,36 @@ export function buildChapterGwiin(report: ReportResult, fairy: FairyImageSlot, s
   ];
 }
 
+/* ────────────────────────────────────────────────────────────────
+ * 九 종합(chapterNineSection) — 출처: intro/sections[]/closing, 전부
+ * lib/chapterNineNarrative.ts가 기존 계산 결과(신강신약·용신희신·원국
+ * 중심축·인생국면·재물방해구조·배우자성·7장 하이라이트·8장 귀인신살)만
+ * 재조합해 만든 값이다. 이 파일에서 새 문장을 짓지 않는다. 1~8장과
+ * 동일한 BookChapterHero 장 전환 구조를 그대로 쓴다 — 9장 전용 이미지가
+ * 아직 없어 endingFairy(마무리 페이지와 같은 이미지)를 재사용한다(새
+ * 이미지 자산 추가 없음, BookFairySlots 타입 무수정).
+ * ──────────────────────────────────────────────────────────────── */
+export function buildChapterNine(report: ReportResult, fairy: FairyImageSlot, seqLabel: string): React.ReactElement[] {
+  const c = report.chapterNineSection;
+  if (!c) return [];
+  const accent = CHAPTER_ACCENT.nine;
+  return [
+    <BookChapterHero key="nine-hero" fairy={fairy} label={seqLabel} title={c.title} accent={accent} />,
+    <BookQuotePlain key="nine-quote" label={`${seqLabel} · 들어가며`} quote={c.intro} accent={accent} />,
+    <section className="b-chapter bpage b-texture-weak" key="nine-body">
+      {c.sections.map((s, idx) => (
+        <div key={idx} style={{ marginBottom: "16pt" }}>
+          <h3 className="b-subheading">{s.heading}</h3>
+          {s.body.map((p, pi) => (
+            <p className="bp" key={pi}>{p}</p>
+          ))}
+        </div>
+      ))}
+      {c.closing && <p className="bp b-card">{c.closing}</p>}
+    </section>,
+  ];
+}
+
 /** [2026-09 편지 3인칭 문제 수정] chapterLifeTransition 원문은 리포트
  * 전체와 똑같이 "이 사람은/이 사람에게는" 3인칭 서술이 정상이다(버그
  * 아님) — 이 함수는 그 문장을 "당신에게 보내는 편지" 문맥에 재사용할
@@ -884,6 +915,7 @@ export default function ReportPdfBookDocument({
     { key: "lifeTransition", present: !!report.chapterLifeTransition, title: report.chapterLifeTransition?.title ?? "" },
     { key: "tenYear", present: !!report.chapterTenYear, title: report.chapterTenYear?.title ?? "" },
     { key: "gwiin", present: !!report.gwiinSinsalSection, title: report.gwiinSinsalSection?.title ?? "" },
+    { key: "nine", present: !!report.chapterNineSection, title: report.chapterNineSection?.title ?? "" },
   ];
   const seqLabel: Record<string, string> = {};
   const tocEntries: TocEntry[] = [];
@@ -914,6 +946,7 @@ export default function ReportPdfBookDocument({
       {report.chapterLifeTransition && buildChapterLifeTransition(report, lifeTransitionFairy, seqLabel.lifeTransition)}
       {report.chapterTenYear && buildChapterTenYear(report, tenYearFairy, seqLabel.tenYear, tenYearBg)}
       {report.gwiinSinsalSection && buildChapterGwiin(report, gwiinFairy, seqLabel.gwiin)}
+      {report.chapterNineSection && buildChapterNine(report, endingFairy, seqLabel.nine)}
 
       <EndingPage report={report} fairy={endingFairy} />
       <BookClosingLetterPage report={report} bg={letterBg} />
