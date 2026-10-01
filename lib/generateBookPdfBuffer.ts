@@ -1,11 +1,22 @@
 import { IntakeFormData } from "./sajuEngine";
 import { buildBookPdfHtml } from "./pdfBookHtml";
 import { defaultBookImageDir, loadBookFairyImages } from "./pdfBookAssets";
+import { PAGINATE_DARK_JS } from "./pdfBookPaginate";
 
 /**
  * 평생운명록(book) PDF를 서버에서 Buffer로 생성한다 —
- * ReportPdfBookDocument → renderHanjiBookHtml(둘 다 lib/pdfBookHtml.ts를
- * 통해서만 호출, 로직 복제 없음) → Chromium → PDF Buffer.
+ * ReportPdfBookDarkDocument → renderDarkFullBookHtml(둘 다
+ * lib/pdfBookHtml.ts를 통해서만 호출, 로직 복제 없음) → Chromium → PDF
+ * Buffer.
+ *
+ * [2026-10-02 변경] buildBookPdfHtml()이 다크 PDF를 반환하도록 바뀌면서,
+ * 다크 PDF 전용으로 이번 세션에서 이미 검증된 생성 파라미터(390x844 뷰포트,
+ * `.flow`를 `.page`로 나누는 PAGINATE_DARK_JS 실행, A4 대신 390x844 용지
+ * 크기)를 그대로 가져왔다 — 새 값을 새로 만들지 않고, 10명 시뮬레이션
+ * 검수에 실제로 썼던 값(scripts/_scratch_dark_final_pdf_hong.ts 등)을
+ * 그대로 재사용한다. 라이트 PDF(A4, 뷰포트/페이지네이션 불필요)와 다크 PDF는
+ * 생성 방식 자체가 다르므로, Document/renderer만 바꾸고 이 부분을 안
+ * 바꾸면 빈 페이지 1장짜리 PDF가 나온다.
  *
  * [2026-09-11 신규] 이 함수 하나로 로컬/서버 양쪽을 전부 커버한다:
  *   - 로컬(이 프로젝트 개발 환경, Windows 포함): process.env.VERCEL이 없으므로
@@ -16,19 +27,16 @@ import { defaultBookImageDir, loadBookFairyImages } from "./pdfBookAssets";
  *     변형은 Chromium 바이너리를 패키지에 안 담고 실행 시점에 외부
  *     URL에서 받아오는 구조라(설치 용량을 250MB 표준 한도 안에 안전하게
  *     맞추기 위함, 2026-09-11 Vercel 서버리스 조사 결과 채택) 그 URL을
- *     CHROMIUM_PACK_URL 환경변수로 받는다 — **이 env var는 아직 어디에도
- *     설정돼 있지 않다.** 정확한 URL은 실제 설치된 @sparticuz/chromium-min
- *     버전(현재 152.0.0)에 맞는 릴리스 자산이어야 하므로, 코드에 임의로
- *     하드코딩하지 않고 설정 안 됐으면 명확히 실패하게 뒀다(추측 금지 —
- *     실제 Vercel 배포/검증 단계에서 정확한 값을 확인해 설정해야 함).
- *     이 분기는 이번 단계에서 Vercel에 실제로 배포해 검증한 적이
- *     없다(로컬 Windows에서는애초에 실행 자체가 불가능 — Chromium
- *     바이너리가 리눅스 서버리스 전용) — "된다"고 단정하지 않는다.
+ *     CHROMIUM_PACK_URL 환경변수로 받는다. [2026-10-02 정정] 이 변수는
+ *     Vercel Production에 이미 설정돼 있음을 `vercel env ls production`으로
+ *     직접 확인했다(위 문단은 2026-09-11 작성 당시의 낡은 상태였다) — 값은
+ *     여기서도 출력/하드코딩하지 않는다.
  *
  * Node.js 런타임 전용이다(Edge에서 절대 동작 안 함 — Puppeteer/Chromium은
- * Node API를 직접 쓴다). 이 함수를 호출하는 쪽(향후 API route)은 반드시
- * `export const runtime = "nodejs";`를 명시해야 한다 — 이 함수 자체는 아직
- * 어떤 라우트에도 연결돼 있지 않다(이번 단계 범위 밖, 지시에 따름).
+ * Node API를 직접 쓴다). 이 함수를 호출하는 쪽은 `export const runtime =
+ * "nodejs";`를 명시해야 한다 — `lib/reportDelivery.ts`의
+ * `sendReportPdfEmail()`이 이미 이 함수를 호출하고 있다(관리자 수동 주문
+ * 경로, app/api/admin/manual-orders 등).
  */
 
 const REQUIRED_CHROMIUM_MIN_VERSION = "152.0.0"; // package.json에 설치된 실제 버전과 반드시 일치해야 함(문서화용 상수)
@@ -86,8 +94,10 @@ export async function generateBookPdfBuffer(
   const browser = await launchBrowser();
   try {
     const page = await browser.newPage();
+    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2 });
     await page.setContent(html, { waitUntil: "load" });
-    const pdf = await page.pdf({ format: "A4", printBackground: true });
+    await page.evaluate(PAGINATE_DARK_JS);
+    const pdf = await page.pdf({ width: "390px", height: "844px", printBackground: true, preferCSSPageSize: false });
     return Buffer.from(pdf);
   } finally {
     await browser.close();
