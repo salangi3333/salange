@@ -27,6 +27,16 @@ const EL_DARK: Record<string, string> = { wood: "#6FAE8B", fire: "#D0624A", eart
 const TIMING_DARK: Record<string, string> = {
   "강화형(A)": "#D6B173", "부담형(B)": "#D0624A", "기반형(C)": "#6FAE8B", "분산/흔들림형(D)": "#9A8BC4", "신호없음형(E)": "#8C8168",
 };
+// 5장 재물 시기 고객용 표시 문구 — analyzeWealthTiming()의 내부 판정값(강화형(A) 등, classifyPeriod()
+// 계산 로직)은 전혀 바꾸지 않는다. TIMING_DARK(색상) 조회는 계속 이 원래 key로 하고, 화면에 보이는
+// 글자만 이 매핑을 거친다.
+const TIMING_DISPLAY_LABEL: Record<string, string> = {
+  "강화형(A)": "재물 힘이 커지는 때",
+  "부담형(B)": "돈의 움직임이 커지는 때",
+  "기반형(C)": "재물 기반을 만드는 때",
+  "분산/흔들림형(D)": "재물 변화가 큰 때",
+  "신호없음형(E)": "재물 흐름이 잔잔한 때",
+};
 
 export const Head = ({ text }: { text: string }) => (
   <div className="blk head" data-keep="1"><div className="title">{text}</div><div className="rule" /></div>
@@ -468,10 +478,10 @@ export function DarkBookChapters1to6({ report, appData, intake, fairies }: DarkB
             {timeline.map((p, i) => (
               <div className={`blk ph${p.state === "current" ? " now" : ""}`} key={`p${i}`}>
                 <div className="a">{p.startAge}~{p.endAge}세<small>{p.ganZhi}</small></div>
-                <div className="t"><i className="dot" style={{ background: TIMING_DARK[p.label] ?? "#8C8168" }} />{p.label.replace(/형.*/, "")}</div>
+                <div className="t"><i className="dot" style={{ background: TIMING_DARK[p.label] ?? "#8C8168" }} />{TIMING_DISPLAY_LABEL[p.label] ?? p.label}</div>
               </div>
             ))}
-            <div className="blk legend">{used.map((l) => <span key={l}><i className="dot" style={{ background: TIMING_DARK[l] ?? "#8C8168" }} />{l}</span>)}<span>· 금색 표시 = 현재 대운</span></div>
+            <div className="blk legend">{used.map((l) => <span key={l}><i className="dot" style={{ background: TIMING_DARK[l] ?? "#8C8168" }} />{TIMING_DISPLAY_LABEL[l] ?? l}</span>)}<span>· 금색 표시 = 현재 대운</span></div>
           </Flow>
         );
       }
