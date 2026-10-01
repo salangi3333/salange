@@ -48,6 +48,38 @@ function ch1Polite(t: string): string { if (/[한하]다$/.test(t)) return t.rep
 function ch1HeroLead(q: string): string { const parts = q.split(","); return `${parts[0].trim()}, ${ch1Polite(parts.slice(1).join(",").trim())}.`; }
 // 4장 std 섹션의 하위 라벨 — scripts/_scratch_ch2_v3_render.ts의 SUB_LABEL을 그대로 옮긴 것(단어 변경 없음).
 const CH2_SUB_LABEL: Record<string, string> = { 정관: "약속과 신뢰", 편관: "분명한 태도", 정재: "꾸준한 약속", 편재: "유연한 대응" };
+
+/** 4장 "연애 인연 글자와 배우자 자리" 표 — scripts/_scratch_ch2_v3_render.ts(69~76줄)의 승인된 표 구성을
+ * 다크 .flow 흐름에 맞게 그대로 옮긴 것(새 디자인·새 계산 없음, 기존 .pgrid/EL_DARK 재사용). v2.chart.notes
+ * 본문이 "위 표에서 금색/붉은 테두리가…"라고 이 표가 있다는 전제로 쓰여 있어, 표 없이는 문장이 성립하지 않는다. */
+const ChartPillarsTable = ({ chart, subtypes }: {
+  chart: { pillars: { stage: string; stem: string; stemSip: string; stemEl: string; branch: string; branchSip: string; branchEl: string; stemStar: boolean; branchStar: boolean; palace: boolean }[]; hiddenStar: string; noHour: boolean };
+  subtypes: [string, string];
+}) => (
+  <div className="blk">
+    <div className="pgrid" style={{ gridTemplateColumns: `repeat(${chart.pillars.length},1fr)`, marginTop: 6 }}>
+      {chart.pillars.map((p, i) => <div className="h" key={`h${i}`}>{p.stage}</div>)}
+      {chart.pillars.map((p, i) => (
+        <div className="c" key={`s${i}`}>
+          <span className={`gl${p.stemStar ? " star" : ""}`} style={{ color: EL_DARK[p.stemEl] ?? "var(--ivory)", padding: "0 6px" }}>{p.stem}</span>
+          <span className="sp">{p.stemSip}</span>
+        </div>
+      ))}
+      {chart.pillars.map((p, i) => (
+        <div className="c" key={`b${i}`}>
+          <span className={`gl${p.palace ? " palace" : p.branchStar ? " star" : ""}`} style={{ color: EL_DARK[p.branchEl] ?? "var(--ivory)", padding: "0 6px" }}>{p.branch}</span>
+          <span className="sp">{p.branchSip}</span>
+        </div>
+      ))}
+    </div>
+    <div className="legend">
+      <span><i className="dot" style={{ background: "transparent", outline: "3px solid var(--gold)" }} />연애 인연 글자 ({subtypes[0]}·{subtypes[1]})</span>
+      <span><i className="dot" style={{ background: "transparent", outline: "3px solid var(--rose)" }} />배우자 자리 (일지)</span>
+      {chart.hiddenStar && <span>{chart.hiddenStar}</span>}
+      {chart.noHour && <span>태어난 시간을 몰라 세 기둥으로 풀이했습니다</span>}
+    </div>
+  </div>
+);
 const BASIS_TITLES = new Set(["정리 근거", "이 풀이의 명리 근거", "명리 근거"]);
 const Sections = ({ items, level }: { items: { heading: string; body: string[] }[]; level: 1 | 2 }) => (
   <>{items.map((s, i) => {
@@ -407,6 +439,7 @@ export function DarkBookChapters1to6({ report, appData, intake, fairies }: DarkB
           )}
 
           <Head text="연애 인연 글자와 배우자 자리" />
+          <ChartPillarsTable chart={v2.chart} subtypes={v2.facts.subtypes} />
           <Paras items={v2.chart.notes.map((n) => n.text)} />
           {basisBlock(v2.chart.basis)}
         </Flow>

@@ -94,6 +94,9 @@ export const DARK_FLOW_CSS = `
 .ph.now .t{font-weight:700}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:middle}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mute);margin:4px 0 18px}
+/* 4장 "연애 인연 글자와 배우자 자리" 표 강조 — scripts/_scratch_ch2_v3_render.ts(.star/.palace)와 동일 값 */
+.star{outline:3px solid var(--gold);outline-offset:2px;border-radius:2px}
+.palace{outline:3px solid var(--rose);outline-offset:2px;border-radius:2px}
 .pg-hero,.pg-quote{padding:0;display:block}
 .pg-hero .himg,.pg-quote .qimg{position:relative;overflow:hidden}
 .pg-hero .himg{height:500px}

@@ -381,8 +381,14 @@ export function buildCh2(name: string, input: Parameters<typeof calculateSaju>[0
   const kind = star.exposure === "미미" || (subCount[0] === 0 && subCount[1] === 0) ? "none" : subCount[0] > 0 && subCount[1] > 0 ? "both" : subCount[0] > 0 ? "A" : "B";
   const [nA, nB] = subNames;
   const kindTxt = kind === "both" ? `이 사주에는 ${nA}${josaWa(nA)} ${nB}${josaGa(nB)} 모두 있습니다.` : kind === "A" ? `이 사주에는 ${nA}만 있습니다.` : kind === "B" ? `이 사주에는 ${nB}만 있습니다.` : "이 사주에서는 이 글자가 겉으로 거의 드러나지 않습니다.";
+  // 표(chart.pillars)는 겉으로 드러난 8글자만 그린다 — exposure==="뚜렷"(count>0, 겉에 직접 있음)일 때만
+  // 금색 테두리가 실제로 생긴다. "숨음"(지장간에만 있음)·"미미"(겉·속 모두 없음)인데도 "위 표에서 금색
+  // 테두리가…"라고 고정 출력되던 것을 star.exposure(기존 계산값, 새 계산 아님) 하나로만 분기한다.
+  const chartIntroClause = star.exposure === "뚜렷" ? "위 표에서 금색 테두리가 그 글자입니다."
+    : star.exposure === "숨음" ? "이 글자는 겉으로 바로 보이는 자리에는 없고, 글자 속(지장간)에 숨어 있습니다."
+    : "이 사주에는 이 글자가 겉으로도, 글자 속으로도 직접 드러나 있지 않습니다.";
   const notes: Tagged[] = [
-    { text: `사주에서는 ${gender === "female" ? "여성" : "남성"}의 연애·배우자 인연을 ${gender === "female" ? "정관·편관" : "정재·편재"}${hasBatchim(gender === "female" ? "정관·편관" : "정재·편재") ? "이라는" : "라는"} 글자로 봅니다. 위 표에서 금색 테두리가 그 글자입니다.`, rule: `chart:intro:${gender}` },
+    { text: `사주에서는 ${gender === "female" ? "여성" : "남성"}의 연애·배우자 인연을 ${gender === "female" ? "정관·편관" : "정재·편재"}${hasBatchim(gender === "female" ? "정관·편관" : "정재·편재") ? "이라는" : "라는"} 글자로 봅니다. ${chartIntroClause}`, rule: `chart:intro:${gender}:${star.exposure}` },
     { text: kind === "none" ? kindTxt : `${kindTxt} 그래서 ${STD_SHORT[gender][focus]}에게 마음이 갑니다.`, rule: kind === "none" ? "chart:star:none" : `chart:star:${kind}:${gender}:${focus}` },
     { text: `표의 붉은 테두리는 곁에서 편안함을 느끼는 방식을 정하는 자리(일지 ${dayZhi})입니다. 여기서는 ${cf.person.replace(/\.$/, "")}에게 편안함을 느낍니다.`, rule: `chart:comfort:${daySip}:${dayZhi}` },
     { text: kind === "none" ? "그래서 마음이 가는 유형보다, 함께 있을 때 편안한 사람이 관계를 정하기 쉽습니다." : match === "일치" ? "그래서 마음이 가는 사람과 함께 있을 때 편안한 사람이 크게 다르지 않습니다." : "그래서 마음이 가는 사람과 함께 있을 때 편안한 사람은 다를 수 있습니다.", rule: `chart:link:${kind === "none" ? "none" : match}` },
