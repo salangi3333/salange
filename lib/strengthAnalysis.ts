@@ -47,7 +47,7 @@ const CATEGORY_TARGET_ELEMENT: Record<SipseongCategory, (dayEl: Element) => Elem
   인성: (d) => elementThatGenerates(d),
 };
 
-const SIPSEONG_TO_CATEGORY: Record<string, SipseongCategory> = {
+export const SIPSEONG_TO_CATEGORY: Record<string, SipseongCategory> = {
   비견: "비겁",
   겁재: "비겁",
   식신: "식상",

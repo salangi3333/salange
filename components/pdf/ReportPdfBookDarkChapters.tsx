@@ -31,11 +31,20 @@ const TIMING_DARK: Record<string, string> = {
 // 계산 로직)은 전혀 바꾸지 않는다. TIMING_DARK(색상) 조회는 계속 이 원래 key로 하고, 화면에 보이는
 // 글자만 이 매핑을 거친다.
 const TIMING_DISPLAY_LABEL: Record<string, string> = {
-  "강화형(A)": "재물 힘이 커지는 때",
-  "부담형(B)": "돈의 움직임이 커지는 때",
-  "기반형(C)": "재물 기반을 만드는 때",
-  "분산/흔들림형(D)": "재물 변화가 큰 때",
-  "신호없음형(E)": "재물 흐름이 잔잔한 때",
+  "강화형(A)": "재물 흐름이 힘을 받는 때",
+  "부담형(B)": "재물 움직임이 커지는 때",
+  "기반형(C)": "재물의 바탕을 다지는 때",
+  "분산/흔들림형(D)": "재물 변화가 두드러지는 때",
+  "신호없음형(E)": "재물 흐름을 지켜보는 때",
+};
+// 2026-10-02 승인된 라벨 바로 아래에 표시하는 한 줄 설명 — classifyPeriod() 계산 로직은
+// 전혀 바꾸지 않는다, 순수 표시 문구만 추가.
+const TIMING_DISPLAY_DESC: Record<string, string> = {
+  "강화형(A)": "필요한 흐름과 재물의 움직임이 함께 나타나, 자연스럽게 힘이 실리는 시기입니다.",
+  "부담형(B)": "돈과 관련된 움직임이 커지는 시기이지만, 그만큼 다루는 데 더 마음을 써야 하는 시기입니다.",
+  "기반형(C)": "당장 눈에 띄는 재물 변화보다, 지금 이 사람에게 맞는 흐름이 조용히 이어지는 시기입니다.",
+  "분산/흔들림형(D)": "지금까지와 다르게, 재물과 관련된 변화가 두드러지게 나타날 수 있는 시기입니다.",
+  "신호없음형(E)": "큰 재물 흐름이 뚜렷하게 정해진 때는 아닙니다. 돈복이 없다는 뜻이 아니라, 어떻게 움직이고 선택하느냐에 따라 재물의 흐름이 달라질 수 있는 시기입니다.",
 };
 
 export const Head = ({ text }: { text: string }) => (
@@ -481,7 +490,15 @@ export function DarkBookChapters1to6({ report, appData, intake, fairies }: DarkB
                 <div className="t"><i className="dot" style={{ background: TIMING_DARK[p.label] ?? "#8C8168" }} />{TIMING_DISPLAY_LABEL[p.label] ?? p.label}</div>
               </div>
             ))}
-            <div className="blk legend">{used.map((l) => <span key={l}><i className="dot" style={{ background: TIMING_DARK[l] ?? "#8C8168" }} />{TIMING_DISPLAY_LABEL[l] ?? l}</span>)}<span>· 금색 표시 = 현재 대운</span></div>
+            <div className="blk desclist">
+              {used.map((l) => (
+                <div className="dsc" key={l}>
+                  <div className="tlabel"><i className="dot" style={{ background: TIMING_DARK[l] ?? "#8C8168" }} />{TIMING_DISPLAY_LABEL[l] ?? l}</div>
+                  <div className="desc">{TIMING_DISPLAY_DESC[l] ?? ""}</div>
+                </div>
+              ))}
+              <div className="note">· 금색 표시 = 현재 대운</div>
+            </div>
           </Flow>
         );
       }

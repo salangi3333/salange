@@ -1,6 +1,6 @@
 import { AppData } from "./sajuContent";
 import { analyzeDayMasterBalance } from "./dayMasterBalanceAnalysis";
-import { analyzeYongsinCandidate, YongsinOutcome, YongsinHoldReason } from "./yongsinCandidateAnalysis";
+import { analyzeYongsinCandidate, YongsinOutcome, YongsinHoldReason, analyzeTonggwanMediator } from "./yongsinCandidateAnalysis";
 import { analyzeHuisinCandidate } from "./huisinCandidateAnalysis";
 import { analyzeDaYunWealth, pickPastCurrentNext, DaYunWealthPeriod } from "./daYunWealthAnalysis";
 import { buildSeunRange, NatalBranchInput, NatalStemInput, SeunKey } from "./seunAnalysis";
@@ -261,17 +261,31 @@ function yongsinNotApplicableResult(reason: WealthTimingNotApplicableReason, hol
 
 export function analyzeWealthTiming(appData: AppData): WealthTimingResult {
   const user = appData.user;
-  const dayGan = user.pillars.day.hanja;
-
-  const balance = analyzeDayMasterBalance(user);
   const yongsin = analyzeYongsinCandidate(user);
   const huisin = analyzeHuisinCandidate(user);
 
-  if (!yongsin.applicable) return yongsinNotApplicableResult("yongsinNotApplicable");
+  // neutral(중화)이라 억부법 용신이 비적용인 경우, 통관용신(v4, 130명 검증
+  // 완료)이 "확정"일 때만 그 mediatorCategory를 기존 yongsinCats 슬롯에
+  // 그대로 꽂아 통과시킨다. "보조 후보"/"보류"는 기존과 동일하게 차단
+  // 유지(차트 생성 안 함). isStrong/isWeak 경로(yongsin.applicable===true)는
+  // 전혀 건드리지 않는다 — 아래 분기는 !yongsin.applicable일 때만 탄다.
+  if (!yongsin.applicable) {
+    const tonggwan = analyzeTonggwanMediator(user);
+    if (tonggwan.verdict !== "확정" || !tonggwan.mediatorCategory) {
+      return yongsinNotApplicableResult("yongsinNotApplicable");
+    }
+    return computeWithYongsinCats(appData, [tonggwan.mediatorCategory], huisin);
+  }
   if (yongsin.outcome === "hold") return yongsinNotApplicableResult("yongsinHold", yongsin.holdReason);
   if (yongsin.outcome === "unresolved") return yongsinNotApplicableResult("yongsinUnresolved");
 
-  const yongsinCats = yongsin.winners;
+  return computeWithYongsinCats(appData, yongsin.winners, huisin);
+}
+
+function computeWithYongsinCats(appData: AppData, yongsinCats: SipseongCategory[], huisin: ReturnType<typeof analyzeHuisinCandidate>): WealthTimingResult {
+  const user = appData.user;
+  const dayGan = user.pillars.day.hanja;
+  const balance = analyzeDayMasterBalance(user);
   const huisinCats = huisin.applicable ? huisin.pairs.map((p) => p.category) : [];
   const supportIntoHuisinCats = huisin.applicable ? huisin.pairs.map((p) => p.supportIntoHuisin.category) : [];
 
