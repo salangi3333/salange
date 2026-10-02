@@ -120,7 +120,7 @@ const SEUN_SIGNAL: Record<string, YearSignalEntry> = {
   식신: {
     label: "서두르지 않고 몰입하는 시기",
     area: "표현과 활동",
-    core: "빨리 결과를 보여줘야 한다는 조급함보다, 지금 하고 있는 걸 계속 붙들고 있고 싶은 마음이 커집니다. 겉으로 티가 안 나도 크게 신경 쓰지 않고, 조용히 계속 이어가는 쪽을 택하기 쉽습니다. 제자리걸음처럼 느껴질 수 있지만, 실제로는 그 시간이 조금씩 쌓이고 있는 쪽에 가깝습니다.",
+    core: "빨리 결과를 보여줘야 한다는 조급함보다, 지금 하고 있는 걸 계속 붙들고 있고 싶은 마음이 커집니다. 겉으로 티가 안 나도 크게 신경 쓰지 않고, 조용히 계속 이어가는 쪽을 택하기 쉽습니다. 제자리걸음처럼 느껴질 수 있지만, 실제로는 지금 붙들고 있는 일에 그만큼 깊이 들어가고 있는 중입니다.",
     action: "당장 티가 안 난다고 방향을 자주 바꾸기보다, 지금 하던 것을 한 번 더 밀어붙여 보는 편이 이 해와 잘 맞습니다.",
   },
   상관: {
@@ -145,13 +145,13 @@ const SEUN_SIGNAL: Record<string, YearSignalEntry> = {
     label: "갑작스러운 승부처가 많아지는 시기",
     area: "책임과 압박",
     core: "예상치 못한 자리나 부담스러운 상황이 한꺼번에 찾아오기 쉽고, 마음의 여유보다 긴장이 먼저 앞섭니다. 즉각 움직여야 하는 일이 늘면서 몸이 먼저 지치는 느낌을 받을 수 있습니다. 다만 그 압박을 한 번 넘기고 나면, 실력을 있는 그대로 인정받는 계기가 되기도 합니다.",
-    action: "전부 한꺼번에 해내려 하기보다, 일정을 나눠서 하나씩 처리하는 편이 이 시기를 수월하게 넘기게 해줍니다.",
+    action: "전부 한꺼번에 밀어붙이기보다, 급한 일부터 먼저 쳐내고 나머지는 하나씩 정리해가면 이 시기를 덜 지치게 넘길 수 있습니다.",
   },
   정관: {
     label: "맡은 자리를 제대로 해내야 하는 시기",
     area: "책임과 압박",
     core: "맡은 자리의 무게가 전보다 뚜렷하게 느껴지고, 이제는 제대로 해내야 한다는 마음이 자연스럽게 커집니다. 누가 시켜서라기보다, 스스로 그 역할을 인정받고 싶은 마음이 앞섭니다. 정해진 기준과 약속을 지키려는 쪽으로 움직이게 됩니다.",
-    action: "책임이 커지는 만큼 전부 혼자 떠안기보다, 우선순위를 정해 하나씩 처리하는 편이 이 해를 덜 힘들게 지나가게 해줍니다.",
+    action: "책임이 커지는 만큼 전부 혼자 떠안기보다, 중요한 일부터 순서를 정해 하나씩 풀어가면 한결 든든하게 넘길 수 있습니다.",
   },
   편인: {
     label: "혼자 정리하는 시간이 필요한 시기",
@@ -282,7 +282,7 @@ function compoundCategory(sk: SeunKey): CompoundCat {
  * 나타난 적이 있는지"만 보는 값으로, 연속은 아니지만 같은 성격이 두
  * 번째로 나타날 때 문장이 똑같아지는 것도 막는다(둘 다 이미 계산된
  * compoundCategory 순서를 비교만 하는 것뿐, 새 계산 아님). */
-function compoundingClause(cat: CompoundCat, prevCat: CompoundCat, prevPrevCat: CompoundCat, hasOccurredBefore: boolean): string | null {
+function compoundingClause(cat: CompoundCat, prevCat: CompoundCat, prevPrevCat: CompoundCat, hasOccurredBefore: boolean, streakLen: number): string | null {
   if (!cat) return null;
   const FIRST: Record<"mixed" | "clash" | "pull", string> = {
     mixed: "이런 해에는 한 가지에만 매달리기보다, 성격이 다른 몇 가지 일을 동시에 챙기는 쪽이 더 잘 맞습니다.",
@@ -291,20 +291,32 @@ function compoundingClause(cat: CompoundCat, prevCat: CompoundCat, prevPrevCat: 
   };
   const AGAIN: Record<"mixed" | "clash" | "pull", string> = {
     mixed: "이 해에도 성격이 다른 일들이 겹치기 쉬우니, 순서를 정해두고 하나씩 처리하는 편이 낫습니다.",
-    clash: "이번에도 뜻대로 잘 안 풀리는 부분이 있을 수 있어, 서두르지 않는 편이 낫습니다.",
+    clash: "그 사이 이번에도 뜻대로 잘 안 풀리는 부분이 나타날 수 있어, 서두르지 않는 편이 낫습니다.",
     pull: "이번에도 여러 가지가 순조롭게 맞아떨어질 수 있어, 미뤄둔 일이 있다면 움직여볼 만합니다.",
   };
+  // [2026-10-02 22명 회귀검증에서 발견·수정] "작년부터 이어지고 있어서"
+  // (진행형 — 앞으로도 계속된다는 인상을 줄 수 있음)를 "작년에 이어
+  // 올해도 ~했습니다/나타났습니다"(완료형 — 이미 확정된 두 해의 사실만
+  // 말함)로 바꿨다. pull은 지난 라운드에 이미 같은 원칙으로 수정됨.
   const CONTINUE: Record<"mixed" | "clash" | "pull", string> = {
-    mixed: "이렇게 여러 가지를 함께 챙기는 흐름이 작년부터 이어지고 있어서, 이번에도 비슷한 방식으로 움직이는 편이 자연스럽습니다.",
-    clash: "이런 답답함이 작년부터 이어지고 있어서, 조급해하지 않고 한 박자씩 늦추는 습관이 이번에도 필요합니다.",
-    pull: "이렇게 맞아떨어지는 흐름이 작년부터 이어지고 있어서, 미뤄둔 일이 있다면 이번에도 진행해볼 만합니다.",
+    mixed: "작년에 이어 올해도 여러 가지 일을 함께 챙기는 쪽으로 움직이는 편이 자연스럽습니다.",
+    clash: "작년에 이어 올해도 이런 답답함이 나타났습니다. 조급해하지 않고 한 박자씩 늦추는 습관이 이번에도 필요합니다.",
+    pull: "작년에 이어 올해도 여러 일이 순조롭게 맞아떨어졌습니다. 미뤄둔 일이 있다면 지금 움직여볼 만합니다.",
   };
   const SETTLE: Record<"mixed" | "clash" | "pull", string> = {
     mixed: "여러 가지를 함께 챙기던 시간도 이쯤에서 한 번 정리해 볼 때입니다.",
     clash: "여러 해 이어진 답답함도 이제 조금씩 가닥이 잡히기 시작할 수 있습니다.",
     pull: "그동안 순조롭게 맞아떨어지던 것들을 이제 눈에 보이는 결과로 확인하게 될 수 있습니다.",
   };
-  if (cat === prevCat && cat === prevPrevCat) return SETTLE[cat];
+  if (cat === prevCat && cat === prevPrevCat) {
+    // [2026-10-02 22명 회귀검증에서 발견·수정] 같은 카테고리가 4년차 이상
+    // 연속되면 이 조건이 매년 다시 참이 되어 SETTLE 문장이 그대로 반복됐다.
+    // streakLen(compoundCats만으로 결정론적으로 계산, 새 계산 아님)이
+    // 정확히 3일 때(SETTLE에 처음 도달하는 해)만 문장을 내고, 4년차
+    // 이상(같은 스트릭 안에서 이미 SETTLE을 말한 뒤)은 추가 문장을 내지
+    // 않는다 — 대체 반복 문장도 만들지 않는다(승인된 설계).
+    return streakLen === 3 ? SETTLE[cat] : null;
+  }
   if (cat === prevCat) return CONTINUE[cat];
   if (hasOccurredBefore) return AGAIN[cat];
   return FIRST[cat];
@@ -338,7 +350,17 @@ function buildYearItem(
   // [2026-09 7장 서술 개정] selfPunish(자형)도 10년 중 여러 해에 걸쳐
   // 나타날 수 있어(연속이 아닐 수도 있음), 이미 몇 번째로 나타나는지에
   // 따라 문장을 바꾼다(0=처음).
-  selfPunishSeenCount: number
+  selfPunishSeenCount: number,
+  // [2026-10-02 22명 회귀검증에서 발견·수정] dayBranchRelation(세운 지지가
+  // 일지와 관계를 맺는지)도 axisMatch와 똑같이 2년 이상 연속으로 나타날 수
+  // 있는데, 그동안 "이미 말했는지" 기억하는 로직이 없어 완전히 같은 문장이
+  // 반복됐다. 새 계산이 아니라 axisMatchSeenBefore와 동일한 패턴으로
+  // buildTenYearNarrative에서 미리 계산해 전달만 한다.
+  dayBranchSeenBefore: boolean,
+  // [2026-10-02 22명 회귀검증에서 발견·수정] compoundingClause의 SETTLE이
+  // 몇 년째 연속인지(새 계산 아님, compoundCats 배열로부터 결정론적으로
+  // 계산해 buildTenYearNarrative에서 전달만 한다). SETTLE 반복 억제에만 쓴다.
+  compoundStreakLen: number
 ): TenYearItem {
   const entry = SEUN_SIGNAL[sk.seunGanSipseong];
   const isTransitionYear = Boolean(prevPeriod && prevPeriod.ganZhi !== period.ganZhi);
@@ -389,12 +411,24 @@ function buildYearItem(
   // SEUN_SIGNAL 등 다른 계산값이 그 해의 개인화를 그대로 이어간다.
   const isRepeatDayunTier = dayunTier !== null && dayunTier === prevDayunTier && !isTransitionYear;
   if (dayunTier === "같음" && !isRepeatDayunTier) {
-    parts.push("지금 지나는 대운 자체도 같은 성질이라, 이 흐름이 한 해로 끝나지 않고 당분간 이어질 가능성이 큽니다.");
+    parts.push("지금 지나는 10년의 전체적인 흐름과도 맞닿아 있어서, 올해 느끼는 이 성향이 유독 뚜렷하게 느껴질 수 있습니다.");
   } else if (dayunTier === "충돌" && !isRepeatDayunTier) {
     parts.push("다만 지금 지나는 대운은 오히려 이와 부딪히는 성질이라, 마음은 이렇게 움직이고 싶은데 상황이 자꾸 제동을 거는 듯한 답답함을 함께 느낄 수 있습니다.");
   }
   if (dayBranchRelation) {
-    parts.push("게다가 이 흐름은 배우자 자리와도 맞물려 있어, 가까운 사람과의 관계에서도 비슷한 결의 신호가 함께 움직일 수 있습니다.");
+    // [2026-10-02 수정] "이 흐름은"이라는 모호한 지시어와 "배우자 자리"의
+    // "자리"(이 함수 안에서 역할/위치/일지 세 가지 뜻으로 혼용되던 단어)를
+    // 제거했다. dayBranchRelation은 세운 지지가 일지(日支)와 합/충 중
+    // 어느 쪽으로 관계를 맺었는지는 구분하지 않으므로(합/충 모두 true),
+    // "거리를 조율해야 한다"처럼 충(갈등)쪽으로 치우친 단정도 하지 않고
+    // "평소와는 다른 움직임"이라는 중립적 표현만 쓴다.
+    // [2026-10-02 22명 회귀검증에서 발견·수정] axisMatch와 동일하게, 두
+    // 번째 이후 등장은 짧게 줄인다(새 의미 추가 없음, 반복만 줄임).
+    parts.push(
+      dayBranchSeenBefore
+        ? "이번에도 비슷한 신호가 배우자와의 관계에서 나타날 수 있습니다."
+        : "게다가 지금 이 해에 나타나는 마음의 흐름은 배우자와의 관계에도 함께 영향을 줄 수 있어, 그 관계 안에서도 평소와는 다른 움직임이 느껴질 수 있습니다."
+    );
   }
   if (axisMatch) {
     // "다른 해보다 유독 선명하고"(비교급 표현)는 그래프의 flowIntensity(신호
@@ -406,21 +440,30 @@ function buildYearItem(
     // 익숙하다"는 사실은 그대로 두고, 그래프와 충돌해 보일 수 있는 비교급
     // 표현만 뺐다 — 익숙함은 flowIntensity와 무관하게 항상 성립하는
     // 주관적 느낌이라 그래프 수치와 부딪힐 일이 없다.
+    // [2026-10-02 수정] 두 번째(이후) 등장 시 첫 문장을 거의 그대로
+    // 반복하던 것을, 같은 계산 근거(axisMatch)를 가리키되 짧은 재확인
+    // 형태로 줄였다 — 10년 중 정확히 2번만 나오는 신호라 "다른 뜻을
+    // 억지로 만들어내지 말고 줄이라"는 원칙을 그대로 따른 것.
     parts.push(
       axisMatchSeenBefore
-        ? "이번에도 원래 이 사람이 가장 많이 써온 방식이 겹쳐 있어, 낯설지 않고 익숙하게 느껴질 수 있습니다."
-        : "이 방식은 원래도 이 사람이 가장 많이 써온 쪽이라, 낯설지 않고 익숙하게 느껴질 수 있습니다."
+        ? "이번에도 손에 익은 쪽이라 크게 낯설지 않을 겁니다."
+        : "이 방식은 원래도 이 사람이 가장 많이 써온 쪽이라, 낯설지 않게 느껴질 수 있습니다."
     );
   }
   if (selfPunish) {
+    // [2026-10-02 수정] "같은 자리끼리 부딪히는 결" 같은 명리식 표현을
+    // 빼고, 그 계산이 실제로 의미하는 결과(바깥일보다 내면 정리에 마음이
+    // 쓰임)만 생활 언어로 남겼다. 세 번째 등장(3회차)은 "이런 결은"처럼
+    // 선행 문맥 없이도 뜻이 통하도록, 가리키는 내용을 그 자리에서 다시
+    // 짧게 풀어 썼다(모호한 지시어 제거).
     const SELF_PUNISH_LINES = [
-      "같은 자리끼리 부딪히는 결이 겹쳐 있어, 밖으로 벌이는 것보다 안에서 스스로와 부대끼며 정리하는 데 더 마음이 쓰이는 해이기도 합니다.",
-      "이번에도 같은 자리끼리 부딪히는 결이 있어, 밖으로 벌이기보다 안에서 스스로 정리하는 데 마음이 쓰일 수 있습니다.",
-      "이런 결은 이 10년 안에서 몇 차례 더 나타날 수 있는데, 그때마다 억지로 해소하려 하기보다 잠시 지켜보는 편이 낫습니다.",
+      "이 시기엔 밖으로 벌이는 일보다, 마음속에서 스스로와 씨름하며 정리하는 데 더 신경이 쓰입니다.",
+      "이번에도 바깥일보다는 마음속에서 스스로와 씨름하며 정리하는 쪽에 마음이 쓰일 수 있습니다.",
+      "한편 마음속에서 쉽게 정리되지 않는 부분은 다시 살펴보게 될 수 있습니다.",
     ];
     parts.push(SELF_PUNISH_LINES[Math.min(selfPunishSeenCount, SELF_PUNISH_LINES.length - 1)]);
   }
-  const compounding = compoundingClause(compoundCategory(sk), prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBefore);
+  const compounding = compoundingClause(compoundCategory(sk), prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBefore, compoundStreakLen);
   if (compounding) parts.push(compounding);
   parts.push(entry.action);
 
@@ -457,6 +500,55 @@ function buildYearItem(
 // 있다(3/3/4 같은 고정 분할이 아니라 실제로 1~2구간만 나온다).
 // ────────────────────────────────────────────────────────────────
 
+// [2026-10-02 7장 ④·⑤ 중복 결론 수정] "10년을 한 번에 보면"의 역할을
+// "연도별 내용 재요약"(gains/prepare, buildClosing과 거의 같은 문장을
+// 두 번 말하는 문제가 있었음)에서 "10년 전체에서 실제로 반복되는 계산
+// 패턴을 보여주는 것"으로 바꾼다. 새 계산 없음 — items[].area(이미
+// buildYearItem이 채워 둔 필드)의 구간 내 빈도만 센다. AREA_PHRASE는
+// SEGMENT_SUMMARY.gains와 같은 성격의 "값→생활 언어" 매핑일 뿐, area
+// 판정 자체(어떤 area인지)는 전혀 건드리지 않는다. */
+const AREA_PHRASE: Record<LifeAreaLabel, string> = {
+  "돈과 일": "돈과 일에서 움직임이 잦아지는 흐름",
+  "관계와 인연": "사람과의 관계나 인연이 움직이는 흐름",
+  "표현과 활동": "생각이나 마음을 적극적으로 표현하는 흐름",
+  "책임과 압박": "맡은 책임이나 부담이 커지는 흐름",
+  "배움과 준비": "혼자 배우고 준비하는 데 마음이 가는 흐름",
+  "변화와 선택": "방향을 다시 정하거나 선택이 많아지는 흐름",
+  "안정과 정리": "마음을 다잡고 생활을 정리하는 흐름",
+};
+const AREA_ORDER: LifeAreaLabel[] = ["돈과 일", "관계와 인연", "표현과 활동", "책임과 압박", "배움과 준비", "변화와 선택", "안정과 정리"];
+const COUNT_WORD = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열"];
+function countWord(n: number): string {
+  return COUNT_WORD[n] ?? `${n}`;
+}
+
+/** 이 구간(세그먼트)에 속한 연도들의 area 분포를 세어, 가장 자주
+ * 나타나는 area를 자연스러운 문장으로 옮긴다. 빈도(topCount)가 1뿐이면
+ * (반복이라 부를 근거가 부족하면) 억지로 패턴을 만들지 않고 기본
+ * 문장으로 떨어진다 — "계산 데이터가 충분하지 않으면 문장을 지어내지
+ * 않는다"는 원칙을 그대로 따른 것. */
+function describeAreaPattern(segItems: TenYearItem[], startYear: number, endYear: number): string {
+  const tally = new Map<LifeAreaLabel, number>();
+  segItems.forEach((it) => tally.set(it.area, (tally.get(it.area) ?? 0) + 1));
+  let top: LifeAreaLabel = segItems[0].area;
+  let topCount = 0;
+  AREA_ORDER.forEach((a) => {
+    const c = tally.get(a) ?? 0;
+    if (c > topCount) { top = a; topCount = c; }
+  });
+  const span = yearSpanClause(startYear, endYear);
+  if (topCount < 2) {
+    return `${span} 한 가지 흐름으로 묶이기보다, 여러 흐름이 번갈아 나타나는 시기입니다.`;
+  }
+  const phrase = AREA_PHRASE[top];
+  const transitionCount = segItems.filter((it) => it.isTransitionYear).length;
+  const transitionClause = transitionCount > 0 ? " 그 사이 한 번은 대운 자체가 바뀌는 해이기도 합니다." : "";
+  if (topCount >= segItems.length) {
+    return `${span} ${phrase}이 내내 이어집니다.${transitionClause}`;
+  }
+  return `${span} ${phrase}이 ${countWord(topCount)} 번 정도 반복해서 찾아옵니다.${transitionClause}`;
+}
+
 function buildSegments(items: TenYearItem[], periodsByYear: (DaYunWealthPeriod | null)[]): TenYearSegment[] {
   const segments: { startYear: number; endYear: number; category: SipseongCategory | null; ganSipseong: string | null }[] = [];
   items.forEach((item, i) => {
@@ -471,14 +563,8 @@ function buildSegments(items: TenYearItem[], periodsByYear: (DaYunWealthPeriod |
   });
 
   return segments.map((seg) => {
-    if (!seg.ganSipseong || !SEGMENT_SUMMARY[seg.ganSipseong]) {
-      return { ...seg, summary: `${yearSpanClause(seg.startYear, seg.endYear)} 한 가지로 정리되기보다 여러 가지가 섞여서 나타나는 시기입니다.` };
-    }
-    const s = SEGMENT_SUMMARY[seg.ganSipseong];
-    return {
-      ...seg,
-      summary: `${yearSpanClause(seg.startYear, seg.endYear)} ${s.gains}을 주로 쓰게 됩니다. 이 기간에는 ${s.prepare}을 함께 챙기면 한결 수월합니다.`,
-    };
+    const segItems = items.filter((it) => it.year >= seg.startYear && it.year <= seg.endYear);
+    return { ...seg, summary: describeAreaPattern(segItems, seg.startYear, seg.endYear) };
   });
 }
 
@@ -500,7 +586,12 @@ function yearSpanClause(startYear: number, endYear: number): string {
 function buildIntro(segments: TenYearSegment[]): string {
   if (segments.length === 1) {
     const gains = segmentGains(segments[0]);
-    return `앞으로 10년은 방향을 자주 바꾸기보다, ${gains}을 꾸준히 이어가면서 자기 방식을 다져가는 쪽에 가깝습니다. 다만 해마다 들어오는 결이 달라서, 어떤 해는 가볍게 지나가고 어떤 해는 유독 마음이 많이 쓰일 수 있습니다. 아래에서 2026년부터 2035년까지 한 해씩 짚어드립니다.`;
+    // [2026-10-02 수정] "어떤 해는 가볍게 지나가고 어떤 해는 유독 마음이
+    // 많이 쓰일 수 있습니다" — 누구에게나 적용되는 일반론 문장을 제거.
+    // 이 구간의 실제 반복 패턴은 바로 아래 "10년을 한 번에 보면"에서
+    // items[].area 기반으로 구체적으로 다루므로, 여는 글에서 같은 내용을
+    // 미리 추상적으로 선점하지 않는다.
+    return `앞으로 10년은 방향을 자주 바꾸기보다, ${gains}을 꾸준히 이어가면서 자기 방식을 다져가는 쪽에 가깝습니다. 아래에서 2026년부터 2035년까지 한 해씩 짚어드립니다.`;
   }
 
   const first = segments[0];
@@ -624,6 +715,12 @@ function buildHighlights(items: TenYearItem[], scores: number[], sks: SeunKey[])
  * 나열하지 않는다 — 이제 10개 연도 본문을 전부 보여주므로, 그 안에서
  * 이미 각자의 비중이 드러난다(아래 ⑤ 참고).
  */
+// [2026-10-02 수정] 마감 문단의 역할을 "요약 재반복"(firstGains/lastGains로
+// "10년을 한 번에 보면"과 거의 같은 문장을 다시 말하던 문제)에서 "이 10년을
+// 지나는 동안 기억해둘 현실적인 포인트 하나"로 바꾼다. gains(그 기간에
+// 주로 쓰는 힘)는 이제 "10년을 한 번에 보면"의 몫이라 여기서 다시 쓰지
+// 않고, prepare(이미 SEGMENT_SUMMARY에 있던 생활 습관 조언)만 짧게 남긴다
+// — 새 계산 없음, 기존 값을 어디서 한 번만 쓰느냐만 바꿨다.
 function buildClosing(segments: TenYearSegment[]): string {
   const first = segments[0];
   const last = segments[segments.length - 1];
@@ -631,15 +728,13 @@ function buildClosing(segments: TenYearSegment[]): string {
   // 2개 이상이면 이미 그런 뜻)로 판단한다 — 편재→정재처럼 카테고리는 같아도
   // 실제 대운이 바뀌는 경우를 "변화 없음"으로 잘못 읽지 않기 위함.
   const changed = segments.length > 1;
-  const firstGains = segmentGains(first);
-  const lastGains = segmentGains(last);
   const lastPrepare = last.ganSipseong && SEGMENT_SUMMARY[last.ganSipseong] ? SEGMENT_SUMMARY[last.ganSipseong].prepare : "달라지는 방식에 맞춰 조정하는 습관";
   const firstPrepare = first.ganSipseong && SEGMENT_SUMMARY[first.ganSipseong] ? SEGMENT_SUMMARY[first.ganSipseong].prepare : "지금의 방식을 꾸준히 이어가는 습관";
 
   if (changed) {
-    return `10년을 하나로 보면, 앞에서는 ${firstGains}을 주로 쓰다가 뒤로 갈수록 ${lastGains}을 더 많이 쓰게 됩니다. 앞서 하던 방식을 한 번에 버릴 필요는 없습니다. 다만 뒤로 갈수록 ${lastPrepare}을 조금씩 늘려가면, 달라지는 쪽에 덜 부딪히며 지나갈 수 있습니다.`;
+    return `이 10년을 지나는 동안 하나만 기억해 둔다면, 뒤로 갈수록 ${lastPrepare}을 조금씩 늘려가는 것입니다. 앞서 하던 방식을 한 번에 버릴 필요는 없습니다.`;
   }
-  return `10년 내내 ${firstGains}을 주로 쓰게 됩니다. 방식을 자주 바꾸기보다 ${firstPrepare}을 꾸준히 이어가는 쪽이 가장 멀리 갈 수 있는 방법이고, 그 사이 유독 마음 쓰일 해와 수월하게 넘어갈 해가 번갈아 옵니다.`;
+  return `이 10년을 지나는 동안 하나만 기억해 둔다면, ${firstPrepare}입니다.`;
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -706,6 +801,26 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
     if (isMatch) selfPunishCount++;
     return countSoFar;
   });
+  // [2026-10-02 22명 회귀검증에서 발견·수정] dayBranchRelation도 axisMatch와
+  // 동일한 패턴(seenBefore)으로 반복을 줄인다 — 새 계산 아님, 기존
+  // sk.natalRelations.some(r=>r.stage==="day")의 과거 등장 여부만 기억한다.
+  let dayBranchCount = 0;
+  const dayBranchSeenBeforeFlags = sks.map((sk) => {
+    const isMatch = sk.natalRelations.some((r) => r.stage === "day");
+    const seenBefore = isMatch && dayBranchCount > 0;
+    if (isMatch) dayBranchCount++;
+    return seenBefore;
+  });
+  // [2026-10-02 22명 회귀검증에서 발견·수정] compoundingClause의 SETTLE이
+  // 4년차 이상 연속될 때도 그대로 반복되는 문제 — 새 계산 없이 이미 있는
+  // compoundCats 배열만으로 "같은 카테고리가 몇 년째 연속인지"를 센다.
+  let streakLen = 0;
+  let prevCatForStreak: CompoundCat = null;
+  const compoundStreakLengths = compoundCats.map((cat) => {
+    streakLen = cat && cat === prevCatForStreak ? streakLen + 1 : cat ? 1 : 0;
+    prevCatForStreak = cat;
+    return streakLen;
+  });
 
   const items = years.map((y, i) => {
     const age = y - birthYear + 1;
@@ -714,7 +829,7 @@ export function buildTenYearNarrative(appData: AppData): TenYearContent {
     const prevDayunTier = i > 0 ? dayunTiers[i - 1] : null;
     const prevCompoundCat = i > 0 ? compoundCats[i - 1] : null;
     const prevPrevCompoundCat = i > 1 ? compoundCats[i - 2] : null;
-    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis, prevDayunTier, prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBeforeFlags[i], axisMatchSeenBeforeFlags[i], selfPunishSeenCounts[i]);
+    return buildYearItem(y, age, period, prevPeriod, sks[i], key.natalAxis, prevDayunTier, prevCompoundCat, prevPrevCompoundCat, compoundCatSeenBeforeFlags[i], axisMatchSeenBeforeFlags[i], selfPunishSeenCounts[i], dayBranchSeenBeforeFlags[i], compoundStreakLengths[i]);
   });
 
   const scores = items.map((item, i) => scoreYear(item, sks[i]));
