@@ -545,8 +545,8 @@ function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance
           cy={cy}
           r={orbitR}
           fill="none"
-          stroke="#D4A34A"
-          strokeOpacity={0.5}
+          stroke="#E9DDC3"
+          strokeOpacity={0.65}
           strokeWidth={2.2}
           strokeLinecap="round"
           strokeDasharray="0.1 13"
@@ -565,8 +565,8 @@ function FiveElementDiagram({ balance }: { balance: ReportResult["elementBalance
               key={`flow-${i}`}
               d={flowChevronPath(cx, cy, orbitR, arrivalAngle, 4.5)}
               fill="none"
-              stroke="#D4A34A"
-              strokeOpacity={0.5}
+              stroke="#FFF3DC"
+              strokeOpacity={0.95}
               strokeWidth={1.4}
               strokeLinecap="round"
               strokeLinejoin="round"
