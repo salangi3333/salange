@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { generateBookPdfBuffer } from "./generateBookPdfBuffer";
 import { IntakeFormData } from "./sajuEngine";
 import { getSql } from "./db";
+import { getReportReferenceYear } from "./reportStore";
 
 /**
  * [2026-09-14 신규] "관리자 주문 등록 → PDF 생성 성공 확인 → 고객 이메일로
@@ -84,7 +85,14 @@ function buildEmailHtml(name: string, resultLink: string): string {
 export async function sendReportPdfEmail(input: SendReportEmailInput): Promise<SendReportEmailResult> {
   let pdfBuffer: Buffer;
   try {
-    pdfBuffer = await generateBookPdfBuffer(input.intake);
+    // 9장 결정론 — report 최초 생성 연도. 조회 실패해도 발송 자체는 막지 않는다(undefined면 현재 연도).
+    let referenceYear: number | undefined;
+    try {
+      referenceYear = (await getReportReferenceYear(input.reportId)) ?? undefined;
+    } catch (e) {
+      console.error("[reportDelivery] referenceYear 조회 실패:", e instanceof Error ? e.message : e);
+    }
+    pdfBuffer = await generateBookPdfBuffer(input.intake, undefined, undefined, referenceYear);
   } catch (e) {
     return { success: false, error: `PDF 생성 실패: ${e instanceof Error ? e.message : String(e)}` };
   }

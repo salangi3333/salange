@@ -4,7 +4,6 @@ import { AppData } from "@/lib/sajuContent";
 import { IntakeFormData } from "@/lib/sajuEngine";
 import { BookFairySlots } from "@/lib/pdfBookAssets";
 import { FairyImageSlot } from "./ReportPdfPrototype";
-import { lifeTransitionLastBasisSentence } from "./ReportPdfBook";
 import { DarkBookChapters1to6, DarkHero, Flow, Head, Head2, Paras } from "./ReportPdfBookDarkChapters";
 
 /**
@@ -99,15 +98,14 @@ function DarkEnding({ report, fairy }: { report: ReportResult; fairy: FairyImage
 }
 
 function DarkLetter({ report, bg }: { report: ReportResult; bg: FairyImageSlot }) {
-  const lastLt = lifeTransitionLastBasisSentence(report.chapterLifeTransitionInsight?.sections) || undefined;
   return (
     <section className="page pg-letter">
       <div className="limg">{bg.dataUri && <img src={bg.dataUri} alt="" />}</div>
       <div className="lbody">
         <div className="ltitle">마지막으로, {report.userName}님에게</div>
         <div className="rule" />
-        <p className="lline">여덟 글자는 태어난 순간 정해지지만, 운명을 알면 앞으로의 삶은 바꿔나갈 수 있습니다.</p>
-        {lastLt && <p className="lline">{lastLt}</p>}
+        <p className="lline">여덟 글자는 태어난 순간 정해지지만, 나의 운명을 알면 앞으로의 삶은 바꿔나갈 수 있습니다.</p>
+        <p className="lline">명리학은 운명을 읽고, 삶을 바라보는 하나의 수단입니다.</p>
       </div>
     </section>
   );

@@ -95,6 +95,27 @@ export async function createReport(input: IntakeFormData): Promise<string> {
   return rows[0].id as string;
 }
 
+// lib/reportPdf.tsx(formatGeneratedAt)와 같은 한국 시간 기준 — 서버(UTC)의 연말·연초
+// 9시간 어긋남으로 연도가 잘못 바뀌지 않게 한다.
+const REFERENCE_YEAR_TZ = "Asia/Seoul";
+
+/** reports.created_at(timestamptz)을 한국 시간 기준 연도로 바꾼다. 해석 불가면 null. */
+export function referenceYearFromCreatedAt(createdAt: unknown): number | null {
+  const d = createdAt instanceof Date ? createdAt : new Date(String(createdAt));
+  if (Number.isNaN(d.getTime())) return null;
+  const y = Number(new Intl.DateTimeFormat("en-CA", { timeZone: REFERENCE_YEAR_TZ, year: "numeric" }).format(d));
+  return Number.isInteger(y) ? y : null;
+}
+
+/** 9장 결정론용 — report가 최초 생성된 연도(created_at은 한 번 정해지고 바뀌지 않는다). */
+export async function getReportReferenceYear(reportId: string): Promise<number | null> {
+  if (!isValidReportId(reportId)) return null;
+  const sql = getSql();
+  const rows = await sql`select created_at from reports where id = ${reportId} limit 1`;
+  if (rows.length === 0) return null;
+  return referenceYearFromCreatedAt((rows[0] as Record<string, unknown>).created_at);
+}
+
 /** reportId가 형식조차 아니면 DB에 물어보지도 않고 null(호출부가 404 취급). */
 export async function getReportInput(reportId: string): Promise<IntakeFormData | null> {
   if (!isValidReportId(reportId)) return null;

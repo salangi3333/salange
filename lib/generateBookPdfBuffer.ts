@@ -80,7 +80,8 @@ async function launchBrowser() {
 export async function generateBookPdfBuffer(
   intake: IntakeFormData,
   imageDir: string = defaultBookImageDir(),
-  generatedAt?: string
+  generatedAt?: string,
+  referenceYear?: number
 ): Promise<Buffer> {
   // 1) 이미지 전부(11개) 있는지 먼저 확인 — 하나라도 없으면 여기서 즉시
   //    실패한다(브라우저를 켜기 전에 끝냄, 불필요한 리소스 낭비 방지 겸
@@ -88,7 +89,7 @@ export async function generateBookPdfBuffer(
   const fairies = loadBookFairyImages(imageDir);
 
   // 2) HTML 조립 — 계산/조립/포장 전부 기존 검증된 경로 재사용(복제 없음).
-  const html = await buildBookPdfHtml(intake, fairies, generatedAt);
+  const html = await buildBookPdfHtml(intake, fairies, generatedAt, referenceYear);
 
   // 3) Chromium 실행 → PDF → Buffer.
   const browser = await launchBrowser();

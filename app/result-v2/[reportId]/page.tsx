@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ResultLandingV2 from "@/components/ResultLandingV2";
-import { getReportInput } from "@/lib/reportStore";
+import { getReportInput, getReportReferenceYear } from "@/lib/reportStore";
 import { isReportPaid } from "@/lib/orderStore";
 import { buildAppData } from "@/lib/sajuContent";
 import { buildReportResult } from "@/lib/reportMapper";
@@ -93,8 +93,10 @@ export default async function ResultV2ReportPage({
   }
 
   try {
+    // 9장 결정론 — report 최초 생성 연도. 조회 실패 시에는 현재 연도로 계산(화면은 막지 않음).
+    const referenceYear = await getReportReferenceYear(params.reportId).catch(() => null);
     const appData = buildAppData(input);
-    const report = buildReportResult(appData, input.gender);
+    const report = buildReportResult(appData, input.gender, referenceYear ?? undefined);
     return <ResultLandingV2 report={report} reportId={params.reportId} isPaid={paid} />;
   } catch (e) {
     // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 가능성은 이미

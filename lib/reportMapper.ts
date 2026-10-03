@@ -753,7 +753,7 @@ function buildChapterTenYear(appData: AppData): ChapterTenYearContent {
  * 호출부(app/result-v2/page.tsx, ResultV2Flow.tsx)가 사용자가 입력한
  * intake.gender/pendingFormData.gender를 그대로 전달한다.
  */
-export function buildReportResult(appData: AppData, gender: "male" | "female"): ReportResult {
+export function buildReportResult(appData: AppData, gender: "male" | "female", referenceYear?: number): ReportResult {
   const { user, chars, birthYear } = appData;
   const dayGan = user.pillars.day.hanja;
   const seed = chars.join("");
@@ -979,6 +979,6 @@ export function buildReportResult(appData: AppData, gender: "male" | "female"): 
     chapterOneDeep: buildChapterOneDeepNarrative(appData),
     chapterTwoDeep: buildChapterTwoDeepNarrative(appData),
     chapterThreeDeep: buildChapterThreeDeepNarrative(appData),
-    chapterNineSection: buildChapterNineSection(appData, gender, gwiinSinsalSectionResult),
+    chapterNineSection: buildChapterNineSection(appData, gender, gwiinSinsalSectionResult, referenceYear),
   };
 }

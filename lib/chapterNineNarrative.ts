@@ -93,7 +93,7 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     strength: {
       strong: "남들이 망설이는 순간에도 먼저 치고 나갈 수 있어요",
       neutral: "흐름이 막힌 순간에 먼저 방향을 잡아주는 사람이지만",
-      weak: "그런 마음이 분명히 있는 사람이지만",
+      weak: "그런 마음이 분명히 있어요",
       hold: "누구보다 먼저 방향을 잡고 밀고 나가는 힘이 있지만",
     },
     burden: {
@@ -103,10 +103,10 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
       hold: "남의 말이 거의 들어오지 않을 만큼 자기 확신이 강해지기도 해요.",
     },
     closing: {
-      strong: "당신의 확신은 결국 제대로 힘을 발휘하게 됩니다.",
-      neutral: "결국 당신은 당신다운 방식으로 돌아오게 될 거예요.",
+      strong: "그 확신을 믿고 밀고 나가도 괜찮아요.",
+      neutral: "그래도 결정하기 전에 한 번만 더 돌아보면 충분해요.",
       weak: "곁에서 지지해 줄 사람이 있다면, 그 확신은 더 든든해질 거예요.",
-      hold: "그 확신을 어떻게 쓰느냐가, 다른 무엇보다 중요할 수 있어요.",
+      hold: "남의 말도 한 번은 끝까지 들어보세요.",
     },
     title: {
       strong: "당신의 확신은, 결국 제 힘을 냅니다",
@@ -121,7 +121,7 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     strength: {
       strong: "막혀 있던 걸 먼저 뚫고 나가는 힘이 있어요",
       neutral: "막힌 순간을 먼저 움직여 풀어내는 사람이지만",
-      weak: "그런 마음이 분명히 있는 사람이지만",
+      weak: "그런 마음이 분명히 있어요",
       hold: "표현하고 시도하는 힘이 누구보다 강하지만",
     },
     burden: {
@@ -131,10 +131,10 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
       hold: "그 힘이 억제되지 않고 계속 밖으로 뻗어 나가려는 편이에요.",
     },
     closing: {
-      strong: "그 표현이 결국 당신의 힘이 되어줄 거예요.",
+      strong: "먼저 꺼내 보는 그 시도를 이어가도 좋아요.",
       neutral: "한 박자 쉬었다 꺼내는 습관만 더해도 충분해요.",
-      weak: "함께 다듬어 가는 것도, 당신다운 방식이 될 수 있으니까요.",
-      hold: "그 힘을 어디에 쓸지 정하는 것이 당신에게 중요해요.",
+      weak: "그 방식을 편하게 이어가도 괜찮아요.",
+      hold: "뻗어 나가는 방향만 한 번 정해 두면 훨씬 가벼워져요.",
     },
     title: {
       strong: "그 표현이, 결국 힘이 되어줄 거예요",
@@ -149,7 +149,7 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     strength: {
       strong: "헛수고를 줄이고 실속을 챙기는 데는 강해요",
       neutral: "실속을 챙기는 데는 강하지만",
-      weak: "그런 감각이 분명히 있는 사람이지만",
+      weak: "그런 감각이 분명히 있어요",
       hold: "실속을 따지는 판단이 거의 본능처럼 작동하지만",
     },
     burden: {
@@ -159,10 +159,10 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
       hold: "계산이 서지 않는 일에는 아예 눈길을 주지 않기도 해요.",
     },
     closing: {
-      strong: "가끔은 계산이 다 서지 않아도, 한번 움직여보는 것도 괜찮아요.",
-      neutral: "그 감각을 믿고 조금 더 움직여봐도 좋아요.",
-      weak: "당신의 계산에 누군가의 손을 더하면, 더 멀리 갈 수 있어요.",
-      hold: "완벽한 계산보다, 한 번의 결단이 필요한 순간도 있어요.",
+      strong: "계산이 끝나기 전에 움직여 봐도 괜찮아요.",
+      neutral: "타이밍이 보일 때는 계산이 끝나기 전에 먼저 움직여도 좋아요.",
+      weak: "필요한 순간엔 도움을 청하는 것도 계산의 일부예요.",
+      hold: "눈길이 가지 않는 일도 한 번은 가볍게 살펴보세요.",
     },
     title: {
       strong: "계산이 다 서지 않아도, 움직여도 돼요",
@@ -177,7 +177,7 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     strength: {
       strong: "믿고 맡길 수 있는 사람이라는 인상을 줘요",
       neutral: "안전하게 지키는 데는 강하지만",
-      weak: "그런 마음이 분명히 있는 사람이지만",
+      weak: "그런 마음이 분명히 있어요",
       hold: "기준과 책임에 대한 무게를 누구보다 무겁게 느끼지만",
     },
     burden: {
@@ -187,10 +187,10 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
       hold: "그 무게가 스스로를 끊임없이 몰아붙이는 방식으로 나타나기도 해요.",
     },
     closing: {
-      strong: "가끔은 그 책임을 조금 내려놓아도 괜찮아요.",
-      neutral: "당신에게 필요한 건 더 큰 책임감이 아니라, 조금 내려놓는 용기일지도 몰라요.",
-      weak: "누군가에게 나눠도 되고, 완벽하지 않아도 한번 움직여봐도 됩니다.",
-      hold: "그 무게를 나누는 법을 찾는 것이 당신에게 중요해요.",
+      strong: "스스로에게도 조금 쉴 틈을 허락해 주세요.",
+      neutral: "책임을 모두 혼자 쥐고 있지 않아도 괜찮아요.",
+      weak: "완벽하지 않아도 일단 한번 움직여봐도 괜찮아요.",
+      hold: "한 번에 다 나누려 하지 말고, 작은 것 하나부터 맡겨 보세요.",
     },
     title: {
       strong: "가끔은, 조금 내려놓아도 괜찮아요",
@@ -205,7 +205,7 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     strength: {
       strong: "그 덕분에 실수는 적고 신중하다는 인상을 줘요",
       neutral: "그 덕분에 실수는 적고 신중하다는 인상을 주지만",
-      weak: "그런 신중함이 분명히 있는 사람이지만",
+      weak: "그런 신중함이 분명히 있어요",
       hold: "이해와 확인에 대한 신중함이 누구보다 강하지만",
     },
     burden: {
@@ -216,8 +216,8 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
     },
     closing: {
       strong: "가끔은 직접 해보면서 알게 되는 것도 있으니까요.",
-      neutral: "지금 필요한 건 더 많은 확인이 아니라, 어느 정도 알아봤다면 움직여보는 용기예요.",
-      weak: "완벽하게 이해되지 않아도 괜찮아요.",
+      neutral: "알아본 만큼만으로도 첫걸음은 충분해요.",
+      weak: "모르는 부분은 모르는 채로 시작해도 괜찮아요.",
       hold: "생각은 충분해요. 이제 한 걸음만 필요해요.",
     },
     title: {
@@ -238,8 +238,6 @@ const CENTER_BANK: Record<SipseongCategory, CategoryClauses> = {
 
 interface ObstructionClauses {
   burden: string;
-  allow: string;
-  concreteAllow: string;
   closing: string;
   title: string;
 }
@@ -247,36 +245,26 @@ interface ObstructionClauses {
 const WEALTH_BANK: Record<ObstructionType, ObstructionClauses> = {
   과부하형: {
     burden: "다만 정작 그걸 손에 쥐고 지키는 데는 유난히 손이 많이 가는 편이에요.",
-    allow: "버는 순간보다, 번 걸 지키는 순간에 조금 더 마음을 써 보세요.",
-    concreteAllow: "무작정 더 벌리려 하기보다, 지금 가진 걸 지키는 습관부터 챙겨도 좋아요.",
     closing: "당신에게 필요한 건 더 큰 기회가 아니라, 지키는 습관일지도 몰라요.",
     title: "버는 것보다, 지키는 게 먼저예요",
   },
   분산형: {
     burden: "다만 가진 걸 나누고 함께 쓰는 데 익숙해서, 정작 내 몫을 따로 떼어 지키는 습관은 잘 안 붙어요.",
-    allow: "나누는 마음은 그대로 두되, 그 전에 내 몫부터 먼저 떼어두는 습관을 만들어 보세요.",
-    concreteAllow: "다 나눠도 괜찮지만, 그 전에 한 번은 나를 위해 남겨두는 것도 필요해요.",
     closing: "나누는 마음이 나쁜 게 아니라, 순서만 조금 바꾸면 돼요.",
     title: "나누기 전에, 내 몫부터 챙기세요",
   },
   소모형: {
     burden: "다만 새로운 시도에 아낌이 없는 만큼, 남는 걸 따로 모아 두는 습관은 잘 붙지 않아요.",
-    allow: "쓰는 속도를 조금만 늦추면, 남는 게 훨씬 커질 수 있어요.",
-    concreteAllow: "다 쓰지 말고, 일부는 그대로 남겨두는 연습을 해보세요.",
     closing: "당신에게 필요한 건 아끼는 마음이 아니라, 남겨두는 습관이에요.",
     title: "쌓아두는 연습도, 필요해요",
   },
   제동형: {
     burden: "다만 이해가 끝날 때까지 기다리다가, 결정이 필요한 순간 다른 사람이 먼저 움직이는 걸 보게 되기도 해요.",
-    allow: "지금 필요한 건 더 많은 확인이 아니라, 어느 정도 알아봤다면 움직여보는 용기예요.",
-    concreteAllow: "완벽하게 이해되지 않아도, 충분히 알아봤다면 한번 움직여봐도 괜찮아요.",
-    closing: "생각은 충분해요. 이제 한 걸음만 있으면 됩니다.",
+    closing: "지금 필요한 건 더 많은 확인이 아니라, 어느 정도 알아봤다면 움직여보는 용기예요.",
     title: "생각은 충분해요, 이제 한 걸음만",
   },
   압박형: {
     burden: "다만 새로운 기회가 와도, 위험이 조금이라도 보이면 먼저 발을 빼는 편이라 좋은 기회를 놓치기도 해요.",
-    allow: "그 책임을 혼자 다 짊어지려 하지 않아도 괜찮은 시기예요.",
-    concreteAllow: "누군가에게 나눠도 되고, 완벽하지 않아도 한번 움직여봐도 됩니다.",
     closing: "당신에게 필요한 건 더 큰 책임감이 아니라, 조금 내려놓는 용기일지도 몰라요.",
     title: "다 짊어지지 않아도, 괜찮아요",
   },
@@ -429,7 +417,7 @@ function secondaryTraitLine(ctx: Ctx): string | null {
   if (!second || !tier) return null;
   const secondBank = CENTER_BANK[second.category];
   if (tier === "A") {
-    return `${secondBank.acknowledge} 면도 없지 않지만, 지금 말한 성향이 워낙 압도적이라 웬만해서는 잘 흔들리지 않는 편이에요.`;
+    return `${secondBank.acknowledge} 면도 없지 않지만, 지금 말한 성향이 워낙 압도적이라 그 면은 좀처럼 앞에 나서지 않는 편이에요.`;
   }
   if (tier === "B") {
     return `그러면서 ${secondBank.acknowledge} 면도 함께 있어서, 상황에 따라 두 가지 모습이 같이 드러나요.`;
@@ -440,8 +428,11 @@ function secondaryTraitLine(ctx: Ctx): string | null {
 // 마무리 문장 보강 — 같은 축·같은 카테고리·같은 버킷이어도(예: F/O 둘 다
 // relation×인성×strong) 마무리 문장이 완전히 같은 문자열이 되는 경우가
 // 있었다. strength.tier(격차 크기)로 마무리 끝에 한 소절을 덧붙여, 그
-// 사람의 실제 계산값 차이가 마지막 문장까지 반영되게 한다.
-function tierClosingSuffix(tier: "A" | "B" | "C" | null): string {
+// 사람의 실제 계산값 차이가 마지막 문장까지 반영되게 한다. 다만 본문에 이미
+// 같은 tier를 말하는 보조 성향 문장(secondaryTraitLine)이 있으면 같은 말의
+// 반복이라 붙이지 않는다.
+function tierClosingSuffix(tier: "A" | "B" | "C" | null, hasTrait: boolean): string {
+  if (hasTrait) return "";
   if (tier === "A") return " 그런 확고함은 쉽게 흔들리지 않을 거예요.";
   if (tier === "C") return " 여러 면이 함께 있는 것, 그 자체가 당신다운 거예요.";
   return " 다만 상황에 따라 다른 면이 함께 드러날 수 있어요.";
@@ -454,8 +445,16 @@ function assembleCenter(ctx: Ctx, second: Axis | null): { title: string; sentenc
     `당신은 ${bank.acknowledge} 사람이에요.`,
     `${bank.manifest} 편이죠.`,
     `그래서 ${bank.strength[bucket]}.`,
-    bank.burden[bucket],
   ];
+  // 재물 2차축의 부담 문장이 중심 기질의 부담 문장과 같은 뜻인 짝(관성↔압박형: "위험이 보이면
+  // 발을 빼 기회를 놓침", 인성↔제동형: "이해가 끝날 때까지 기다리다 기회를 놓침")이면, 더
+  // 구체적인 재물 쪽 한 번만 쓴다. 다른 짝은 서로 다른 말이라 둘 다 쓴다.
+  const wealthFirst = second === "wealth" ? ctx.obstruction.structuralObstructions[0] : undefined;
+  const burdenRepeated = Boolean(
+    wealthFirst &&
+      ((ctx.centerCat === "관성" && wealthFirst.type === "압박형") || (ctx.centerCat === "인성" && wealthFirst.type === "제동형"))
+  );
+  if (!burdenRepeated) sentences.push(bank.burden[bucket]);
   const trait = secondaryTraitLine(ctx);
   if (trait) sentences.push(trait);
 
@@ -474,17 +473,17 @@ function assembleCenter(ctx: Ctx, second: Axis | null): { title: string; sentenc
       yearsLeft !== null && yearsLeft <= 3
         ? `이 시기는 생각보다 금방 지나갑니다. 다시 ${bank.acknowledge} 쪽이 편해지는 때가 머지않아요.`
         : `이 시기가 지나면, 다시 ${bank.acknowledge} 쪽이 편해지는 때가 옵니다. 그때까지는 ${nowCat.acknowledge} 감각도 함께 지니고 가게 될 거예요.`;
-    sentences.push(urgencyLine + tierClosingSuffix(ctx.strength.tier));
+    sentences.push(urgencyLine + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
   } else if (second === "wealth" && ctx.obstruction.structuralObstructions[0]) {
     const w = WEALTH_BANK[ctx.obstruction.structuralObstructions[0].type];
     sentences.push(w.burden);
-    sentences.push(w.closing + tierClosingSuffix(ctx.strength.tier));
+    sentences.push(w.closing + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
   } else if (second === "relation") {
     const rel = RELATION_BANK[ctx.centerCat];
     sentences.push(rel.mid);
-    sentences.push(rel.closing + tierClosingSuffix(ctx.strength.tier));
+    sentences.push(rel.closing + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
   } else {
-    sentences.push(bank.closing[bucket] + tierClosingSuffix(ctx.strength.tier));
+    sentences.push(bank.closing[bucket] + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
   }
 
   return { title: bank.title[bucket], sentences };
@@ -504,8 +503,8 @@ function assembleWealth(ctx: Ctx): { title: string; sentences: string[] } {
   ];
   const trait = secondaryTraitLine(ctx);
   if (trait) sentences.push(trait);
-  sentences.push(wealthBank.burden, wealthBank.allow, wealthBank.concreteAllow);
-  sentences.push(wealthBank.closing + tierClosingSuffix(ctx.strength.tier));
+  sentences.push(wealthBank.burden);
+  sentences.push(wealthBank.closing + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
 
   return { title: wealthBank.title, sentences };
 }
@@ -523,7 +522,7 @@ const RELATION_BANK: Record<SipseongCategory, { mid: string; title: string; clos
   식상: {
     mid: "곁에 있는 사람 앞에서는 표현도 훨씬 편하게 흘러나오는 편이고요.",
     title: "가까운 사람 앞에서, 가장 당신다워져요",
-    closing: "그 사람과 나누는 대화가, 결국 당신에게 힘이 될 거예요.",
+    closing: "그 사람과 나누는 대화가 당신에게 힘이 될 거예요.",
   },
   재성: {
     mid: "곁에 있는 사람과는 계산 없이도 마음이 놓이는 편이고요.",
@@ -533,7 +532,7 @@ const RELATION_BANK: Record<SipseongCategory, { mid: string; title: string; clos
   관성: {
     mid: "곁에 있는 사람에게는 혼자 짊어지던 것도 조금 내려놓게 되는 편이고요.",
     title: "곁에 있는 사람과, 함께 나눠도 괜찮아요",
-    closing: "그 사람과 나누면, 짊어진 것도 한결 가벼워질 거예요.",
+    closing: "그 사람과 함께라면 부담이 조금은 덜어질 수 있어요.",
   },
   인성: {
     mid: "곁에 있는 사람 앞에서는 설명하지 않아도 이해받는 편안함을 느끼는 편이고요.",
@@ -552,7 +551,7 @@ function assembleRelation(ctx: Ctx): { title: string; sentences: string[] } {
 
   const sentences = [
     `당신은 평소엔 ${bank.acknowledge} 모습을 보이지만,`,
-    `정말 당신다운 모습은 가까운 사람 앞에서 가장 선명하게 드러나요.`,
+    `진짜 모습은 가까운 사람 앞에서 가장 선명하게 드러나요.`,
     exposureLine,
     rel.mid,
   ];
@@ -561,7 +560,7 @@ function assembleRelation(ctx: Ctx): { title: string; sentences: string[] } {
   if (ctx.spouse.yongsinRelation.isWinner) {
     sentences.push(`좋은 사람을 곁에 두면, 그 사람이 당신에게 꼭 필요한 힘을 채워주기도 해요.`);
   }
-  sentences.push(rel.closing + tierClosingSuffix(ctx.strength.tier));
+  sentences.push(rel.closing + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
 
   return { title: rel.title, sentences };
 }
@@ -598,8 +597,7 @@ function assembleTime(ctx: Ctx): { title: string; sentences: string[] } {
       ? `이 시기는 생각보다 금방 지나가고, 다시 원래 편한 방식으로 돌아오는 때가 머지않아요.`
       : `이 시기가 지나면, 다시 원래 편한 방식으로 돌아오는 때가 옵니다.`
   );
-  sentences.push(`그러니 지금은 억지로 다 맞추려 하지 말고, 낯선 방식도 한번 받아들여보세요.`);
-  sentences.push(`결국 당신은 당신다운 방식으로 돌아오게 될 거예요.` + tierClosingSuffix(ctx.strength.tier));
+  sentences.push(`그러니 지금은 억지로 다 맞추려 하지 말고, 낯선 방식도 한번 받아들여보세요.` + tierClosingSuffix(ctx.strength.tier, Boolean(trait)));
 
   const title = ctx.strength.tier ? TIME_TITLE_BY_TIER[ctx.strength.tier] : TIME_TITLE_BY_TIER.B;
   return { title, sentences };
@@ -612,9 +610,10 @@ function assembleTime(ctx: Ctx): { title: string; sentences: string[] } {
 export function buildChapterNineSection(
   appData: AppData,
   gender: "male" | "female",
-  _gwiin: GwiinSinsalSection | undefined
+  _gwiin: GwiinSinsalSection | undefined,
+  referenceYear?: number
 ): ChapterNineSection {
-  const ctx = buildCtx(appData, gender);
+  const ctx = buildCtx(appData, gender, referenceYear);
 
   const { lead, second } = pickAxes(ctx);
   const assembled =
@@ -636,23 +635,41 @@ export function buildChapterNineSection(
   };
 }
 
+// referenceYear(report 최초 생성 연도)가 있을 때만, 9장이 읽는 대운 state를 그 연도 기준으로
+// 다시 매긴 복제본을 돌려준다. sajuContent.buildFortuneTimeline과 같은 규칙(나이 = 연도 −
+// 출생연도 + 1, past/current/future)을 age 문자열("49-58")에 그대로 적용한 것이며, 공용
+// appData(1~8장이 공유)는 건드리지 않는다.
+function withStatesAt(appData: AppData, referenceYear: number): AppData {
+  const currentAge = referenceYear - appData.birthYear + 1;
+  const nodes = appData.fortuneTimelineNodes.map((n) => {
+    const [startAge, endAge] = n.age.split("-").map(Number);
+    let state: typeof n.state = "future";
+    if (endAge < currentAge) state = "past";
+    else if (startAge <= currentAge && currentAge <= endAge) state = "current";
+    return { ...n, state };
+  });
+  return { ...appData, fortuneTimelineNodes: nodes };
+}
+
 // 계산 컨텍스트 구성 — buildChapterNineSection과 디버그/검증용 exportedhelper가
 // 함께 쓴다(1~8장 계산 함수는 전혀 건드리지 않고 그대로 호출만 한다).
-function buildCtx(appData: AppData, gender: "male" | "female"): Ctx {
+function buildCtx(appData: AppData, gender: "male" | "female", referenceYear?: number): Ctx {
   const user: SajuUser = appData.user;
   const name = user.name;
   const dayGan = user.pillars.day.hanja;
+  const year = referenceYear ?? new Date().getFullYear();
+  const timeApp = referenceYear === undefined ? appData : withStatesAt(appData, referenceYear);
 
   const balance = analyzeDayMasterBalance(user);
   const strength = analyzeCategoryStrength(user);
   const yongsin = analyzeYongsinCandidate(user);
   const huisin = analyzeHuisinCandidate(user);
-  const flow = buildLifeFlowKey(appData);
+  const flow = buildLifeFlowKey(timeApp);
   const obstruction = analyzeWealthObstruction(appData);
-  const timing = analyzeWealthTiming(appData);
+  const timing = analyzeWealthTiming(timeApp);
   const spouse = analyzeSpouseStar(user, gender);
 
-  const rawPeriods = analyzeDaYunWealth(dayGan, appData.fortuneTimelineNodes);
+  const rawPeriods = analyzeDaYunWealth(dayGan, timeApp.fortuneTimelineNodes);
   const { current, next } = pickPastCurrentNext(rawPeriods);
   const targetPeriod = current ?? next;
   const natalBranches: NatalBranchInput[] = [
@@ -668,12 +685,12 @@ function buildCtx(appData: AppData, gender: "male" | "female"): Ctx {
     ...(user.pillars.hour ? [{ stage: "hour" as const, gan: user.pillars.hour.hanja }] : []),
   ];
   const seunKeysForPalace = targetPeriod
-    ? buildSeunRange(dayGan, new Date().getFullYear(), new Date().getFullYear() + 4, natalBranches, { ganZhi: targetPeriod.ganZhi, ganSipseong: targetPeriod.ganSipseong }, natalStems)
+    ? buildSeunRange(dayGan, year, year + 4, natalBranches, { ganZhi: targetPeriod.ganZhi, ganSipseong: targetPeriod.ganSipseong }, natalStems)
     : [];
   const palace = findSpousePalaceRelations(user.pillars.branches.day.hanja, rawPeriods, seunKeysForPalace);
 
   const centerCat: SipseongCategory = strength.top?.category ?? flow.natalAxis ?? "관성";
-  const currentAge = new Date().getFullYear() - appData.birthYear + 1;
+  const currentAge = year - appData.birthYear + 1;
 
   return {
     name, balance, strength, centerCat, yongsin, huisin, obstruction, timing,
@@ -684,8 +701,8 @@ function buildCtx(appData: AppData, gender: "male" | "female"): Ctx {
 // 검증/디버그 전용 — 운영 코드(buildChapterNineSection)는 쓰지 않는다.
 // 22명 회귀검증 스크립트가 lead/second axis, centerCat, bucket을 직접
 // 확인할 수 있도록 내부 선택 결과를 노출한다.
-export function debugChapterNineAxes(appData: AppData, gender: "male" | "female") {
-  const ctx = buildCtx(appData, gender);
+export function debugChapterNineAxes(appData: AppData, gender: "male" | "female", referenceYear?: number) {
+  const ctx = buildCtx(appData, gender, referenceYear);
   const { lead, second, scores } = pickAxes(ctx);
   return {
     lead,

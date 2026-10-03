@@ -26,7 +26,7 @@ import { BookFairySlots } from "./pdfBookAssets";
  * 절대 lib/reportPdf.tsx의 renderReportPdfHtml/generateReportPdfBuffer(구
  * ReportPdfDocument 45p 경로)는 참조하지 않는다.
  */
-export async function buildBookPdfHtml(intake: IntakeFormData, fairies: BookFairySlots, generatedAt?: string): Promise<string> {
+export async function buildBookPdfHtml(intake: IntakeFormData, fairies: BookFairySlots, generatedAt?: string, referenceYear?: number): Promise<string> {
   // [2026-09-11 수정] 정적 `import ... from "react-dom/server"`를 쓰면
   // Next.js App Router 빌드가 "You're importing a component that imports
   // react-dom/server" 에러로 이 파일을 참조하는 모든 route/page의 빌드
@@ -37,7 +37,7 @@ export async function buildBookPdfHtml(intake: IntakeFormData, fairies: BookFair
   const { renderToStaticMarkup } = await import("react-dom/server");
 
   const appData = buildAppData(intake);
-  const report = buildReportResult(appData, intake.gender);
+  const report = buildReportResult(appData, intake.gender, referenceYear);
 
   const bodyHtml = renderToStaticMarkup(
     React.createElement(ReportPdfBookDarkDocument, {
