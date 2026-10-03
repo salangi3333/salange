@@ -72,7 +72,7 @@ export type CreateOrderResult =
  * 호출부(app/api/orders/route.ts)에서 report_id가 실제 reports에 존재하는지
  * 이미 확인한 뒤 이 함수를 부른다 — 여기서는 다시 확인하지 않는다.
  */
-export async function createOrGetPendingOrder(reportId: string): Promise<CreateOrderResult> {
+export async function createOrGetPendingOrder(reportId: string, buyerPhone: string): Promise<CreateOrderResult> {
   const sql = getSql();
 
   const existing = await sql`
@@ -89,6 +89,12 @@ export async function createOrGetPendingOrder(reportId: string): Promise<CreateO
       return { alreadyPaid: true };
     }
     if (row.status === "PENDING") {
+      // 같은 PENDING 주문을 재사용하면서 번호가 바뀐 경우 최신 번호로 갱신한다(PAID로
+      // 넘어간 주문은 where status='PENDING' 때문에 건드리지 않는다).
+      await sql`
+        update orders set buyer_phone = ${buyerPhone}, updated_at = now()
+        where order_id = ${row.order_id as string} and status = 'PENDING'
+      `;
       return {
         alreadyPaid: false,
         orderId: row.order_id as string,
@@ -101,8 +107,8 @@ export async function createOrGetPendingOrder(reportId: string): Promise<CreateO
 
   const orderId = randomUUID();
   await sql`
-    insert into orders (report_id, order_id, amount, order_name, status)
-    values (${reportId}, ${orderId}, ${FULL_REPORT_PRICE}, ${FULL_REPORT_ORDER_NAME}, 'PENDING')
+    insert into orders (report_id, order_id, amount, order_name, status, buyer_phone)
+    values (${reportId}, ${orderId}, ${FULL_REPORT_PRICE}, ${FULL_REPORT_ORDER_NAME}, 'PENDING', ${buyerPhone})
   `;
 
   return { alreadyPaid: false, orderId, amount: FULL_REPORT_PRICE, orderName: FULL_REPORT_ORDER_NAME };

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { formatKoreanMobileInput, validateKoreanMobile } from "@/lib/phone";
 import { loadTossPayments, ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 import type {
   TossPaymentsWidgets,
@@ -48,6 +49,9 @@ export default function TossInlineCheckout({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [initError, setInitError] = useState("");
+  const [phone, setPhone] = useState("");
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneCheck = validateKoreanMobile(phone);
 
   const widgetsRef = useRef<TossPaymentsWidgets | null>(null);
   const lockRef = useRef(false);
@@ -123,6 +127,10 @@ export default function TossInlineCheckout({
     if (lockRef.current || submitting || !agreed || !reportId) return;
     const widgets = widgetsRef.current;
     if (!widgets) return;
+    if (!phoneCheck.ok) {
+      setPhoneTouched(true);
+      return;
+    }
 
     lockRef.current = true;
     setSubmitting(true);
@@ -132,7 +140,7 @@ export default function TossInlineCheckout({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reportId }),
+        body: JSON.stringify({ reportId, phone: phoneCheck.phone }),
       });
       const data = await res.json().catch(() => null);
 
@@ -170,6 +178,28 @@ export default function TossInlineCheckout({
 
   return (
     <div className="w-full">
+      {/* 0. 결과를 받을 휴대번호(알림톡 발송용). 저장은 서버가 orders.buyer_phone에만 한다. */}
+      <div className="mb-4 text-left">
+        <label htmlFor="buyer-phone" className="block text-[14px] font-bold text-sceneText">
+          결과를 받을 휴대번호
+        </label>
+        <input
+          id="buyer-phone"
+          type="tel"
+          inputMode="numeric"
+          autoComplete="tel"
+          placeholder="010-0000-0000"
+          value={phone}
+          maxLength={17}
+          onChange={(e) => setPhone(formatKoreanMobileInput(e.target.value))}
+          onBlur={() => setPhoneTouched(true)}
+          className="mt-2 w-full rounded-card border border-sceneGold/40 bg-sceneBg px-4 py-3 text-[16px] text-sceneText placeholder:text-sceneTextSub/60 focus:border-sceneGold focus:outline-none"
+        />
+        {phoneTouched && !phoneCheck.ok && (
+          <p className="mt-1.5 text-xs text-sceneRed">{phoneCheck.message}</p>
+        )}
+      </div>
+
       {/* 1. Toss 공식 결제수단 선택 UI — 실제 가맹점에서 쓸 수 있는 수단만
           토스가 그려준다. 카카오페이/네이버페이 등을 직접 버튼으로 흉내내지
           않는다. */}
@@ -213,7 +243,7 @@ export default function TossInlineCheckout({
       <button
         type="button"
         onClick={handlePay}
-        disabled={!ready || !agreed || submitting}
+        disabled={!ready || !agreed || submitting || !phoneCheck.ok}
         className={className}
       >
         {submitting ? "결제 진행 중..." : `${amount.toLocaleString()}원 결제하기`}

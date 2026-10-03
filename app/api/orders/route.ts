@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getReportInput, isValidReportId } from "@/lib/reportStore";
 import { createOrGetPendingOrder } from "@/lib/orderStore";
+import { validateKoreanMobile } from "@/lib/phone";
 
 /**
  * TossPayments 테스트 결제 1차 구현 — 주문 생성 전용 서버 엔드포인트.
@@ -25,6 +26,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "유효하지 않은 리포트입니다." }, { status: 400 });
   }
 
+  // 번호는 서버에서 다시 정규화·검증한다(주문 생성 전 차단). 번호는 로그에 남기지 않는다.
+  const phoneCheck = validateKoreanMobile((body as Record<string, unknown>).phone);
+  if (!phoneCheck.ok) {
+    return NextResponse.json({ error: phoneCheck.message }, { status: 400 });
+  }
+
   let reportExists: boolean;
   try {
     reportExists = (await getReportInput(reportId)) !== null;
@@ -37,7 +44,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await createOrGetPendingOrder(reportId);
+    const result = await createOrGetPendingOrder(reportId, phoneCheck.phone);
     if (result.alreadyPaid) {
       return NextResponse.json({ alreadyPaid: true });
     }

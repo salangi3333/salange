@@ -69,6 +69,13 @@ create index if not exists orders_report_id_idx on orders (report_id);
 alter table orders add column if not exists channel text not null default 'site'
   check (channel in ('site', 'karrot'));
 
+-- orders.buyer_phone: 웹 결제 고객이 결제 직전에 입력한 휴대전화번호(알림톡 발송용).
+-- 숫자만 저장(예: 01012345678). 원본 저장 위치는 이 컬럼 한 곳뿐이다 — reports와
+-- report_deliveries에는 두지 않는다. null 허용이라 기존 주문(웹/관리자/당근)은 그대로
+-- 유지된다(코드 배포보다 먼저 적용해야 한다).
+alter table orders add column if not exists buyer_phone text
+  check (buyer_phone is null or buyer_phone ~ '^010[0-9]{7,8}$');
+
 -- report_deliveries: PDF를 어느 이메일로 보냈는지의 기록(감사/재발송용).
 -- reports 테이블 자체에는 이메일 컬럼을 추가하지 않았다 — reports는
 -- "계산 입력값"만 담는 테이블이라는 기존 원칙을 유지하고, 이메일처럼
