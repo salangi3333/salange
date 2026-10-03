@@ -6,6 +6,7 @@ import {
   FULL_REPORT_PRICE,
 } from "@/lib/orderStore";
 import { confirmTossPayment } from "@/lib/tossPayments";
+import { notifyKakaoAfterPaid } from "@/lib/kakaoNotify";
 
 /**
  * TossPayments successUrl. 여기 도착했다고 결제가 끝난 게 아니다 — 인증만
@@ -133,6 +134,10 @@ export default async function PaymentSuccessPage({
       <p className="text-sm text-sceneTextSub">고객센터로 문의해주세요.</p>
     </Message>;
   }
+
+  // 알림톡은 결제 후 "부가 전달 수단"이다 — PAID를 따낸 이 요청에서만 시도하고,
+  // 미설정·실패·지연이 있어도 아래 리포트 이동을 막지 않는다(notifyKakaoAfterPaid는 throw하지 않는다).
+  await notifyKakaoAfterPaid(updated.orderId);
 
   redirect(`/result-v2/${updated.reportId}`);
 }

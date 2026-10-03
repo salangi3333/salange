@@ -76,6 +76,19 @@ alter table orders add column if not exists channel text not null default 'site'
 alter table orders add column if not exists buyer_phone text
   check (buyer_phone is null or buyer_phone ~ '^010[0-9]{7,8}$');
 
+-- 결제 후 카카오 알림톡(SOLAPI) 발송 추적 — 전부 null 허용이라 기존 주문(웹/관리자/당근)은
+-- 그대로 유지된다(코드 배포보다 먼저 적용하면 가장 안전하다. SOLAPI 설정이 없는 동안은
+-- 코드가 이 컬럼들을 읽거나 쓰지 않는다).
+--   kakao_status: null(미시도) / sending(선점·요청 중 또는 결과 대기) / sent(SOLAPI 4000 확인) /
+--                 failed(명확한 실패). 자동 재발송은 없다 — failed만 관리자가 수동 재발송한다.
+--   kakao_group_id: SOLAPI 그룹 ID(발송 전에 저장 → 응답이 유실돼도 상태 조회 가능).
+--   kakao_error: 짧은 코드만(번호·이름 금지).
+alter table orders add column if not exists kakao_status text
+  check (kakao_status is null or kakao_status in ('sending', 'sent', 'failed'));
+alter table orders add column if not exists kakao_group_id text;
+alter table orders add column if not exists kakao_updated_at timestamptz;
+alter table orders add column if not exists kakao_error text;
+
 -- report_deliveries: PDF를 어느 이메일로 보냈는지의 기록(감사/재발송용).
 -- reports 테이블 자체에는 이메일 컬럼을 추가하지 않았다 — reports는
 -- "계산 입력값"만 담는 테이블이라는 기존 원칙을 유지하고, 이메일처럼
