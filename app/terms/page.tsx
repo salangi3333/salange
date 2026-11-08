@@ -43,6 +43,10 @@ export default function TermsPage() {
       <p className="text-sm text-textSub">시행일: 서비스 정식 오픈일에 시행됩니다.</p>
       <h1 className="mt-2 font-serif-kr text-2xl font-bold text-textMain">이용약관</h1>
 
+      <p className="mt-4 rounded-box border border-bg bg-white p-3 text-sm leading-relaxed text-textSub" data-testid="terms-scope-note">
+        본 약관은 종합 리포트 서비스에 적용됩니다. 별도 이용약관이 제공되는 상품은 해당 상품의 약관을 우선 적용합니다.
+      </p>
+
       <Article no="제1조" title="목적">
         <p>
           이 약관은 코다온(이하 "회사")이 제공하는 팔자문
@@ -106,11 +110,13 @@ export default function TermsPage() {
       </Article>
 
       <Article no="제8조" title="유료 서비스 및 결제">
-        <p>현재 확정된 유료 리포트 판매가격은 29,800원입니다.</p>
+        <p>
+          종합 리포트의 유료 서비스는 준비 중입니다. 판매가격과 결제 조건은
+          정식 출시 시 안내하며, 안내 전까지는 실제 결제가 제공되지 않습니다.
+        </p>
         <p>
           결제는 결제대행사 TossPayments를 통해 제공되는 신용·체크카드 및
-          회사가 제공하는 전자결제수단으로 진행됩니다. 정식 오픈 전까지는
-          실제 결제가 제공되지 않습니다.
+          회사가 제공하는 전자결제수단으로 진행될 예정입니다.
         </p>
       </Article>
 

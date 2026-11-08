@@ -97,7 +97,7 @@ export default async function ResultV2ReportPage({
     const referenceYear = await getReportReferenceYear(params.reportId).catch(() => null);
     const appData = buildAppData(input);
     const report = buildReportResult(appData, input.gender, referenceYear ?? undefined);
-    return <ResultLandingV2 report={report} reportId={params.reportId} isPaid={paid} />;
+    return <ResultLandingV2 report={report} reportId={params.reportId} isPaid={paid} salesOpen={process.env.FULL_REPORT_SALES === "on"} />;
   } catch (e) {
     // calculateSaju의 방어 검증(validateBirthDate)에 걸릴 가능성은 이미
     // POST /api/reports에서 저장 전에 한 번 걸러졌지만, 혹시 모를 경우에도

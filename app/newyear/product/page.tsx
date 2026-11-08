@@ -120,7 +120,7 @@ export default function NewYearProductPage() {
 
         <p className="text-center text-xs text-textSub"><Link className="underline" href="/newyear/terms">이용약관·환불 안내</Link> · <Link className="underline" href="/newyear/privacy">개인정보 수집·이용 안내</Link></p>
       </div>
-      <div className="mx-auto w-full max-w-content px-6"><Footer /></div>
+      <div className="mx-auto w-full max-w-content px-6"><Footer scope="newyear" /></div>
     </main>
   );
 }

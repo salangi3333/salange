@@ -30,8 +30,17 @@ import Link from "next/link";
  * 화면에 맞는 토큰을 고르게 했다. 새 색상을 추가하지 않고 기존 두
  * 팔레트(textSub/sceneTextSub 등)만 그대로 재사용한다.
  */
-export default function Footer({ variant = "light" }: { variant?: "light" | "dark" }) {
+export default function Footer({
+  variant = "light",
+  scope = "default",
+}: {
+  variant?: "light" | "dark";
+  scope?: "default" | "newyear";
+}) {
   const isDark = variant === "dark";
+  // 2027 신년운세 화면에서는 기존 종합 리포트용 약관·환불정책(/terms, /refund) 대신
+  // 신년운세 전용 약관·환불 안내로 연결한다. 기본값(default)은 기존 동작 그대로다.
+  const isNewYear = scope === "newyear";
   return (
     <footer
       className={`mx-auto mt-16 w-full max-w-content border-t px-6 py-8 text-center text-xs sm:text-left ${
@@ -39,14 +48,14 @@ export default function Footer({ variant = "light" }: { variant?: "light" | "dar
       }`}
     >
       <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:justify-start">
-        <Link href="/terms" className="underline-offset-2 hover:underline">
-          이용약관
+        <Link href={isNewYear ? "/newyear/terms" : "/terms"} className="underline-offset-2 hover:underline">
+          {isNewYear ? "신년운세 이용약관" : "이용약관"}
         </Link>
         <Link href="/privacy" className="underline-offset-2 hover:underline">
           개인정보처리방침
         </Link>
-        <Link href="/refund" className="underline-offset-2 hover:underline">
-          환불정책
+        <Link href={isNewYear ? "/newyear/terms#terms-5" : "/refund"} className="underline-offset-2 hover:underline">
+          {isNewYear ? "신년운세 환불 안내" : "환불정책"}
         </Link>
       </nav>
 

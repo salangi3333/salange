@@ -32,7 +32,7 @@ export default function NewYearPrivacyPage() {
       <section className="mt-10 text-sm text-textSub" aria-label="관련 문서">
         <p>관련 문서: <Link className="underline" href="/newyear/terms">신년운세 이용약관·환불 안내</Link> · <Link className="underline" href="/privacy">개인정보처리방침</Link></p>
       </section>
-      <Footer />
+      <Footer scope="newyear" />
     </main>
   );
 }

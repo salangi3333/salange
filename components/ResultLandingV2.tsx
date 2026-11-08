@@ -1118,6 +1118,7 @@ export default function ResultLandingV2({
   report,
   reportId,
   isPaid = false,
+  salesOpen = false,
 }: {
   report?: ReportResult;
   /** DB reportId — 결제 CTA가 /api/orders에 주문을 붙일 대상을 알기 위해
@@ -1125,6 +1126,9 @@ export default function ResultLandingV2({
    * (app/result-v2/page.tsx) 등 DB reportId가 없는 경로에서는 undefined로
    * 두면 TossInlineCheckout이 결제를 시도하지 않고 안내만 보여준다. */
   reportId?: string;
+  /** 종합 리포트 신규 유료 결제 개방 여부(서버 진입점이 FULL_REPORT_SALES 환경변수로 판정). 기본 false=닫힘이라
+   * 이 값을 넘기지 않는 진입 경로(개발용 쿼리 진입 등)에서도 결제 영역은 안내 문구만 보인다. */
+  salesOpen?: boolean;
   /** 서버(app/result-v2/[reportId]/page.tsx)가 orders 테이블을 조회해 이미
    * PAID 상태인지 판정한 결과. client가 query string/localStorage 등으로
    * 이 값을 조작할 수 있는 경로는 없다 — 항상 서버가 내려준 값 그대로
@@ -1866,11 +1870,17 @@ export default function ResultLandingV2({
               같아야 한다 — 실제 주문 생성 금액은 이 prop이 아니라 서버
               (createOrGetPendingOrder)가 항상 결정하며, 이 값은 화면
               표시(및 Toss 위젯 setAmount)에만 쓰인다. */}
-          <TossInlineCheckout
-            reportId={reportId}
-            amount={29800}
-            className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10 disabled:opacity-60"
-          />
+          {salesOpen ? (
+            <TossInlineCheckout
+              reportId={reportId}
+              amount={29800}
+              className="mt-2 w-full rounded-pill bg-sceneGold px-6 py-4 text-[16px] font-bold text-sceneBg sm:w-auto sm:px-10 disabled:opacity-60"
+            />
+          ) : (
+            <p className="text-[14px] leading-relaxed text-sceneTextSub" data-testid="full-report-sales-closed">
+              유료 리포트는 준비 중입니다. 판매가격과 결제 조건은 정식 출시 시 안내해 드립니다.
+            </p>
+          )}
         </div>
       </section>
       )}

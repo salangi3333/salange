@@ -7,6 +7,7 @@ import IntakeForm from "./IntakeForm";
 import AnalyzingScreenV2 from "./AnalyzingScreenV2";
 import ConfirmInfoScreen from "./ConfirmInfoScreen";
 import ResultLandingV2 from "./ResultLandingV2";
+import Footer from "./Footer";
 import { IntakeFormData } from "@/lib/sajuEngine";
 import { buildAppData } from "@/lib/sajuContent";
 import { buildReportResult, ReportResult } from "@/lib/reportMapper";
@@ -124,7 +125,16 @@ export default function ResultV2Flow() {
   };
 
   if (stage === "intro") {
-    return <OnboardingIntroV2 onEnter={() => setStage("form")} />;
+    // 첫 화면은 전면 화면이라 디자인은 그대로 두고, 스크롤을 내리면 보이는 위치에
+    // 사업자정보·약관 링크(Footer)만 덧붙인다(전자상거래법 사업자정보 표시).
+    return (
+      <>
+        <OnboardingIntroV2 onEnter={() => setStage("form")} />
+        <div className="flow-root bg-dark">
+          <Footer variant="dark" />
+        </div>
+      </>
+    );
   }
 
   if (stage === "analyzing") {

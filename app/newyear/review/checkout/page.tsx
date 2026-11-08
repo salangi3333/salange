@@ -44,7 +44,7 @@ export default function NewYearReviewCheckoutPage() {
           <NewYearReviewCheckout clientKey={cfg.clientKey} orderName={cfg.orderName} amount={cfg.amount} className="mt-4 block w-full rounded-pill bg-gradient-to-r from-accentGoldFrom to-accentGoldTo py-3 text-sm font-bold text-dark disabled:cursor-not-allowed disabled:opacity-50" />
         </Card>
       </div>
-      <div className="mx-auto w-full max-w-content px-6"><Footer /></div>
+      <div className="mx-auto w-full max-w-content px-6"><Footer scope="newyear" /></div>
     </main>
   );
 }

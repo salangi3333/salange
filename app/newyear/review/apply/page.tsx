@@ -34,7 +34,7 @@ export default function NewYearReviewApplyPage() {
         토스페이먼츠 심사용 테스트 경로입니다. 결제창까지 확인하며, 실제 청구·주문 접수·PDF 제작·이메일 발송은 일어나지 않습니다. 개인정보를 입력하지 마세요(예시 값만 표시됩니다).
       </p>
       <div className="mt-8"><NewYearReviewApply priceText={priceText} productLines={lines} sections={NEWYEAR_TERMS_DRAFT.sections.map((s) => ({ title: s.title, body: [...s.body] }))} /></div>
-      <Footer />
+      <Footer scope="newyear" />
     </main>
   );
 }

@@ -14,6 +14,15 @@ import { validateKoreanMobile } from "@/lib/phone";
  * 그 상태를 그대로 반환/재사용, 아니면) 새 PENDING 주문 생성.
  */
 export async function POST(req: NextRequest) {
+  // 종합 리포트 신규 유료 결제 차단(기본 닫힘) — 입력 검증·DB 조회보다 먼저 막아 어떤 요청도 주문을 만들지 못한다.
+  // 정확히 "on"일 때만 열린다(환경변수 FULL_REPORT_SALES, 미설정·그 밖의 값은 모두 닫힘).
+  if (process.env.FULL_REPORT_SALES !== "on") {
+    return NextResponse.json(
+      { error: "유료 리포트는 준비 중입니다. 판매가격과 결제 조건은 정식 출시 시 안내해 드립니다." },
+      { status: 403 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

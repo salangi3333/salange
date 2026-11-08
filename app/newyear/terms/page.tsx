@@ -28,7 +28,7 @@ export default function NewYearTermsPage() {
         <h2 className="text-sm font-bold text-textMain">신청 전에 꼭 확인하세요</h2>
         <dl className="mt-3 grid grid-cols-[6rem_1fr] gap-x-3 gap-y-2 text-sm text-textMain">
           <dt className="text-textSub">상품</dt><dd>{p.name} — {p.offerName ?? "개인 맞춤 신년운세 5장(PDF)"}</dd>
-          <dt className="text-textSub">가격</dt><dd data-testid="terms-price">{priceText} (계좌이체)</dd>
+          <dt className="text-textSub">가격</dt><dd data-testid="terms-price">{priceText} (결제수단은 신청 화면에서 안내합니다)</dd>
           <dt className="text-textSub">제공 방식</dt><dd>결제 확인 후 입력하신 이메일로 PDF 전송(쪽수는 고객별로 다르며 보장하지 않습니다)</dd>
           <dt className="text-textSub">제작 기한</dt><dd data-testid="terms-deadline">결제 및 필수 정보 입력 완료 후 최대 48시간 이내(주말·공휴일 포함)</dd>
           <dt className="text-textSub">취소·환불</dt><dd>PDF를 보내기 전에는 제작이 시작되었어도 전액 환불됩니다. PDF가 제공된 뒤에는 법령이 정한 요건을 갖춘 경우 단순 변심에 의한 청약철회가 제한될 수 있으나, 발송·파일 오류나 계약과 다른 제공은 재발송·재제작·전액 환불을 받으실 수 있습니다(<a className="underline" href="#terms-5">제5조</a>~<a className="underline" href="#terms-7">제7조</a>).</dd>
@@ -48,10 +48,10 @@ export default function NewYearTermsPage() {
       </div>
 
       <section className="mt-10 text-sm text-textSub" aria-label="관련 문서">
-        <p>관련 문서: <Link className="underline" href="/newyear/privacy">신년운세 개인정보 수집·이용 안내</Link> · <Link className="underline" href="/terms">이용약관</Link> · <Link className="underline" href="/refund">환불정책</Link> · <Link className="underline" href="/privacy">개인정보처리방침</Link></p>
-        <p className="mt-1">이용약관·환불정책·개인정보처리방침은 팔자문 전체 서비스에 적용되며, 이 상품에는 위 약관이 먼저 적용됩니다(제9조).</p>
+        <p>관련 문서: <Link className="underline" href="/newyear/privacy">신년운세 개인정보 수집·이용 안내</Link> · <Link className="underline" href="/terms">종합 리포트 이용약관</Link> · <Link className="underline" href="/refund">종합 리포트 환불정책</Link> · <Link className="underline" href="/privacy">개인정보처리방침</Link></p>
+        <p className="mt-1">종합 리포트 이용약관·환불정책은 기존 종합 리포트 상품에 적용되며, 2027 신년운세에는 위 신년운세 약관·환불 안내가 먼저 적용됩니다(제9조).</p>
       </section>
-      <Footer />
+      <Footer scope="newyear" />
     </main>
   );
 }
