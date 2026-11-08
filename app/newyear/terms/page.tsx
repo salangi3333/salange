@@ -30,8 +30,8 @@ export default function NewYearTermsPage() {
           <dt className="text-textSub">상품</dt><dd>{p.name} — {p.offerName ?? "개인 맞춤 신년운세 5장(PDF)"}</dd>
           <dt className="text-textSub">가격</dt><dd data-testid="terms-price">{priceText} (결제수단은 신청 화면에서 안내합니다)</dd>
           <dt className="text-textSub">제공 방식</dt><dd>결제 확인 후 입력하신 이메일로 PDF 전송(쪽수는 고객별로 다르며 보장하지 않습니다)</dd>
-          <dt className="text-textSub">제작 기한</dt><dd data-testid="terms-deadline">결제 및 필수 정보 입력 완료 후 최대 48시간 이내(주말·공휴일 포함)</dd>
-          <dt className="text-textSub">취소·환불</dt><dd>PDF를 보내기 전에는 제작이 시작되었어도 전액 환불됩니다. PDF가 제공된 뒤에는 법령이 정한 요건을 갖춘 경우 단순 변심에 의한 청약철회가 제한될 수 있으나, 발송·파일 오류나 계약과 다른 제공은 재발송·재제작·전액 환불을 받으실 수 있습니다(<a className="underline" href="#terms-5">제5조</a>~<a className="underline" href="#terms-7">제7조</a>).</dd>
+          <dt className="text-textSub">제작 기한</dt><dd data-testid="terms-deadline">결제 및 필수 정보 입력 완료 후 최대 48시간 이내(주말·공휴일 포함). 기한이 지나면 계속 기다리시거나 취소하고 전액 환불받으실 수 있습니다(<a className="underline" href="#terms-3">제3조</a>).</dd>
+          <dt className="text-textSub">취소·환불</dt><dd>PDF를 보내기 전에는 제작이 시작되었어도 위약금·제작비 공제 없이 전액 환불됩니다. PDF가 제공된 뒤에는 법령이 정한 요건을 갖춘 경우 단순 변심에 의한 청약철회가 제한될 수 있고, 풀이가 기대와 다르다는 주관적 사유만으로는 환불이 보장되지 않습니다. 다만 파일 오류, 신청 정보와 다른 제작, 구성 누락, 제공 기한 미준수, 표시·계약과 다른 제공은 사안과 법령에 따라 재발송·재제작·환불을 받으실 수 있고, 기한을 넘긴 경우에는 취소하고 전액 환불받으실 수도 있습니다(<a className="underline" href="#terms-5">제5조</a>~<a className="underline" href="#terms-7">제7조</a>).</dd>
         </dl>
       </section>
 

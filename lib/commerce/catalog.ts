@@ -73,11 +73,11 @@ const base = (code: ProductCode, name: string, extra: Partial<ProductDefinition>
 export const CATALOG: Readonly<Record<ProductCode, Readonly<ProductDefinition>>> = Object.freeze({
   LIFE_V2: base("LIFE_V2", "인생 종합운세 V2"),
   // 판매 조건 확정(2026-11-02, 사용자 결정; 가격은 2026-11-06 34,800원으로 변경): 34,800원·결제 및 필수 정보 입력 완료 후 최대 48시간 이내 이메일 PDF(2026-11-06 24시간→48시간 변경)·개인 맞춤 5장(쪽수는 고객별로 달라지며 보장하지 않음; 시험본 43~49쪽). 계좌이체 → 관리자 입금 확인 → 로컬 제작 → 관리자 승인 → 관리자 수동 발송. PDF 발송 전에는 제작 시작 여부와 관계없이 전액 환불.
-  // 판매 상태는 일부러 APPROVAL_PENDING 으로 둔다: 약관·환불 고지(newyear-2027-terms/2026-11-r3 초안)의 법률 확인과 최종 출시 승인 뒤에 ON_SALE 로 바꾼다(그 전에는 주문을 만들 수 없다).
+  // 판매 상태는 일부러 APPROVAL_PENDING 으로 둔다: 약관·환불 고지(newyear-2027-terms/2026-11-r4 초안)의 법률 확인과 최종 출시 승인 뒤에 ON_SALE 로 바꾼다(그 전에는 주문을 만들 수 없다).
   NEWYEAR_2027: base("NEWYEAR_2027", "2027 신년운세", {
     status: "APPROVAL_PENDING", yearly: true, saleYear: 2027,
     offerName: "개인 맞춤 신년운세 5장(PDF)", priceKrw: 34800,
-    termsVersion: "newyear-2027-terms/2026-11-r3",
+    termsVersion: "newyear-2027-terms/2026-11-r4",
     deliveryTerms: "결제 및 필수 정보 입력 완료 후 최대 48시간 이내 이메일로 PDF 전달(newyear-2027-delivery/2026-11-r2)",
     intakeFormVersion: "newyear-intake/1",
     production: { method: "LOCAL_TOOL", generatorVersion: "newyear-gen/v5", sourceRef: "v2/gen/live/chapter_gen_v5_newyear.ts" },
