@@ -9,7 +9,7 @@ import { loadTestPayConfig } from "@/lib/commerce/newyearTestPay";
 /**
  * 2027 신년운세 상품 상세페이지(공개). 판매가 열리기 전에는 검색에 노출하지 않는다(noindex) — 신청 버튼도 서버 판정(applyOpenState)이 닫혀 있으면 막힌다.
  * 가격은 상품 카탈로그에서 가져온다. 제공 기한·환불 안내는 2026-11 확정 운영 정책(결제 및 필수 정보 입력 완료 후 최대 48시간·PDF 발송 전 전액 환불)이며, 이 파일 안의 상수로 둔다 —
- * /newyear 신청 화면·신년운세 약관 초안(newyear-2027-terms/2026-11-r2)·신년운세 환불 안내(/newyear/terms)와 같은 문구다. 문구를 바꾸면 이 네 곳을 함께 바꾼다.
+ * /newyear 신청 화면·신년운세 약관 초안(newyear-2027-terms/2026-11-r5)·신년운세 환불 안내(/newyear/terms)와 같은 문구다. 문구를 바꾸면 이 네 곳을 함께 바꾼다.
  * 분량·구성은 실제 제작·승인된 시험 PDF(5장, 43~49쪽)에서 확인한 값만 쓰며, 고객별 쪽수는 보장하지 않는다. 샘플은 가상 인물로 만든 시험 보고서 5쪽(/sample/newyear-2027-preview.pdf)이다.
  */
 export const metadata: Metadata = { title: "2027 신년운세 | 팔자문", description: "입력하신 사주 정보로 한 분만을 위해 제작하는 맞춤 신년운세 PDF", robots: { index: false, follow: false } };
@@ -95,8 +95,9 @@ export default function NewYearProductPage() {
         </Card>
 
         <Card title="PDF 제공 안내" id="delivery">
-          <p><strong>결제와 필수 정보 입력이 끝난 뒤 최대 {DELIVERY_HOURS}시간 이내</strong>에 입력하신 이메일로 PDF를 보내 드립니다. 주말과 공휴일도 시간에 포함됩니다.</p>
-          <p className="mt-2">제작에 꼭 필요한 정보를 확인해야 하면 이메일로 문의드립니다. 문의를 보낸 때부터 답해 주실 때까지는 시간이 멈추고, 답해 주시면 남은 시간부터 이어집니다. 문의와 답변 시각은 회사가 직접 기록해 관리합니다.</p>
+          <p data-testid="product-service-period"><strong>서비스 제공기간: 결제일로부터 최대 {DELIVERY_HOURS}시간</strong> (카드 결제와 실시간 계좌이체는 결제 승인 시점부터, 계좌로 직접 입금하는 경우는 입금이 확인된 시점부터 계산하며, 주말과 공휴일도 시간에 포함됩니다.)</p>
+          <p className="mt-2">필수 정보는 결제 전에 신청서로 모두 입력받고, 결제가 완료되면 입력하신 이메일로 PDF를 보내 드립니다.</p>
+          <p className="mt-2" data-testid="product-service-end"><strong>이메일로 PDF 발송이 완료되면 서비스 제공이 종료됩니다.</strong> 웹사이트에서 별도의 열람·다운로드 서비스는 제공하지 않으며, 받으신 PDF는 직접 저장해 두고 보실 수 있습니다. 발송 오류·파일 오류 등은 약관 제7조에 따라 조치해 드립니다.</p>
           <p className="mt-2">{DELIVERY_HOURS}시간 안에 보내기 어려우면 기한이 지나기 전에 사유와 새 예정 시각을 알려 드립니다. 기한이 지났다면 계속 기다리시거나 전액 환불을 선택하실 수 있습니다.</p>
         </Card>
 

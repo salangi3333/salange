@@ -52,7 +52,7 @@ export const NEWYEAR_PRIVACY_NOTICE = Object.freeze({
 /** 법률 확인이 필요한 문구 표시. doc: 어느 문서인지, target: 약관은 조 번호('제6조'), 안내는 섹션 id, reason: 무엇을 확인해야 하는지. 법률 확인이 끝난 것이 아니다. */
 export interface LegalFlag { id: string; doc: "terms" | "privacy" | "consent"; target: string; reason: string }
 export const NEWYEAR_LEGAL_FLAGS: readonly LegalFlag[] = Object.freeze([
-  { id: "t3-delay", doc: "terms", target: "제3조", reason: "기한(최대 48시간) 초과 시 취소·전액 환불과 사전 통지 약속, 문의~답변 시간 제외(일시 정지) 규정이 소비자 보호 기준에 맞는지, 기산점(결제 및 필수 정보 입력 완료 시각)과 문의·답변 시각을 어떻게 기록·고지할지." },
+  { id: "t3-delay", doc: "terms", target: "제3조", reason: "기한(최대 48시간) 초과 시 취소·전액 환불과 사전 통지 약속이 소비자 보호 기준에 맞는지, 기산점(결제 및 필수 정보 입력 완료 시각)과 서비스 제공 종료 시점(PDF 이메일 발송 완료)을 어떻게 기록·고지할지." },
   { id: "t5-refund", doc: "terms", target: "제5조", reason: "PDF 발송 전에는 제작 시작 여부와 관계없이 전액 환불, 환불 기한 3영업일, 결제수단별 환불 방식이 적정한지." },
   { id: "t6-withdrawal", doc: "terms", target: "제6조", reason: "PDF 제공 후 청약철회 제한을 적용하는 근거와 요건(결제 전 고지, 별도 동의, 제공 개시 시점의 정의와 발송 기록)을 충족하는지." },
   { id: "t7-rights", doc: "terms", target: "제7조", reason: "3개월·30일 기간 표기가 현행 법령과 일치하는지." },
