@@ -56,7 +56,7 @@ export const NEWYEAR_LEGAL_FLAGS: readonly LegalFlag[] = Object.freeze([
   { id: "t5-refund", doc: "terms", target: "제5조", reason: "PDF 발송 전에는 제작 시작 여부와 관계없이 전액 환불, 환불 기한 3영업일, 결제수단별 환불 방식이 적정한지." },
   { id: "t6-withdrawal", doc: "terms", target: "제6조", reason: "PDF 제공 후 청약철회 제한을 적용하는 근거와 요건(결제 전 고지, 별도 동의, 제공 개시 시점의 정의와 발송 기록)을 충족하는지." },
   { id: "t7-rights", doc: "terms", target: "제7조", reason: "3개월·30일 기간 표기가 현행 법령과 일치하는지." },
-  { id: "t8-contact", doc: "terms", target: "제8조", reason: "사업자 정보·문의처 표기(법적 표시 문구)가 기존 서비스 약관과 같게 기재되었는지. 현재는 미기재." },
+  { id: "t8-contact", doc: "terms", target: "제8조", reason: "문의처(고객센터 전화·이메일) 표기(법적 표시 문구)가 푸터·기존 서비스 약관과 같게 기재되었는지." },
   { id: "t9-relation", doc: "terms", target: "제9조", reason: "기존 인생사주 약관·환불정책과의 우선 적용 관계가 유효한지(별도 상품 약관으로 두는 방식)." },
   { id: "c-withdrawal", doc: "consent", target: "withdrawal_limit", reason: "청약철회 제한 동의 문구가 요건을 충족하는지." },
   { id: "c-privacy", doc: "consent", target: "privacy", reason: "개인정보 수집·이용 및 AI 서비스 이용·해외 이전에 대한 동의 문구와 방식(필수 동의 하나로 묶는 것이 적정한지)." },

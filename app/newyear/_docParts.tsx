@@ -14,8 +14,13 @@ export function DraftBanner({ version, sha256, reviewed }: { version: string; sh
   );
 }
 
-/** 법률 확인이 필요한 부분 표시. 법률 확인이 끝났다는 뜻이 아니며, 확인이 끝나면 표시를 걷어낸다. */
+/**
+ * 법률 확인이 필요한 부분 표시(개발자·운영자용 내부 메모). 법률 확인이 끝났다는 뜻이 아니다.
+ * 고객에게는 보이지 않게 기본으로 숨기고, 내부에서 볼 때만 NEWYEAR_SHOW_LEGAL_MARKS=on 으로 켠다.
+ * 법률 확인 전이라는 사실은 문서 맨 위 DraftBanner 가 고객에게 그대로 알린다.
+ */
 export function LegalMark({ doc, target }: { doc: "terms" | "privacy" | "consent"; target: string }) {
+  if (process.env.NEWYEAR_SHOW_LEGAL_MARKS !== "on") return null;
   const flags = NEWYEAR_LEGAL_FLAGS.filter((f) => f.doc === doc && f.target === target);
   if (flags.length === 0) return null;
   return (
